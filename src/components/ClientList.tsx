@@ -1,4 +1,6 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+// Importation de l'instance API configurée avec l'intercepteur JWT
+import api from '../services/api'; 
 
 const ClientList = () => {
   const [clients, setClients] = useState<any[]>([]);
@@ -19,12 +21,20 @@ const ClientList = () => {
   });
   const [successMessage, setSuccessMessage] = useState(false);
 
-  const API_URL = 'http://127.0.0.1:8000/api/clients/';
+  // Utilisation de useEffect pour charger les données au montage du composant
+  useEffect(() => { 
+    fetchClients(); 
+  }, []);
 
-  useEffect(() => { fetchClients(); }, []);
-
-  const fetchClients = () => {
-    fetch(API_URL).then(res => res.json()).then(data => setClients(data));
+  // --- RÉCUPÉRATION DES CLIENTS (GET) ---
+  const fetchClients = async () => {
+    try {
+      // api.get utilise automatiquement le token du localStorage
+      const response = await api.get('/clients/');
+      setClients(response.data);
+    } catch (error) {
+      console.error("Erreur lors de la récupération des clients:", error);
+    }
   };
 
   const filteredClients = clients.filter(client => {
@@ -67,21 +77,34 @@ const ClientList = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  // --- CRÉATION / MODIFICATION (POST / PUT) ---
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
-    const finalData = { ...formData, pathologies_blessures: formData.pathologies_blessures || "Aucune", tags: formData.tags || "Standard" };
-    const method = editingClient ? 'PUT' : 'POST';
-    const url = editingClient ? `${API_URL}${editingClient.id}/` : API_URL;
+
+    const finalData = { 
+      ...formData, 
+      pathologies_blessures: formData.pathologies_blessures || "Aucune", 
+      tags: formData.tags || "Standard" 
+    };
+
     try {
-      const response = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(finalData) });
-      if (response.ok) {
+      let response;
+      if (editingClient) {
+        response = await api.put(`/clients/${editingClient.id}/`, finalData);
+      } else {
+        response = await api.post('/clients/', finalData);
+      }
+
+      if (response.status === 200 || response.status === 201) {
         setSuccessMessage(true);
         setTimeout(() => setSuccessMessage(false), 3000);
         closeModal();
         fetchClients();
       }
-    } catch (error) { console.error(error); }
+    } catch (error) { 
+      console.error("Erreur lors de l'enregistrement:", error); 
+    }
   };
 
   const openDeleteModal = (client: any) => {
@@ -89,12 +112,17 @@ const ClientList = () => {
     setIsDeleteModalOpen(true);
   };
 
+  // --- SUPPRESSION (DELETE) ---
   const confirmDelete = async () => {
     if (clientToDelete) {
-      await fetch(`${API_URL}${clientToDelete.id}/`, { method: 'DELETE' });
-      setIsDeleteModalOpen(false);
-      setClientToDelete(null);
-      fetchClients();
+      try {
+        await api.delete(`/clients/${clientToDelete.id}/`);
+        setIsDeleteModalOpen(false);
+        setClientToDelete(null);
+        fetchClients();
+      } catch (error) {
+        console.error("Erreur lors de la suppression:", error);
+      }
     }
   };
 
@@ -114,16 +142,15 @@ const ClientList = () => {
   const rgpdRate = totalClients > 0 ? Math.round((clients.filter(c => c.consentement_rgpd).length / totalClients) * 100) : 0;
 
   return (
-    <div className="h-screen w-full flex flex-col animate-in fade-in duration-700 overflow-hidden bg-gray-50">
+    <div className="h-screen w-full flex flex-col animate-in fade-in duration-700 overflow-hidden bg-gray-50 font-sans">
       <style>{`
       @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-      .font-sans { font-family: 'Inter', sans-serif !important; }
       .custom-scroll::-webkit-scrollbar { width: 6px; }
       .custom-scroll::-webkit-scrollbar-track { background: transparent; }
       .custom-scroll::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 10px; }
     `}</style>
 
-      {/* NOTIFICATION */}
+      {/* NOTIFICATION SUCCESS */}
       <div className={`fixed bottom-10 right-5 z-[250] transform transition-all duration-500 ${successMessage ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0 pointer-events-none'}`}>
         <div className="flex items-start sm:items-center p-4 text-sm text-green-800 rounded-2xl bg-green-50 border border-green-200 shadow-2xl" role="alert">
           <svg className="w-5 h-5 me-3 shrink-0 text-green-600" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 11h2v5m-2 0h4m-2.592-8.5h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
@@ -131,7 +158,7 @@ const ClientList = () => {
         </div>
       </div>
 
-      {/* ZONE FIXE : TITRE ET DASHBOARD (shrink-0 empêche ce bloc de se réduire) */}
+      {/* DASHBOARD STATS */}
       <div className="px-8 pt-2 pb-4 shrink-0">
         <div className="max-w-6xl mx-auto">
           <div className="flex justify-between items-end mb-6">
@@ -154,7 +181,6 @@ const ClientList = () => {
             </div>
           </div>
 
-          {/* BARRE DE RECHERCHE */}
           <div className="relative mb-2">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
@@ -170,7 +196,7 @@ const ClientList = () => {
         </div>
       </div>
 
-      {/* [MODIFICATION] :  */}
+      {/* TABLEAU DES CLIENTS */}
       <div className="max-w-6xl w-full mx-auto px-8 flex-1 min-h-0 flex flex-col mb-4">
         {filteredClients.length > 0 ? (
           <div className="bg-white shadow-2xl rounded-2xl border border-gray-100 overflow-hidden flex flex-col">
@@ -221,20 +247,19 @@ const ClientList = () => {
             </div>
           </div>
         ) : (
-          /* Ce qui s'affiche si la liste est vide*/
           <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border-2 border-dashed border-gray-100 shadow-inner">
             <div className="bg-gray-50 p-4 rounded-full mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6 text-gray-300">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
               </svg>
-
             </div>
             <p className="text-gray-400 font-bold text-center">
               Aucun sportif ne correspond à <span className="text-indigo-900">"{searchTerm}"</span>
-            </p>    </div>
+            </p>    
+          </div>
         )}
 
-        {/* ZONE PAGINATION  */}
+        {/* PAGINATION */}
         {totalPages > 1 && (
           <div className="flex justify-center items-center py-4 space-x-2 shrink-0">
             <button disabled={currentPage === 1} onClick={() => setCurrentPage(prev => prev - 1)} className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium disabled:opacity-50 hover:bg-gray-50 transition-colors">Précédent</button>
@@ -249,20 +274,9 @@ const ClientList = () => {
       </div>
 
       {/* MODALE FORMULAIRE */}
-      <div
-        className={`fixed inset-0 z-[110] flex items-center justify-center p-6 transition-all duration-300 ease-out ${isModalOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'
-          }`}
-      >
-        <div
-          className={`absolute inset-0 bg-gray-950/40 backdrop-blur-sm transition-opacity duration-300 ${isModalOpen ? 'opacity-100' : 'opacity-0'
-            }`}
-          onClick={closeModal}
-        ></div>
-
-        <div
-          className={`relative bg-white rounded-[2.5rem] shadow-2xl w-full max-w-3xl p-10 overflow-hidden transform transition-all duration-300 ease-out ${isModalOpen ? 'translate-y-0 scale-100 opacity-100' : 'translate-y-4 scale-95 opacity-0'
-            }`}
-        >
+      <div className={`fixed inset-0 z-[110] flex items-center justify-center p-6 transition-all duration-300 ease-out ${isModalOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}`}>
+        <div className={`absolute inset-0 bg-gray-950/40 backdrop-blur-sm transition-opacity duration-300 ${isModalOpen ? 'opacity-100' : 'opacity-0'}`} onClick={closeModal}></div>
+        <div className={`relative bg-white rounded-[2.5rem] shadow-2xl w-full max-w-3xl p-10 overflow-hidden transform transition-all duration-300 ease-out ${isModalOpen ? 'translate-y-0 scale-100 opacity-100' : 'translate-y-4 scale-95 opacity-0'}`}>
           <h2 className="text-3xl font-black text-orange-500 mb-8">{editingClient ? 'Modifier le profil' : 'Nouveau sportif'}</h2>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -277,43 +291,18 @@ const ClientList = () => {
                     {errors.nom && <p className="text-red-500 text-[10px] font-bold mt-1 ml-2 uppercase tracking-tighter">{errors.nom}</p>}
                   </div>
                 </div>
-                <div className="flex flex-col">
-                  <input
-                    type="email"
-                    placeholder="Email"
-                    className={`border-2 p-3.5 rounded-2xl w-full outline-none transition-all ${errors.email ? 'border-red-500 bg-red-50' : 'border-gray-100 focus:border-indigo-900'}`}
-                    value={formData.email}
-                    onChange={e => { setFormData({ ...formData, email: e.target.value }); setErrors({ ...errors, email: null }) }}
-                  />
-                  {errors.email && <p className="text-red-500 text-[10px] font-bold mt-1 ml-2 uppercase tracking-tighter">{errors.email}</p>}
+                <input type="email" placeholder="Email" className={`border-2 p-3.5 rounded-2xl w-full outline-none transition-all ${errors.email ? 'border-red-500 bg-red-50' : 'border-gray-100 focus:border-indigo-900'}`} value={formData.email} onChange={e => { setFormData({ ...formData, email: e.target.value }); setErrors({ ...errors, email: null }) }} />
+                <div className="grid grid-cols-2 gap-3">
+                  <input placeholder="Tél" className={`border-2 p-3.5 rounded-2xl w-full outline-none ${errors.telephone ? 'border-red-500 bg-red-50' : 'border-gray-100'}`} value={formData.telephone} onChange={e => { setFormData({ ...formData, telephone: e.target.value }); setErrors({ ...errors, telephone: null }) }} />
+                  <input type="date" className="border-2 p-3.5 rounded-2xl w-full outline-none border-gray-100 text-gray-500" value={formData.date_naissance} onChange={e => setFormData({ ...formData, date_naissance: e.target.value })} />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div><input placeholder="Tél" className={`border-2 p-3.5 rounded-2xl w-full outline-none ${errors.telephone ? 'border-red-500 bg-red-50' : 'border-gray-100'}`} value={formData.telephone} onChange={e => { setFormData({ ...formData, telephone: e.target.value }); setErrors({ ...errors, telephone: null }) }} />{errors.telephone && <p className="text-red-500 text-[10px] font-bold mt-1 ml-2 uppercase tracking-tighter">{errors.telephone}</p>}</div>
-                  <div>
-                    <input
-                      type="date"
-                      className={`border-2 p-3.5 rounded-2xl w-full outline-none ${errors.date_naissance ? 'border-red-500 bg-red-50' : 'border-gray-100 text-gray-500 focus:border-indigo-900'}`}
-                      value={formData.date_naissance}
-                      onChange={e => { setFormData({ ...formData, date_naissance: e.target.value }); setErrors({ ...errors, date_naissance: null }) }}
-                    />
-                    {errors.date_naissance && <p className="text-red-500 text-[10px] font-bold mt-1 ml-2 uppercase tracking-tighter">{errors.date_naissance}</p>}
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div><input type="number" placeholder="Poids" className={`border-2 p-3.5 rounded-2xl w-full outline-none ${errors.poids ? 'border-red-500 bg-red-50' : 'border-gray-100'}`} value={formData.poids} onChange={e => { setFormData({ ...formData, poids: e.target.value }); setErrors({ ...errors, poids: null }) }} />{errors.poids && <p className="text-red-500 text-[10px] font-bold mt-1 ml-2 uppercase tracking-tighter">{errors.poids}</p>}</div>
-                  <div><input type="number" placeholder="Taille" className={`border-2 p-3.5 rounded-2xl w-full outline-none ${errors.taille ? 'border-red-500 bg-red-50' : 'border-gray-100'}`} value={formData.taille} onChange={e => { setFormData({ ...formData, taille: e.target.value }); setErrors({ ...errors, taille: null }) }} />{errors.taille && <p className="text-red-500 text-[10px] font-bold mt-1 ml-2 uppercase tracking-tighter">{errors.taille}</p>}</div>
+                  <input type="number" placeholder="Poids" className="border-2 p-3.5 rounded-2xl w-full outline-none border-gray-100" value={formData.poids} onChange={e => setFormData({ ...formData, poids: e.target.value })} />
+                  <input type="number" placeholder="Taille" className="border-2 p-3.5 rounded-2xl w-full outline-none border-gray-100" value={formData.taille} onChange={e => setFormData({ ...formData, taille: e.target.value })} />
                 </div>
               </div>
               <div className="space-y-4">
-                <div className="flex flex-col">
-                  <textarea
-                    placeholder="Objectifs sportifs..."
-                    className={`border-2 p-3.5 rounded-2xl w-full h-24 resize-none outline-none ${errors.objectifs_sportifs ? 'border-red-500 bg-red-50' : 'border-gray-100 focus:border-indigo-900'}`}
-                    value={formData.objectifs_sportifs}
-                    onChange={e => { setFormData({ ...formData, objectifs_sportifs: e.target.value }); setErrors({ ...errors, objectifs_sportifs: null }) }}
-                  />
-                  {errors.objectifs_sportifs && <p className="text-red-500 text-[10px] font-bold mt-1 ml-2 uppercase tracking-tighter">{errors.objectifs_sportifs}</p>}
-                </div>
+                <textarea placeholder="Objectifs sportifs..." className="border-2 p-3.5 rounded-2xl w-full h-24 resize-none outline-none border-gray-100 focus:border-indigo-900" value={formData.objectifs_sportifs} onChange={e => setFormData({ ...formData, objectifs_sportifs: e.target.value })} />
                 <textarea placeholder="Pathologies" className="border-2 border-gray-100 p-3.5 rounded-2xl w-full h-24 resize-none outline-none" value={formData.pathologies_blessures} onChange={e => setFormData({ ...formData, pathologies_blessures: e.target.value })} />
                 <input placeholder="Tags" className="border-2 border-gray-100 p-3.5 rounded-2xl w-full outline-none" value={formData.tags} onChange={e => setFormData({ ...formData, tags: e.target.value })} />
               </div>
@@ -333,53 +322,23 @@ const ClientList = () => {
       </div>
 
       {/* MODALE SUPPRESSION */}
-      <div
-        className={`fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-0 transition-all duration-300 ease-out ${isDeleteModalOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'
-          }`}
-      >
-        {/* Overlay (Fond gris flouté) */}
-        <div
-          className={`fixed inset-0 bg-gray-500/75 backdrop-blur-sm transition-opacity duration-300 ${isDeleteModalOpen ? 'opacity-100' : 'opacity-0'
-            }`}
-          onClick={() => setIsDeleteModalOpen(false)}
-        ></div>
-
-        {/* Boîte de dialogue */}
-        <div
-          className={`relative transform transition-all duration-300 ease-out bg-white rounded-2xl text-left shadow-2xl sm:my-8 sm:w-full sm:max-w-lg ${isDeleteModalOpen ? 'translate-y-0 scale-100 opacity-100' : 'translate-y-4 scale-95 opacity-0'
-            }`}
-        >
+      <div className={`fixed inset-0 z-[200] flex items-center justify-center p-4 transition-all duration-300 ease-out ${isDeleteModalOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}`}>
+        <div className={`fixed inset-0 bg-gray-500/75 backdrop-blur-sm transition-opacity duration-300 ${isDeleteModalOpen ? 'opacity-100' : 'opacity-0'}`} onClick={() => setIsDeleteModalOpen(false)}></div>
+        <div className={`relative transform transition-all duration-300 ease-out bg-white rounded-2xl text-left shadow-2xl sm:my-8 sm:w-full sm:max-w-lg ${isDeleteModalOpen ? 'translate-y-0 scale-100 opacity-100' : 'translate-y-4 scale-95 opacity-0'}`}>
           <div className="bg-white px-4 pt-5 pb-4 sm:p-6">
             <div className="sm:flex sm:items-center">
-              {/* ICONE */}
               <div className="mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10 text-red-600">
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
-                </svg>
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" /></svg>
               </div>
-
-              {/* TEXTE */}
               <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left flex flex-col justify-center">
                 <h3 className="text-lg font-bold text-gray-900 leading-6">Supprimer le client</h3>
-                <p className="text-sm text-gray-500 mt-1">
-                  Supprimer définitivement <span className="text-red-600 font-bold">{clientToDelete?.prenom} {clientToDelete?.nom}</span> ?
-                </p>
+                <p className="text-sm text-gray-500 mt-1">Supprimer définitivement <span className="text-red-600 font-bold">{clientToDelete?.prenom} {clientToDelete?.nom}</span> ?</p>
               </div>
             </div>
           </div>
           <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 rounded-b-2xl">
-            <button
-              onClick={confirmDelete}
-              className="inline-flex w-full justify-center rounded-xl bg-red-600 px-6 py-2.5 text-sm font-black text-white hover:bg-red-500 sm:ml-3 sm:w-auto transition-all active:scale-95"
-            >
-              SUPPRIMER
-            </button>
-            <button
-              onClick={() => setIsDeleteModalOpen(false)}
-              className="mt-3 inline-flex w-full justify-center rounded-xl bg-white px-6 py-2.5 text-sm font-bold text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto transition-all"
-            >
-              ANNULER
-            </button>
+            <button onClick={confirmDelete} className="inline-flex w-full justify-center rounded-xl bg-red-600 px-6 py-2.5 text-sm font-black text-white hover:bg-red-500 sm:ml-3 sm:w-auto transition-all active:scale-95">SUPPRIMER</button>
+            <button onClick={() => setIsDeleteModalOpen(false)} className="mt-3 inline-flex w-full justify-center rounded-xl bg-white px-6 py-2.5 text-sm font-bold text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto">ANNULER</button>
           </div>
         </div>
       </div>
