@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, ArrowRight, Dumbbell, Users, Building2, Zap } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, Dumbbell, Users, Zap } from 'lucide-react';
 import { authService } from '../services/authService';
 
 const Register = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [selectedRole, setSelectedRole] = useState('coach');
-  const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
@@ -19,7 +18,6 @@ const Register = () => {
   const roles = [
     { id: 'coach', label: 'Coach', icon: Dumbbell },
     { id: 'athlete', label: 'Athlète', icon: Users },
-    
   ];
 
   const handleInputChange = (e) => {
@@ -32,23 +30,24 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (currentStep < 3) {
-      setCurrentStep(prev => prev + 1);
-      return;
-    }
-
     setLoading(true);
     setError('');
 
     try {
-      await authService.register({
-        ...formData,
-        role: selectedRole
-      });
-      navigate('/login');
+      // 1. Inscription
+      await authService.register({ ...formData, role: selectedRole });
+      
+      // 2. Connexion Automatique (nécessaire pour accéder aux étapes protégées suivantes)
+      await authService.login({ email: formData.email, password: formData.password });
+
+      // 3. Redirection immédiate vers l'étape 2
+      if (selectedRole === 'coach') {
+        navigate('/onboarding/coach/step2');
+      } else {
+        navigate('/onboarding/athlete/step2');
+      }
     } catch (err) {
-      setError(err.response?.data?.message || 'Erreur lors de l\'inscription');
+      setError(err.response?.data?.message || "Erreur lors de l'inscription");
     } finally {
       setLoading(false);
     }
@@ -106,19 +105,19 @@ const Register = () => {
             <p className="text-gray-400">Prêt à transformer vos entraînements ?</p>
           </div>
 
-          {/* Progress Bar */}
+          {/* Progress Bar STATIQUE (Step 1/3 - 33%) */}
           <div className="flex flex-col gap-3 mb-8">
             <div className="flex gap-6 justify-between items-end">
-              <p className="text-white text-sm font-medium">Étape {currentStep} sur 3</p>
-              <p className="text-[#ff6a00] text-xs font-bold uppercase tracking-wider">
-                Informations Personnelles
-              </p>
+                <p className="text-white text-sm font-medium">Étape 1 sur 3</p>
+                <p className="text-[#ff6a00] text-xs font-bold uppercase tracking-wider">
+                    Informations Personnelles
+                </p>
             </div>
             <div className="rounded-full bg-[#2a1d15] h-1.5 overflow-hidden">
-              <div 
-                className="h-full rounded-full bg-[#ff6a00] transition-all duration-500"
-                style={{ width: `${(currentStep / 3) * 100}%` }}
-              ></div>
+                <div 
+                    className="h-full rounded-full bg-[#ff6a00] transition-all duration-500" 
+                    style={{ width: '33.3333%' }}
+                ></div>
             </div>
           </div>
 
