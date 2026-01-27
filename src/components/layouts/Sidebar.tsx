@@ -1,0 +1,85 @@
+import React, { useState } from 'react';
+import { LayoutDashboard, Users, Dumbbell, Calendar, Settings, ChevronRight, LogOut, ChevronLeft, Menu } from 'lucide-react';
+
+const logo = new URL('../../assets/images/logo.png', import.meta.url).href;
+interface SidebarProps {
+  activePage?: string; 
+}
+const Sidebar = ({ activePage = "Dashboard" }: SidebarProps) => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const menuItems = [
+    { icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
+    { icon: <Users size={20} />, label: 'Mes Clients' },
+    { icon: <Dumbbell size={20} />, label: 'Programmes' },
+    { icon: <Calendar size={20} />, label: 'Calendrier' },
+    { icon: <Settings size={20} />, label: 'Paramètres' },
+  ];
+
+  return (
+    <aside 
+      className={`bg-indigo-900 h-screen flex flex-col text-white shadow-2xl z-50 transition-all duration-300 ease-in-out relative ${
+        isCollapsed ? 'w-20' : 'w-64'
+      }`}
+    >
+
+    
+<div className={`w-full flex items-center py-6 px-4 shrink-0 transition-all duration-300 ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
+  {/* LOGO */}
+  {!isCollapsed && (
+    <div className="w-32 h-auto flex items-center">
+      <img src={logo} alt="Logo" className="max-w-full h-auto object-contain brightness-110" />
+    </div>
+  )}
+
+  {/* BOUTON TOGGLE INTÉGRÉ */}
+<button 
+  onClick={() => setIsCollapsed(!isCollapsed)}
+  className="p-3.5 rounded-xl bg-indigo-800/50 hover:bg-indigo-700/50 text-indigo-300 hover:text-white transition-all shadow-sm group"
+>
+  <Menu 
+    size={20} 
+    className="group-hover:text-orange-400 transition-colors" 
+  />
+</button>
+</div>
+
+      {/* NAVIGATION */}
+    <nav className="flex-1 px-3 space-y-2">
+        {menuItems.map((item, index) => {
+          //On compare le label de l'item avec la page active reçue en prop
+          const isActive = activePage === item.label;
+
+          return (
+            <button
+              key={index}
+              className={`w-full flex items-center p-3.5 rounded-xl transition-all duration-200 group relative ${
+                isActive 
+                  ? 'bg-orange-500 text-white shadow-lg shadow-orange-600/20' 
+                  : 'hover:bg-indigo-800/50 text-indigo-300 hover:text-white'
+              } ${isCollapsed ? 'justify-center' : 'justify-between'}`}
+            >
+              <div className="flex items-center space-x-3">
+                <span className={`${isActive ? 'text-white' : 'group-hover:text-orange-400'} transition-colors shrink-0`}>
+                  {item.icon}
+                </span>
+                {!isCollapsed && <span className="font-bold text-sm tracking-wide">{item.label}</span>}
+              </div>
+              {!isCollapsed && isActive && <ChevronRight size={16} className="text-orange-200" />}
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* DÉCONNEXION */}
+      <div className="p-4 border-t border-indigo-800/50">
+        <button className={`w-full flex items-center p-3 hover:bg-red-500/10 rounded-xl transition-colors text-red-400 group ${isCollapsed ? 'justify-center' : 'space-x-3'}`}>
+          <LogOut size={20} className="group-hover:scale-110 transition-transform shrink-0" />
+          {!isCollapsed && <span className="font-bold text-sm whitespace-nowrap">Déconnexion</span>}
+        </button>
+      </div>
+    </aside>
+  );
+};
+
+export default Sidebar;

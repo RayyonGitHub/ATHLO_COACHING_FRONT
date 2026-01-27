@@ -13,6 +13,7 @@ const api = axios.create({
 // Intercepteur pour ajouter le token à chaque requête
 api.interceptors.request.use(
   (config) => {
+    // Uses authService to get 'authToken' correctly
     const token = authService.getToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -29,7 +30,7 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Token expiré ou invalide
+      // Token expiré ou invalide -> Logout and redirect
       authService.logout();
       window.location.href = '/login';
     }
