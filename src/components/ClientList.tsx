@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 // Importation de l'instance API configurée avec l'intercepteur JWT
-import api from '../services/api'; 
+import api from '../services/api';
 
 const ClientList = () => {
   const [clients, setClients] = useState<any[]>([]);
@@ -22,8 +22,8 @@ const ClientList = () => {
   const [successMessage, setSuccessMessage] = useState(false);
 
   // Utilisation de useEffect pour charger les données au montage du composant
-  useEffect(() => { 
-    fetchClients(); 
+  useEffect(() => {
+    fetchClients();
   }, []);
 
   // --- RÉCUPÉRATION DES CLIENTS (GET) ---
@@ -57,7 +57,7 @@ const ClientList = () => {
 
   const validateForm = () => {
     let newErrors: any = {};
-    const alphaRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s-]+$/;
+    const alphaRegex = /^[^\d]+$/;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const phoneRegex = /^0\d{9}$/;
     const today = new Date().toISOString().split('T')[0];
@@ -70,9 +70,12 @@ const ClientList = () => {
     if (Number(formData.taille) <= 0) newErrors.taille = "Doit être positif";
     if (!formData.date_naissance) newErrors.date_naissance = "La date est obligatoire";
     else if (formData.date_naissance > today) newErrors.date_naissance = "La date ne peut pas être dans le futur";
-    if (!formData.objectifs_sportifs || formData.objectifs_sportifs.trim().length < 5) {
-      newErrors.objectifs_sportifs = "Les objectifs sont obligatoires (min. 5 caractères)";
+
+    // Correction ici : on baisse à 3 caractères minimum pour accepter "Rest" ou "Bulk"
+    if (!formData.objectifs_sportifs || formData.objectifs_sportifs.trim().length < 3) {
+      newErrors.objectifs_sportifs = "Les objectifs sont obligatoires (min. 3 caractères)";
     }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -82,10 +85,10 @@ const ClientList = () => {
     e.preventDefault();
     if (!validateForm()) return;
 
-    const finalData = { 
-      ...formData, 
-      pathologies_blessures: formData.pathologies_blessures || "Aucune", 
-      tags: formData.tags || "Standard" 
+    const finalData = {
+      ...formData,
+      pathologies_blessures: formData.pathologies_blessures || "Aucune",
+      tags: formData.tags || "Standard"
     };
 
     try {
@@ -102,8 +105,8 @@ const ClientList = () => {
         closeModal();
         fetchClients();
       }
-    } catch (error) { 
-      console.error("Erreur lors de l'enregistrement:", error); 
+    } catch (error) {
+      console.error("Erreur lors de l'enregistrement:", error);
     }
   };
 
@@ -255,7 +258,7 @@ const ClientList = () => {
             </div>
             <p className="text-gray-400 font-bold text-center">
               Aucun sportif ne correspond à <span className="text-indigo-900">"{searchTerm}"</span>
-            </p>    
+            </p>
           </div>
         )}
 
@@ -291,19 +294,66 @@ const ClientList = () => {
                     {errors.nom && <p className="text-red-500 text-[10px] font-bold mt-1 ml-2 uppercase tracking-tighter">{errors.nom}</p>}
                   </div>
                 </div>
-                <input type="email" placeholder="Email" className={`border-2 p-3.5 rounded-2xl w-full outline-none transition-all ${errors.email ? 'border-red-500 bg-red-50' : 'border-gray-100 focus:border-indigo-900'}`} value={formData.email} onChange={e => { setFormData({ ...formData, email: e.target.value }); setErrors({ ...errors, email: null }) }} />
-                <div className="grid grid-cols-2 gap-3">
-                  <input placeholder="Tél" className={`border-2 p-3.5 rounded-2xl w-full outline-none ${errors.telephone ? 'border-red-500 bg-red-50' : 'border-gray-100'}`} value={formData.telephone} onChange={e => { setFormData({ ...formData, telephone: e.target.value }); setErrors({ ...errors, telephone: null }) }} />
-                  <input type="date" className="border-2 p-3.5 rounded-2xl w-full outline-none border-gray-100 text-gray-500" value={formData.date_naissance} onChange={e => setFormData({ ...formData, date_naissance: e.target.value })} />
+                <div className="space-y-1">
+                  <input type="email" placeholder="Email"
+                  className={`border-2 p-3.5 rounded-2xl w-full outline-none transition-all ${errors.email ? 'border-red-500 bg-red-50' : 'border-gray-100 focus:border-indigo-900'}`}
+                  value={formData.email}
+                  onChange={e => { setFormData({ ...formData, email: e.target.value }); setErrors({ ...errors, email: null }) }}
+                />
+                {errors.email && <p className="text-red-500 text-[10px] font-bold mt-1 ml-2 uppercase tracking-tighter">{errors.email}</p>}                <div className="grid grid-cols-2 gap-3">
                 </div>
+                
+                  <div>
+                    <input placeholder="Tél"
+                      className={`border-2 p-3.5 rounded-2xl w-full outline-none ${errors.telephone ? 'border-red-500 bg-red-50' : 'border-gray-100'}`}
+                      value={formData.telephone}
+                      onChange={e => { setFormData({ ...formData, telephone: e.target.value }); setErrors({ ...errors, telephone: null }) }}
+                    />
+                    {errors.telephone && <p className="text-red-500 text-[10px] font-bold mt-1 ml-2 uppercase tracking-tighter">{errors.telephone}</p>}
+                  </div>
+                  <div className="mt-4">
+                    <input
+                      type="date"
+                      className={`border-2 p-3.5 rounded-2xl w-full outline-none transition-all ${errors.date_naissance ? 'border-red-500 bg-red-50' : 'border-gray-100 text-gray-500'}`}
+                      value={formData.date_naissance}
+                      onChange={e => { setFormData({ ...formData, date_naissance: e.target.value }); setErrors({ ...errors, date_naissance: null }) }}
+                    />
+                    {errors.date_naissance && <p className="text-red-500 text-[10px] font-bold mt-1 ml-2 uppercase tracking-tighter">{errors.date_naissance}</p>}
+                  </div>                </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <input type="number" placeholder="Poids" className="border-2 p-3.5 rounded-2xl w-full outline-none border-gray-100" value={formData.poids} onChange={e => setFormData({ ...formData, poids: e.target.value })} />
-                  <input type="number" placeholder="Taille" className="border-2 p-3.5 rounded-2xl w-full outline-none border-gray-100" value={formData.taille} onChange={e => setFormData({ ...formData, taille: e.target.value })} />
+                  <div>
+                    <input
+                      type="number"
+                      placeholder="Poids"
+                      className={`border-2 p-3.5 rounded-2xl w-full outline-none transition-all ${errors.poids ? 'border-red-500 bg-red-50' : 'border-gray-100'}`}
+                      value={formData.poids}
+                      onChange={e => { setFormData({ ...formData, poids: e.target.value }); setErrors({ ...errors, poids: null }) }}
+                    />
+                    {errors.poids && <p className="text-red-500 text-[10px] font-bold mt-1 ml-2 uppercase tracking-tighter">{errors.poids}</p>}
+                  </div>
+
+                  {/* CHAMP TAILLE */}
+                  <div>
+                    <input
+                      type="number"
+                      placeholder="Taille"
+                      className={`border-2 p-3.5 rounded-2xl w-full outline-none transition-all ${errors.taille ? 'border-red-500 bg-red-50' : 'border-gray-100'}`}
+                      value={formData.taille}
+                      onChange={e => { setFormData({ ...formData, taille: e.target.value }); setErrors({ ...errors, taille: null }) }}
+                    />
+                    {errors.taille && <p className="text-red-500 text-[10px] font-bold mt-1 ml-2 uppercase tracking-tighter">{errors.taille}</p>}
+                  </div>
                 </div>
               </div>
               <div className="space-y-4">
-                <textarea placeholder="Objectifs sportifs..." className="border-2 p-3.5 rounded-2xl w-full h-24 resize-none outline-none border-gray-100 focus:border-indigo-900" value={formData.objectifs_sportifs} onChange={e => setFormData({ ...formData, objectifs_sportifs: e.target.value })} />
-                <textarea placeholder="Pathologies" className="border-2 border-gray-100 p-3.5 rounded-2xl w-full h-24 resize-none outline-none" value={formData.pathologies_blessures} onChange={e => setFormData({ ...formData, pathologies_blessures: e.target.value })} />
+                <div>
+                  <textarea placeholder="Objectifs sportifs..."
+                    className={`border-2 p-3.5 rounded-2xl w-full h-24 resize-none outline-none ${errors.objectifs_sportifs ? 'border-red-500 bg-red-50' : 'border-gray-100 focus:border-indigo-900'}`}
+                    value={formData.objectifs_sportifs}
+                    onChange={e => { setFormData({ ...formData, objectifs_sportifs: e.target.value }); setErrors({ ...errors, objectifs_sportifs: null }) }}
+                  />
+                  {errors.objectifs_sportifs && <p className="text-red-500 text-[10px] font-bold mt-1 ml-2 uppercase tracking-tighter">{errors.objectifs_sportifs}</p>}
+                </div>                <textarea placeholder="Pathologies" className="border-2 border-gray-100 p-3.5 rounded-2xl w-full h-24 resize-none outline-none" value={formData.pathologies_blessures} onChange={e => setFormData({ ...formData, pathologies_blessures: e.target.value })} />
                 <input placeholder="Tags" className="border-2 border-gray-100 p-3.5 rounded-2xl w-full outline-none" value={formData.tags} onChange={e => setFormData({ ...formData, tags: e.target.value })} />
               </div>
             </div>
