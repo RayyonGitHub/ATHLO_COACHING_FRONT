@@ -83,7 +83,7 @@ const Register = () => {
         </div>
 
         <div className="relative z-10 flex gap-4 text-sm text-gray-500">
-          <span>© 2024 ATHLO SaaS</span>
+          <span>© 2026 ATHLO SaaS</span>
           <span>•</span>
           <a className="hover:text-white transition" href="#">Privacy Policy</a>
         </div>

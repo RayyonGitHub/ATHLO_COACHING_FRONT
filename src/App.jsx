@@ -6,7 +6,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import ClientList from './components/ClientList';
-
+import Home from './pages/Home';
 // Onboarding Pages
 import CoachStep2 from './pages/onboarding/CoachStep2';
 import CoachStep3 from './pages/onboarding/CoachStep3';
@@ -20,6 +20,7 @@ function App() {
   return (
     <Router>
       <Routes>
+        <Route path="/" element={<Home />} />
         {/* === Routes publiques === */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
