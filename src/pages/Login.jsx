@@ -43,8 +43,8 @@ const Login = () => {
           console.log("4. Redirection vers /clients"); // LOG 4
           navigate('/clients');
       } else {
-          console.log("4. Redirection vers /dashboard"); // LOG 4
-          navigate('/dashboard');
+          console.log("4. Redirection vers /"); // LOG 4
+          navigate('/');
       }
 
     } catch (err) {
