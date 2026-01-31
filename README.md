@@ -1,6 +1,6 @@
 ![Logo Athlo](src/assets/images/logo.png)
 
-# Athlo - Front-End 🏋️‍♂️📊
+# Athlo - Front-End 
 
 Athlo est une plateforme web destinée aux **coachs sportifs**, pour gérer leurs clients, leurs séances, leurs programmes, la facturation et la relation client.  
 
@@ -46,7 +46,7 @@ Le projet fait partie du programme **ArchiWeb 2026** et vise à créer une appli
 ## Documentation
 
 Toutes les étapes d’installation et de configuration sont détaillées dans le fichier :  
-[installation.md](installation.md)
+[installation.md](docs/installation.md)
 
 ---
 
@@ -57,5 +57,6 @@ https://stitch.withgoogle.com/projects/15655097857567584238
 ---
 
 ## Auteur
+
 
 - **Groupe 6 ArchiWeb 2026**
