@@ -32,6 +32,7 @@ npm install
 ```
 ### 3. Lancer l'application
 ```bash
-npm start
+npm run dev
 ```
 L'application sera accessible localement à l'URL suivante : http://localhost:5173 (port par défaut de Vite)
+
