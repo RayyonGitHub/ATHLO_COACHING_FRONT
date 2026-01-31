@@ -1,16 +1,61 @@
-# React + Vite
+![Logo Athlo](src/assets/images/logo.png)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# Athlo - Front-End 🏋️‍♂️📊
 
-Currently, two official plugins are available:
+Athlo est une plateforme web destinée aux **coachs sportifs**, pour gérer leurs clients, leurs séances, leurs programmes, la facturation et la relation client.  
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Ce dépôt contient uniquement le **Front-End** de l'application, développé avec **React** et **Tailwind CSS**.
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Contexte du projet
 
-## Expanding the ESLint configuration
+Le projet fait partie du programme **ArchiWeb 2026** et vise à créer une application web complète pour les coachs sportifs.  
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+**Objectifs Front-End :**
+- Afficher l'interface utilisateur responsive (desktop et mobile)
+- Communiquer avec le back via les API REST
+- Visualiser les données des clients, séances, programmes et facturation
+- Fournir une expérience utilisateur claire et moderne
+
+---
+
+## Fonctionnalités principales du Front
+
+- Gestion des clients et prospects
+- Vue calendrier des séances
+- Consultation et suivi des programmes
+- Messagerie interne
+- Dashboards et indicateurs de performance
+- Boutique en ligne (produits numériques et physiques)
+- Notifications et alertes
+
+---
+
+## Stack technique
+
+- **React 18** – bibliothèque front-end
+- **Vite** – bundler et serveur de développement
+- **Tailwind CSS** – framework CSS
+- **Axios / Fetch** – appels API REST
+- **Prop-types** – vérification des props React
+- **React Router** – routage côté client
+
+---
+
+## Documentation
+
+Toutes les étapes d’installation et de configuration sont détaillées dans le fichier :  
+[installation.md](installation.md)
+
+---
+
+## Maquette
+
+https://stitch.withgoogle.com/projects/15655097857567584238
+
+---
+
+## Auteur
+
+- **Groupe 6 ArchiWeb 2026**
