@@ -7,6 +7,10 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import ClientList from './components/ClientList';
 import Home from './pages/Home';
+
+// 1. AJOUT : Importe ta nouvelle page !
+import AthleteDashboard from './pages/AthleteDashboard'; 
+
 // Onboarding Pages
 import CoachStep2 from './pages/onboarding/CoachStep2';
 import CoachStep3 from './pages/onboarding/CoachStep3';
@@ -20,13 +24,13 @@ function App() {
   return (
     <Router>
       <Routes>
+        {/* === Route publique principale === */}
         <Route path="/" element={<Home />} />
-        {/* === Routes publiques === */}
+        
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         
         {/* === Onboarding Routes === */}
-        
         {/* Onboarding Coach */}
         <Route path="/onboarding/coach/step2" element={<ProtectedRoute><CoachStep2 /></ProtectedRoute>} />
         <Route path="/onboarding/coach/step3" element={<ProtectedRoute><CoachStep3 /></ProtectedRoute>} />
@@ -52,8 +56,16 @@ function App() {
             </ProtectedRoute>
         } />
 
-        {/* Redirection par défaut */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        {/* 2. AJOUT : La route pour l'athlète */}
+        {/* Note : On ne met PAS le MainLayout ici car ton composant AthleteDashboard a déjà sa propre barre latérale ! */}
+        <Route path="/athlete/dashboard" element={
+            <ProtectedRoute>
+              <AthleteDashboard />
+            </ProtectedRoute>
+        } />
+
+        {/* Redirection par défaut (si l'URL n'existe pas) */}
+        {/* J'ai supprimé ton deuxième path="/" ici pour éviter le conflit avec Home */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </Router>
