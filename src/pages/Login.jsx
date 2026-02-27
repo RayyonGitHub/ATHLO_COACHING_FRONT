@@ -28,27 +28,35 @@ const Login = () => {
     setError('');
 
     try {
-      console.log("1. Envoi de la demande de connexion..."); // LOG 1
+      console.log("1. Envoi de la demande de connexion...");
       
       const response = await authService.login({
         email: formData.email,
         password: formData.password
       });
 
-      console.log("2. Réponse reçue du Back :", response); // LOG 2
-      console.log("3. Rôle trouvé :", response.user?.role); // LOG 3
+      console.log("2. Réponse reçue du Back :", response);
 
-      // Vérification avant redirection
-      if (response.user?.role === 'coach') {
-          console.log("4. Redirection vers /clients"); // LOG 4
+      // --- LOGIQUE DE REDIRECTION PAR RÔLE ---
+      // On récupère le rôle stocké dans l'objet utilisateur renvoyé par le backend
+      const role = response.user?.role;
+      console.log("3. Rôle détecté :", role);
+
+      if (role === 'coach') {
+          console.log("4. Redirection vers l'espace Coach");
           navigate('/clients');
+      } else if (role === 'athlete') {
+          console.log("4. Redirection vers l'espace Athlète");
+          // On redirige vers ton nouveau dashboard noir et orange
+          navigate('/athlete/dashboard');
       } else {
-          console.log("4. Redirection vers /"); // LOG 4
+          console.log("4. Rôle non reconnu, redirection accueil");
           navigate('/');
       }
 
     } catch (err) {
-      console.error("ERREUR :", err); // LOG ERREUR
+      console.error("ERREUR DE CONNEXION :", err);
+      // Gestion de l'erreur 401 si les identifiants sont faux ou le profil inexistant
       setError(err.response?.data?.message || 'Email ou mot de passe incorrect');
     } finally {
       setLoading(false);
@@ -117,19 +125,21 @@ const Login = () => {
 
           {/* Info Alert */}
           <div className="mb-6 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg flex items-start gap-3">
-            <Info className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+            <div className="p-1 bg-blue-500/20 rounded">
+                <Info className="w-4 h-4 text-blue-400" />
+            </div>
             <p className="text-xs text-blue-300 leading-relaxed">
-              Connectez-vous pour accéder à votre espace de gestion des clients.
+              La redirection s'effectuera automatiquement vers votre espace personnalisé selon votre profil.
             </p>
           </div>
 
           {error && (
-            <div className="mb-6 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+            <div className="mb-6 p-3 bg-red-500/10 border border-red-500/20 rounded-lg animate-pulse">
               <p className="text-sm text-red-300">{error}</p>
             </div>
           )}
 
-          <div className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email Input */}
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-1" htmlFor="email">
@@ -207,13 +217,13 @@ const Login = () => {
 
             {/* Submit Button */}
             <button
-              onClick={handleSubmit}
+              type="submit"
               disabled={loading}
               className="w-full flex justify-center py-3.5 px-4 border border-transparent text-sm font-semibold rounded-lg text-white bg-[#ff6a00] hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#ff6a00] focus:ring-offset-[#0B0B0F] transition-all duration-200 shadow-lg shadow-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Connexion...' : 'Se connecter'}
             </button>
-          </div>
+          </form>
 
           {/* Footer */}
           <div className="mt-8 text-center">
@@ -226,11 +236,6 @@ const Login = () => {
                 S'inscrire
               </button>
             </p>
-          </div>
-
-          <div className="mt-12 flex justify-center gap-6 text-xs text-gray-600">
-            <a className="hover:text-gray-400 transition-colors" href="#">Conditions d'utilisation</a>
-            <a className="hover:text-gray-400 transition-colors" href="#">Politique de confidentialité</a>
           </div>
         </div>
       </div>
