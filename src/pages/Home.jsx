@@ -54,9 +54,9 @@ const Home = () => {
             <Link to="/register" className="flex items-center justify-center px-10 py-4 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-2xl shadow-xl shadow-orange-500/25 transition-all transform hover:-translate-y-1">
               <Dumbbell className="mr-2 w-5 h-5" /> Devenir coach
             </Link>
-            {/* On le prépare pour l'Issue #F7 (Le mode Démo / Annuaire public) */}
+             {/* On le prépare pour l'Issue #F7 (Le mode Démo / Annuaire public) */}
             <Link to="/demo" className="flex items-center justify-center px-10 py-4 border border-gray-300 dark:border-white/10 dark:text-white font-bold rounded-2xl hover:bg-gray-100 dark:hover:bg-white/5 transition-all">
-              <Search className="mr-2 w-5 h-5" /> Trouver un coach
+            <Search className="mr-2 w-5 h-5" /> Trouver un coach
           </Link>
           </div>
         </div>
