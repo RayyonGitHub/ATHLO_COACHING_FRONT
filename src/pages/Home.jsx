@@ -54,9 +54,10 @@ const Home = () => {
             <Link to="/register" className="flex items-center justify-center px-10 py-4 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-2xl shadow-xl shadow-orange-500/25 transition-all transform hover:-translate-y-1">
               <Dumbbell className="mr-2 w-5 h-5" /> Devenir coach
             </Link>
-            <Link to="#" className="flex items-center justify-center px-10 py-4 border border-gray-300 dark:border-white/10 dark:text-white font-bold rounded-2xl hover:bg-gray-100 dark:hover:bg-white/5 transition-all">
+            {/* On le prépare pour l'Issue #F7 (Le mode Démo / Annuaire public) */}
+            <Link to="/demo" className="flex items-center justify-center px-10 py-4 border border-gray-300 dark:border-white/10 dark:text-white font-bold rounded-2xl hover:bg-gray-100 dark:hover:bg-white/5 transition-all">
               <Search className="mr-2 w-5 h-5" /> Trouver un coach
-            </Link>
+          </Link>
           </div>
         </div>
       </div>
@@ -77,18 +78,124 @@ const Home = () => {
           ))}
         </div>
       </section>
+{/* ... (Garde ton code actuel jusqu'à la fin de la section STATS) ... */}
 
-      {/* FOOTER SIMPLE */}
-      <footer className="py-12 border-t border-gray-200 dark:border-white/5">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-6 text-gray-500 text-sm">
-          <div className="flex items-center gap-2">
-            <Zap className="w-5 h-5 text-orange-500" />
-            <span className="font-bold text-gray-900 dark:text-white">ATHLO</span>
-            <span>© 2026</span>
+      {/* MARQUES PARTENAIRES */}
+      <div className="py-12 border-b border-gray-200 dark:border-white/5 w-full bg-white dark:bg-[#0B0B0F]">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <p className="text-sm text-gray-500 dark:text-gray-500 font-medium uppercase tracking-widest mb-6">Utilisé par les meilleurs coachs et gyms</p>
+          <div className="flex flex-wrap justify-center gap-8 md:gap-16 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
+            <div className="flex items-center gap-2 font-black text-xl text-gray-800 dark:text-gray-200"><Zap className="w-6 h-6"/> POWERGYM</div>
+            <div className="flex items-center gap-2 font-black text-xl text-gray-800 dark:text-gray-200"><TrendingUp className="w-6 h-6"/> FLOWSTATE</div>
+            <div className="flex items-center gap-2 font-black text-xl text-gray-800 dark:text-gray-200"><Users className="w-6 h-6"/> PEAKPERF</div>
           </div>
-          <div className="flex gap-8">
-            <a href="#" className="hover:text-orange-500 transition-colors">Confidentialité</a>
-            <a href="#" className="hover:text-orange-500 transition-colors">CGU</a>
+        </div>
+      </div>
+
+      {/* SECTION FONCTIONNALITÉS (Tout-en-un) */}
+      <section id="features" className="py-24 bg-white dark:bg-[#0f0f13]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-orange-500 font-bold tracking-wide uppercase text-sm mb-2">Tout-en-un</h2>
+            <h3 className="text-3xl sm:text-4xl font-black text-gray-900 dark:text-white mb-4">Une suite complète pour l'excellence</h3>
+            <p className="max-w-2xl mx-auto text-lg text-gray-500 dark:text-gray-400">
+              Oubliez les feuilles de calcul et les emails dispersés. Centralisez votre coaching.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Carte 1 */}
+            <div className="p-8 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/10 hover:border-orange-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-orange-500/5">
+              <div className="w-12 h-12 bg-orange-500/10 rounded-xl flex items-center justify-center mb-6 text-orange-500">
+                <Users className="w-6 h-6" />
+              </div>
+              <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-3">CRM Athlètes</h4>
+              <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-6">
+                Gérez les profils, les objectifs et l'historique de chaque athlète. Une vue à 360° pour un suivi ultra-personnalisé.
+              </p>
+              <a href="#" className="inline-flex items-center text-orange-500 font-bold hover:text-orange-600">En savoir plus <ArrowRight className="w-4 h-4 ml-1" /></a>
+            </div>
+            {/* Carte 2 */}
+            <div className="p-8 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/10 hover:border-orange-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-orange-500/5">
+              <div className="w-12 h-12 bg-orange-500/10 rounded-xl flex items-center justify-center mb-6 text-orange-500">
+                <Dumbbell className="w-6 h-6" />
+              </div>
+              <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-3">Program Builder</h4>
+              <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-6">
+                Créez des programmes d'entraînement complexes en quelques clics. Glissez-déposez, périodisation, et exercices.
+              </p>
+              <a href="#" className="inline-flex items-center text-orange-500 font-bold hover:text-orange-600">En savoir plus <ArrowRight className="w-4 h-4 ml-1" /></a>
+            </div>
+            {/* Carte 3 */}
+            <div className="p-8 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/10 hover:border-orange-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-orange-500/5">
+              <div className="w-12 h-12 bg-orange-500/10 rounded-xl flex items-center justify-center mb-6 text-orange-500">
+                <Smartphone className="w-6 h-6" />
+              </div>
+              <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-3">Intégrations Smart</h4>
+              <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-6">
+                Synchronisation automatique avec Strava, Garmin, Apple Health. Récupérez les données de performance sans effort.
+              </p>
+              <a href="#" className="inline-flex items-center text-orange-500 font-bold hover:text-orange-600">En savoir plus <ArrowRight className="w-4 h-4 ml-1" /></a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA FINAL */}
+      <section className="relative py-24 overflow-hidden border-t border-gray-200 dark:border-white/5">
+        <div className="relative z-10 max-w-4xl mx-auto px-4 text-center">
+          <h2 className="text-3xl sm:text-5xl font-black text-gray-900 dark:text-white mb-6">Prêt à transformer votre coaching ?</h2>
+          <p className="text-xl text-gray-600 dark:text-gray-300 mb-10">Rejoignez la communauté ATHLO dès aujourd'hui et faites passer vos athlètes au niveau supérieur.</p>
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <Link to="/register" className="px-8 py-4 bg-orange-500 text-white rounded-xl font-bold text-lg hover:bg-orange-600 shadow-lg shadow-orange-500/30 transition-transform transform hover:scale-105">
+              Commencer l'essai gratuit
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* FOOTER COMPLET */}
+      <footer className="bg-white dark:bg-[#0B0B0F] border-t border-gray-200 dark:border-white/10 pt-16 pb-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+            <div className="col-span-1 md:col-span-1">
+              <div className="flex items-center gap-2 mb-4">
+                <Zap className="w-6 h-6 text-orange-500" />
+                <span className="font-black text-xl dark:text-white">ATHLO</span>
+              </div>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">La plateforme de référence pour les professionnels du sport.</p>
+              <div className="flex gap-4">
+                <Github className="w-5 h-5 text-gray-400 hover:text-orange-500 cursor-pointer" />
+                <Twitter className="w-5 h-5 text-gray-400 hover:text-orange-500 cursor-pointer" />
+                <Instagram className="w-5 h-5 text-gray-400 hover:text-orange-500 cursor-pointer" />
+              </div>
+            </div>
+            <div>
+              <h5 className="uppercase text-xs font-bold text-gray-900 dark:text-white mb-4 tracking-wider">Produit</h5>
+              <ul className="space-y-3 text-sm text-gray-500 dark:text-gray-400">
+                <li><a href="#" className="hover:text-orange-500">CRM</a></li>
+                <li><a href="#" className="hover:text-orange-500">Programmes</a></li>
+                <li><a href="#" className="hover:text-orange-500">Analytiques</a></li>
+              </ul>
+            </div>
+            <div>
+              <h5 className="uppercase text-xs font-bold text-gray-900 dark:text-white mb-4 tracking-wider">Ressources</h5>
+              <ul className="space-y-3 text-sm text-gray-500 dark:text-gray-400">
+                <li><a href="#" className="hover:text-orange-500">Blog</a></li>
+                <li><a href="#" className="hover:text-orange-500">Guides</a></li>
+                <li><a href="#" className="hover:text-orange-500">Support</a></li>
+              </ul>
+            </div>
+            <div>
+              <h5 className="uppercase text-xs font-bold text-gray-900 dark:text-white mb-4 tracking-wider">Légal</h5>
+              <ul className="space-y-3 text-sm text-gray-500 dark:text-gray-400">
+                <li><a href="#" className="hover:text-orange-500">Confidentialité</a></li>
+                <li><a href="#" className="hover:text-orange-500">CGU</a></li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-gray-200 dark:border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
+            <p>© 2026 ATHLO Inc. Tous droits réservés.</p>
+            <p className="mt-4 md:mt-0 cursor-pointer hover:text-orange-500">Français</p>
           </div>
         </div>
       </footer>
