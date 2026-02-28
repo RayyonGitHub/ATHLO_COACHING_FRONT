@@ -29,6 +29,8 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminCoachList from './pages/admin/AdminCoachList';
 import AdminGymList from './pages/admin/AdminGymList';
 
+import SessionBuilder from './components/SessionBuilder';
+
 function App() {
   return (
     <Router>
@@ -91,6 +93,14 @@ function App() {
           </AdminRoute>
         } />
 
+        <Route path="/builder" element={
+          <ProtectedRoute>
+            <MainLayout activePageLabel="Créateur de Séance" headerSection="Programmes" headerSubSection="Builder">
+             <SessionBuilder />
+            </MainLayout>
+          </ProtectedRoute>
+        } />
+        
         <Route path="/admin/salles" element={
           <AdminRoute>
             <AdminLayout>
