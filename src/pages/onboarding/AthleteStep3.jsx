@@ -1,29 +1,52 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { onboardingService } from '../../services/onboardingService';
-import { authService } from '../../services/authService';
 
 const AthleteStep3 = () => {
   const navigate = useNavigate();
   const [connected, setConnected] = useState({ strava: false, garmin: false, apple: false });
+  const [connecting, setConnecting] = useState(null);
 
-  const toggleApp = (app) => {
-    setConnected({ ...connected, [app]: !connected[app] });
+  const handleConnectApp = (appId) => {
+    if (appId === 'apple') {
+      alert("Apple Health se connecte directement via l'application mobile (iOS).");
+      return;
+    }
+
+    setConnecting(appId);
+
+    // Vraies URLs de connexion
+    const urls = {
+      strava: "https://www.strava.com/login",
+      garmin: "https://sso.garmin.com/portal/sso/fr-FR/sign-in?clientId=GarminConnect&service=https%3A%2F%2Fconnect.garmin.com%2Fapp",
+    };
+
+    // Calcul pour centrer la pop-up
+    const width = 500;
+    const height = 600;
+    const left = (window.screen.width / 2) - (width / 2);
+    const top = (window.screen.height / 2) - (height / 2);
+
+    // Ouvre la pop-up
+    const popup = window.open(
+      urls[appId],
+      'OAuthLogin',
+      `width=${width},height=${height},top=${top},left=${left},toolbar=no,menubar=no,scrollbars=yes`
+    );
+
+    // Le composant surveille si l'utilisateur ferme la pop-up manuellement
+    const timer = setInterval(() => {
+      if (!popup || popup.closed) {
+        clearInterval(timer); // Arrête la surveillance
+        setConnected(prev => ({ ...prev, [appId]: true })); // Passe en "Connecté"
+        setConnecting(null);
+      }
+    }, 500);
   };
 
   const handleFinish = async () => {
-    try {
-      await onboardingService.updateAthleteProfile({
-        onboarding_data: { apps_connected: connected }
-      });
-      authService.logout();
-      navigate('/login'); 
-    } catch (error) {
-      console.error(error);
-    }
+    navigate('/athlete/dashboard'); 
   };
 
-  // Logos SVG pour un rendu parfait
   const logos = {
     strava: (
       <svg role="img" viewBox="0 0 24 24" fill="#fc4c02" className="w-8 h-8">
@@ -51,7 +74,6 @@ const AthleteStep3 = () => {
       <div className="flex-1 flex justify-center py-10 px-4">
         <div className="w-full max-w-[800px] flex flex-col">
           
-          {/* Progress Bar : Étape 3 sur 3 */}
           <div className="flex flex-col gap-3 mb-10">
             <div className="flex gap-6 justify-between items-end">
               <p className="text-base font-medium">Étape 3 sur 3</p>
@@ -67,14 +89,13 @@ const AthleteStep3 = () => {
             <p className="opacity-60 text-lg">Synchronisez vos données pour un suivi optimal.</p>
           </div>
 
-          {/* Apps Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
             {[
               { id: 'strava', label: 'Strava', svg: logos.strava, desc: 'Segments & Courses' },
               { id: 'garmin', label: 'Garmin', svg: logos.garmin, desc: 'VFC & Sommeil' },
               { id: 'apple', label: 'Apple Health', svg: logos.apple, desc: 'Activité journalière' }
             ].map((app) => (
-              <div key={app.id} className="bg-white dark:bg-[#16161A] border border-slate-200 dark:border-white/5 rounded-xl p-6 flex flex-col items-center text-center hover:border-[#f96b06]/50 transition-all shadow-sm group">
+              <div key={app.id} className={`bg-white dark:bg-[#16161A] border rounded-xl p-6 flex flex-col items-center text-center transition-all shadow-sm group ${connected[app.id] ? 'border-[#f96b06] bg-orange-50 dark:bg-orange-500/5' : 'border-slate-200 dark:border-white/5 hover:border-[#f96b06]/50'}`}>
                 <div className="w-16 h-16 bg-slate-50 dark:bg-white/5 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                   {app.svg}
                 </div>
@@ -82,14 +103,15 @@ const AthleteStep3 = () => {
                 <p className="text-xs opacity-50 mb-6">{app.desc}</p>
                 
                 <button 
-                  onClick={() => toggleApp(app.id)}
+                  onClick={() => handleConnectApp(app.id)}
+                  disabled={connecting === app.id || connected[app.id]}
                   className={`w-full py-2.5 px-4 rounded-lg font-bold text-sm border transition-all ${
                     connected[app.id] 
                     ? 'bg-[#f96b06] text-white border-[#f96b06]' 
                     : 'bg-transparent text-slate-500 dark:text-slate-300 border-slate-200 dark:border-white/10 hover:border-[#f96b06] hover:text-[#f96b06]'
                   }`}
                 >
-                  {connected[app.id] ? 'Connecté ✓' : 'Connecter'}
+                  {connecting === app.id ? 'Connexion...' : connected[app.id] ? 'Connecté ✓' : 'Connecter'}
                 </button>
               </div>
             ))}

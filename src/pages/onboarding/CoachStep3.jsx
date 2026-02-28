@@ -1,24 +1,43 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { onboardingService } from '../../services/onboardingService';
-import { authService } from '../../services/authService';
 
 const CoachStep3 = () => {
   const navigate = useNavigate();
-  const [integrations, setIntegrations] = useState({ google: false, strava: false, garmin: false });
+  const [connected, setConnected] = useState({ google: false, strava: false, garmin: false });
+  const [connecting, setConnecting] = useState(null);
 
-  const toggleIntegration = (key) => {
-    setIntegrations({ ...integrations, [key]: !integrations[key] });
+  const handleConnectApp = (appId) => {
+    setConnecting(appId);
+
+    const urls = {
+      google: "https://accounts.google.com/signin",
+      strava: "https://www.strava.com/login",
+      garmin: "https://sso.garmin.com/portal/sso/fr-FR/sign-in?clientId=GarminConnect&service=https%3A%2F%2Fconnect.garmin.com%2Fapp",
+    };
+
+    const width = 500;
+    const height = 600;
+    const left = (window.screen.width / 2) - (width / 2);
+    const top = (window.screen.height / 2) - (height / 2);
+
+    const popup = window.open(
+      urls[appId],
+      'OAuthLogin',
+      `width=${width},height=${height},top=${top},left=${left},toolbar=no,menubar=no,scrollbars=yes`
+    );
+
+    // Le composant surveille si l'utilisateur ferme la pop-up manuellement
+    const timer = setInterval(() => {
+      if (!popup || popup.closed) {
+        clearInterval(timer);
+        setConnected(prev => ({ ...prev, [appId]: true }));
+        setConnecting(null);
+      }
+    }, 500);
   };
 
   const handleFinish = async () => {
-    try {
-      await onboardingService.updateCoachProfile({ integrations });
-      authService.logout();
-      navigate('/login'); 
-    } catch (error) {
-      console.error("Erreur:", error);
-    }
+    navigate('/dashboard'); 
   };
 
   const logos = {
@@ -56,7 +75,7 @@ const CoachStep3 = () => {
             { id: 'strava', label: 'Strava', svg: logos.strava, desc: 'Activités des élèves' },
             { id: 'garmin', label: 'Garmin Connect', svg: logos.garmin, desc: 'Données de santé' }
           ].map((app) => (
-            <div key={app.id} className={`p-6 rounded-xl border transition-all flex flex-col items-center text-center gap-4 ${integrations[app.id] ? 'border-orange-500 bg-orange-500/5' : 'border-slate-200 dark:border-white/10 bg-white dark:bg-[#16161A]'}`}>
+            <div key={app.id} className={`p-6 rounded-xl border transition-all flex flex-col items-center text-center gap-4 ${connected[app.id] ? 'border-orange-500 bg-orange-50 dark:bg-orange-500/5' : 'border-slate-200 dark:border-white/10 bg-white dark:bg-[#16161A]'}`}>
               <div className="w-16 h-16 bg-slate-50 dark:bg-white/5 rounded-2xl flex items-center justify-center shadow-sm">
                   {app.svg}
               </div>
@@ -65,10 +84,15 @@ const CoachStep3 = () => {
                 <p className="text-xs text-slate-400">{app.desc}</p>
               </div>
               <button 
-                onClick={() => toggleIntegration(app.id)}
-                className={`w-full py-2.5 rounded-lg font-bold text-sm transition-colors ${integrations[app.id] ? 'bg-orange-500 text-white' : 'bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-white hover:bg-slate-200 dark:hover:bg-white/20'}`}
+                onClick={() => handleConnectApp(app.id)}
+                disabled={connecting === app.id || connected[app.id]}
+                className={`w-full py-2.5 rounded-lg font-bold text-sm transition-colors ${
+                  connected[app.id] 
+                  ? 'bg-orange-500 text-white' 
+                  : 'bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-white hover:bg-slate-200 dark:hover:bg-white/20'
+                }`}
               >
-                {integrations[app.id] ? 'Connecté' : 'Connecter'}
+                {connecting === app.id ? 'Connexion...' : connected[app.id] ? 'Connecté ✓' : 'Connecter'}
               </button>
             </div>
           ))}

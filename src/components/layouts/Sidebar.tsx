@@ -16,7 +16,7 @@ const Sidebar = ({ activePage = "Dashboard" }: SidebarProps) => {
   const menuItems = [
     { icon: <LayoutDashboard size={20} />, label: 'Dashboard', path: '/dashboard' },
     { icon: <Users size={20} />, label: 'Mes Clients', path: '/clients' },
-    { icon: <Dumbbell size={20} />, label: 'Programmes', path: '' },
+    { icon: <Dumbbell size={20} />, label: 'Programmes', path: '/builder' },
     { icon: <Calendar size={20} />, label: 'Calendrier', path: '' },
     { icon: <Settings size={20} />, label: 'Paramètres', path: '' },
   ];
