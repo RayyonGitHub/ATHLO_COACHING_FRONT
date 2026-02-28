@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { LayoutDashboard, Users, Dumbbell, Calendar, Settings, ChevronRight, LogOut, Menu } from 'lucide-react';
+import { LayoutDashboard, Users, Dumbbell, Calendar, Settings, ChevronRight, LogOut, Menu, Activity} from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authService } from '../../services/authService';
+
 
 const logo = new URL('../../assets/images/logo.png', import.meta.url).href;
 
@@ -16,7 +17,8 @@ const Sidebar = ({ activePage = "Dashboard" }: SidebarProps) => {
   const menuItems = [
     { icon: <LayoutDashboard size={20} />, label: 'Dashboard', path: '/dashboard' },
     { icon: <Users size={20} />, label: 'Mes Clients', path: '/clients' },
-    { icon: <Dumbbell size={20} />, label: 'Programmes', path: '/builder' },
+    { icon: <Dumbbell size={20} />, label: 'Programmes', path: '/programmes' },
+    { icon: <Activity size={20} />, label: 'Exercices', path: '/exercices' },
     { icon: <Calendar size={20} />, label: 'Calendrier', path: '' },
     { icon: <Settings size={20} />, label: 'Paramètres', path: '' },
   ];

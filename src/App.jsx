@@ -31,6 +31,7 @@ import AdminCoachList from './pages/admin/AdminCoachList';
 import AdminGymList from './pages/admin/AdminGymList';
 
 import SessionBuilder from './components/SessionBuilder';
+import ExerciceManager from './pages/ExerciceManager';
 
 function App() {
   return (
@@ -67,7 +68,13 @@ function App() {
             </MainLayout>
           </ProtectedRoute>
         } />
-
+          <Route path="/exercices" element={
+          <ProtectedRoute>
+            <MainLayout activePageLabel="Exercices" headerSection="Bibliothèque" headerSubSection="Base de données">
+              <ExerciceManager />
+            </MainLayout>
+          </ProtectedRoute>
+        } />
         <Route path="/programmes" element={
           <ProtectedRoute>
                  <MainLayout activePageLabel="Programmes" headerSection="Coach" headerSubSection="Gestion des Programmes">
