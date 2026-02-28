@@ -135,17 +135,17 @@ const DemoDashboard = () => {
                                 </p>
 
                                 <a
-                                    href={exo.demo_url || "#"}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className={`w-full py-2 border-2 rounded-xl font-bold text-center block transition-colors ${exo.demo_url
-                                        ? "border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white"
-                                        : "border-gray-300 text-gray-300 cursor-not-allowed"
-                                        }`}
-                                    onClick={(e) => !exo.demo_url && e.preventDefault()}
-                                >
-                                    {exo.demo_url ? "Voir la démo vidéo" : "Pas de vidéo"}
-                                </a>
+    href={exo.video_url || "#"} 
+    target="_blank"
+    rel="noopener noreferrer"
+    className={`w-full py-2 border-2 rounded-xl font-bold text-center block transition-colors ${exo.video_url 
+        ? "border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white"
+        : "border-gray-300 text-gray-300 cursor-not-allowed"
+        }`}
+    onClick={(e) => !exo.video_url && e.preventDefault()} 
+>
+    {exo.video_url ? "Voir la démo vidéo" : "Pas de vidéo"}
+</a>
                             </div>
                         ))}
                     </div>
