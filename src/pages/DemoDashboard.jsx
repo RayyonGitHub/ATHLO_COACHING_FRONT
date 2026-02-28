@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { Zap } from 'lucide-react'; 
 import demoService from '../services/demoService';
 import { Link } from 'react-router-dom';
 
-// === DONNÉES FICTIVES (Indispensables pour le graphique) ===
+// === DONNÉES FICTIVES ===
 const dataProgression = [
     { name: 'Lun', performance: 4000 },
     { name: 'Mar', performance: 3000 },
@@ -22,7 +23,6 @@ const DemoDashboard = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // Appel aux deux endpoints du Backend
                 const statsData = await demoService.getDemoStats();
                 const exercicesData = await demoService.getPublicExercices();
                 setStats(statsData);
@@ -39,20 +39,27 @@ const DemoDashboard = () => {
             {/* === SECTION FIGÉE (STICKY) === */}
             <div className="sticky top-0 z-20 bg-slate-50/95 backdrop-blur-sm p-6 pb-4 border-b border-slate-200">
 
-                {/* 1. Bandeau de Démo Orange */}
-                <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-5 rounded-2xl mb-6 flex flex-col md:flex-row justify-between items-center shadow-lg border-b-4 border-orange-700">
+                {/* 1. Bandeau de Démo Orange*/}
+                <div className="bg-orange-500 text-white p-5 rounded-lg mb-8 flex flex-col md:flex-row justify-between items-center shadow-lg transition-all">
                     <div className="mb-4 md:mb-0">
-                        <h2 className="text-xl font-black uppercase tracking-wider">     Mode Démo Actif</h2>
-                        <p className="text-orange-100 opacity-90 text-sm">Explorez les fonctionnalités. Connectez-vous pour enregistrer vos performances.</p>
+                        <h2 className="text-xl font-bold uppercase tracking-wider flex items-center gap-2">
+                            <Zap className="w-5 h-5 fill-white" /> Mode Démo Actif
+                        </h2>
+                        <p className="text-white/90 text-sm">
+                            Explorez les fonctionnalités. Connectez-vous pour enregistrer vos propres performances.
+                        </p>
                     </div>
-                    <Link to="/login" className="bg-white text-orange-600 px-8 py-2 rounded-full font-black uppercase text-sm hover:scale-105 transition-transform shadow-md">
+                    <Link
+                        to="/login"
+                        className="bg-white text-orange-500 hover:bg-gray-100 px-6 py-2.5 rounded-lg font-bold shadow-md transition-all active:scale-95"
+                    >
                         Se connecter
                     </Link>
                 </div>
 
                 {/* 2. Cartes de Statistiques Compactes */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <StatCard title="Athlètes" value={stats?.utilisateurs_actifs || '128+'} color="border-green-500" />
+                    <StatCard title="Athlètes" value={stats?.utilisateurs_actifs || '127+'} color="border-green-500" />
                     <StatCard title="Programmes" value={stats?.programmes_crees || '450'} color="border-purple-500" />
                     <StatCard title="Bibliothèque" value={stats?.total_exercices || '0'} color="border-blue-500" />
                     <StatCard title="Experts" value={stats?.total_coachs || '3'} color="border-orange-500" />
@@ -61,7 +68,7 @@ const DemoDashboard = () => {
 
             {/* === SECTION SCROLLABLE === */}
             <div className="p-6 pt-4">
-                {/* 3. Graphique de Progression (Recharts) */}
+                {/* 3. Graphique de Progression */}
                 <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 mb-8">
                     <div className="flex justify-between items-center mb-8">
                         <div>
@@ -87,8 +94,9 @@ const DemoDashboard = () => {
                                     tickLine={false}
                                     tick={{ fill: '#94a3b8', fontSize: 12 }}
                                     dy={10}
-                                    padding={{ left: 10, right: 10 }} // Ajoute cette ligne 👈
-                                />                                <YAxis hide />
+                                    padding={{ left: 10, right: 10 }}
+                                />
+                                <YAxis hide />
                                 <Tooltip
                                     contentStyle={{ borderRadius: '15px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
                                     itemStyle={{ color: '#ff6600', fontWeight: 'bold' }}
@@ -99,7 +107,7 @@ const DemoDashboard = () => {
                     </div>
                 </div>
 
-                {/* 4. Bibliothèque d'Exercices (Réelle du Back) */}
+                {/* 4. Bibliothèque d'Exercices */}
                 <div className="mt-8 pb-10">
                     <div className="flex justify-between items-center mb-6">
                         <h3 className="text-2xl font-bold text-slate-800">
@@ -131,10 +139,10 @@ const DemoDashboard = () => {
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className={`w-full py-2 border-2 rounded-xl font-bold text-center block transition-colors ${exo.demo_url
-                                            ? "border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white"
-                                            : "border-gray-300 text-gray-300 cursor-not-allowed"
+                                        ? "border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white"
+                                        : "border-gray-300 text-gray-300 cursor-not-allowed"
                                         }`}
-                                    onClick={(e) => !exo.demo_url && e.preventDefault()} // Empêche le clic si pas d'URL
+                                    onClick={(e) => !exo.demo_url && e.preventDefault()}
                                 >
                                     {exo.demo_url ? "Voir la démo vidéo" : "Pas de vidéo"}
                                 </a>
@@ -147,7 +155,6 @@ const DemoDashboard = () => {
     );
 };
 
-// Composant interne pour les cartes de stats compactes
 const StatCard = ({ title, value, color }) => (
     <div className={`bg-white px-4 py-3 rounded-xl shadow-sm border-l-4 ${color} flex flex-col justify-center`}>
         <p className="text-slate-400 text-[10px] font-bold uppercase tracking-tight mb-1">{title}</p>

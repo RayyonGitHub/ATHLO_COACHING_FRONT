@@ -29,7 +29,7 @@ const Login = () => {
 
     try {
       console.log("1. Envoi de la demande de connexion..."); // LOG 1
-      
+
       const response = await authService.login({
         email: formData.email,
         password: formData.password
@@ -40,11 +40,11 @@ const Login = () => {
 
       // Vérification avant redirection
       if (response.user?.role === 'coach') {
-          console.log("4. Redirection vers /clients"); // LOG 4
-          navigate('/clients');
+        console.log("4. Redirection vers /clients"); // LOG 4
+        navigate('/clients');
       } else {
-          console.log("4. Redirection vers /"); // LOG 4
-          navigate('/');
+        console.log("4. Redirection vers /"); // LOG 4
+        navigate('/');
       }
 
     } catch (err) {
@@ -60,7 +60,7 @@ const Login = () => {
       {/* Left Side: Visual Branding */}
       <div className="relative hidden lg:flex lg:w-1/2 flex-col justify-between p-12 overflow-hidden bg-[#181410]">
         <div className="absolute inset-0 z-0 opacity-60">
-          <img 
+          <img
             src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1200&q=80"
             alt="Athlete training"
             className="h-full w-full object-cover"
@@ -82,7 +82,7 @@ const Login = () => {
           <p className="text-lg text-gray-400 max-w-sm">
             La plateforme tout-en-un pour les coachs d'élite et les salles de sport modernes.
           </p>
-          
+
           <div className="flex gap-2 pt-6">
             <div className="h-1.5 w-12 bg-[#ff6a00] rounded-full"></div>
             <div className="h-1.5 w-12 bg-gray-700 rounded-full"></div>
@@ -226,6 +226,15 @@ const Login = () => {
                 S'inscrire
               </button>
             </p>
+            <div className="pt-2 border-t border-[#27272A]/30">
+              <button
+                onClick={() => navigate('/demo')}
+                className="text-gray-400 text-xs hover:text-[#ff6a00] transition-colors flex items-center justify-center gap-2 mx-auto group"
+              >
+                <Zap className="w-3 h-3 text-[#ff6a00] group-hover:animate-pulse" />
+                Pas encore convaincu ? <span className="underline decoration-[#ff6a00]/30 group-hover:decoration-[#ff6a00]">Explorer l'app en mode démo</span>
+              </button>
+            </div>
           </div>
 
           <div className="mt-12 flex justify-center gap-6 text-xs text-gray-600">
