@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import CoachAnalytics from './pages/CoachAnalytics';
 
 // Pages Protégées Coach/Athlète
 import ProtectedRoute from './components/ProtectedRoute';
@@ -12,7 +13,7 @@ import MainLayout from './components/layouts/MainLayout';
 import Dashboard from './pages/Dashboard';
 import ClientList from './components/ClientList';
 import DemoDashboard from './pages/DemoDashboard';
-import AthleteDashboard from './pages/AthleteDashboard'; 
+import AthleteDashboard from './pages/AthleteDashboard';
 
 // Onboarding Pages
 import CoachStep2 from './pages/onboarding/CoachStep2';
@@ -36,7 +37,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        
+
         {/* === ROUTES ONBOARDING (Protégées) === */}
         <Route path="/onboarding/coach/step2" element={<ProtectedRoute><CoachStep2 /></ProtectedRoute>} />
         <Route path="/onboarding/coach/step3" element={<ProtectedRoute><CoachStep3 /></ProtectedRoute>} />
@@ -46,12 +47,16 @@ function App() {
         {/* === ESPACE COACH (Avec Layout latéral) === */}
         <Route path="/dashboard" element={
           <ProtectedRoute>
-            <MainLayout activePageLabel="Tableau de bord" headerSection="Dashboard" headerSubSection="Vue d'ensemble">
-              <Dashboard />
+            <MainLayout
+              activePageLabel="Dashboard"
+              headerSection="Coach"
+              headerSubSection="Analyses & Performance"
+            >
+              <CoachAnalytics />
             </MainLayout>
           </ProtectedRoute>
         } />
-        
+
         <Route path="/clients" element={
           <ProtectedRoute>
             <MainLayout activePageLabel="Mes Clients" headerSection="Coach" headerSubSection="Annuaire Clients">
@@ -61,11 +66,10 @@ function App() {
         } />
 
         {/* === ESPACE ATHLÈTE === */}
-        {/* Note: On ne met pas de MainLayout ici car l'AthleteDashboard gère son propre design noir/orange */}
         <Route path="/athlete/dashboard" element={
-            <ProtectedRoute>
-              <AthleteDashboard />
-            </ProtectedRoute>
+          <ProtectedRoute>
+            <AthleteDashboard />
+          </ProtectedRoute>
         } />
 
         {/* === ESPACE SUPER-ADMIN (Isolé) === */}
@@ -107,6 +111,7 @@ function App() {
         <Route path="*" element={<Navigate to="/login" replace />} />
 
         <Route path="/demo" element={<DemoDashboard />} />
+        <Route path="/coach/analytics" element={<CoachAnalytics />} />
       </Routes>
     </Router>
   );

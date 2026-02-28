@@ -7,7 +7,6 @@ interface MainLayoutProps {
   activePageLabel: string;
   headerSection?: string;
   headerSubSection?: string;
-  // Transmettre les infos du coach
   coachName?: string;
   coachPlan?: string;
   coachInitials?: string;

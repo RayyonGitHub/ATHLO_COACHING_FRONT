@@ -79,7 +79,6 @@ const Home = () => {
           ))}
         </div>
       </section>
-      {/* ... (Garde ton code actuel jusqu'à la fin de la section STATS) ... */}
 
       {/* MARQUES PARTENAIRES */}
       <div className="py-12 border-b border-gray-200 dark:border-white/5 w-full bg-white dark:bg-[#0B0B0F]">

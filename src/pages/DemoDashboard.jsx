@@ -39,7 +39,7 @@ const DemoDashboard = () => {
             {/* === SECTION FIGÉE (STICKY) === */}
             <div className="sticky top-0 z-20 bg-slate-50/95 backdrop-blur-sm p-6 pb-4 border-b border-slate-200">
 
-                {/* 1. Bandeau de Démo Orange*/}
+                {/* 1. Bandeau de Démo */}
                 <div className="bg-orange-500 text-white p-5 rounded-lg mb-8 flex flex-col md:flex-row justify-between items-center shadow-lg transition-all">
                     <div className="mb-4 md:mb-0">
                         <h2 className="text-xl font-bold uppercase tracking-wider flex items-center gap-2">
