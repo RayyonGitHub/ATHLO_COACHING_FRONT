@@ -6,6 +6,7 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import CoachAnalytics from './pages/CoachAnalytics';
+import ProgrammeList from './pages/ProgrammeList';
 
 // Pages Protégées Coach/Athlète
 import ProtectedRoute from './components/ProtectedRoute';
@@ -65,6 +66,14 @@ function App() {
               <ClientList />
             </MainLayout>
           </ProtectedRoute>
+        } />
+
+        <Route path="/programmes" element={
+          <ProtectedRoute>
+                 <MainLayout activePageLabel="Programmes" headerSection="Coach" headerSubSection="Gestion des Programmes">
+                 <ProgrammeList />
+                  </MainLayout>
+         </ProtectedRoute>
         } />
 
         {/* === ESPACE ATHLÈTE === */}

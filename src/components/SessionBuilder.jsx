@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Search, GripVertical, Trash2, Save, Dumbbell, Clock } from 'lucide-react';
 import api from '../services/api';
 
 const SessionBuilder = () => {
+  const location = useLocation();
+  
   // --- ÉTATS ---
   const [exercicesLib, setExercicesLib] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -11,7 +14,7 @@ const SessionBuilder = () => {
   const [sessionExos, setSessionExos] = useState([]);
   const [isSaving, setIsSaving] = useState(false);
 
-  // NOUVEAUX ÉTATS POUR LE PROGRAMME (Définitif)
+  // ÉTATS POUR LE PROGRAMME
   const [programmes, setProgrammes] = useState([]);
   const [selectedProgrammeId, setSelectedProgrammeId] = useState('');
 
@@ -25,12 +28,20 @@ const SessionBuilder = () => {
         ]);
         setExercicesLib(exosRes.data);
         setProgrammes(progsRes.data);
+
+        // Lecture de l'URL pour pré-sélectionner le programme
+        const searchParams = new URLSearchParams(location.search);
+        const progIdFromUrl = searchParams.get('progId');
+        if (progIdFromUrl) {
+          setSelectedProgrammeId(progIdFromUrl);
+        }
+
       } catch (error) {
         console.error("Erreur lors du chargement des données:", error);
       }
     };
     fetchData();
-  }, []);
+  }, [location.search]);
 
   // --- FILTRE RECHERCHE ---
   const filteredExercices = exercicesLib.filter(exo => 
@@ -109,7 +120,7 @@ const SessionBuilder = () => {
       // Reset du formulaire
       setSessionTitle('');
       setSessionExos([]);
-      setSelectedProgrammeId('');
+      // On garde selectedProgrammeId au cas où on veut ajouter une 2ème séance au même programme
     } catch (error) {
       console.error("Erreur de sauvegarde:", error);
       alert("Erreur lors de la sauvegarde de la séance.");
