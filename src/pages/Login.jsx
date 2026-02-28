@@ -28,8 +28,7 @@ const Login = () => {
     setError('');
 
     try {
-      console.log("1. Envoi de la demande de connexion...");
-      
+console.log("1. Envoi de la demande de connexion...");
       const response = await authService.login({
         email: formData.email,
         password: formData.password
@@ -37,8 +36,6 @@ const Login = () => {
 
       console.log("2. Réponse reçue du Back :", response);
 
-      // --- LOGIQUE DE REDIRECTION PAR RÔLE ---
-      // On récupère le rôle stocké dans l'objet utilisateur renvoyé par le backend
       const role = response.user?.role;
       console.log("3. Rôle détecté :", role);
 
@@ -47,7 +44,6 @@ const Login = () => {
           navigate('/clients');
       } else if (role === 'athlete') {
           console.log("4. Redirection vers l'espace Athlète");
-          // On redirige vers ton nouveau dashboard noir et orange
           navigate('/athlete/dashboard');
       } else {
           console.log("4. Rôle non reconnu, redirection accueil");
@@ -68,7 +64,7 @@ const Login = () => {
       {/* Left Side: Visual Branding */}
       <div className="relative hidden lg:flex lg:w-1/2 flex-col justify-between p-12 overflow-hidden bg-[#181410]">
         <div className="absolute inset-0 z-0 opacity-60">
-          <img 
+          <img
             src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1200&q=80"
             alt="Athlete training"
             className="h-full w-full object-cover"
@@ -90,7 +86,7 @@ const Login = () => {
           <p className="text-lg text-gray-400 max-w-sm">
             La plateforme tout-en-un pour les coachs d'élite et les salles de sport modernes.
           </p>
-          
+
           <div className="flex gap-2 pt-6">
             <div className="h-1.5 w-12 bg-[#ff6a00] rounded-full"></div>
             <div className="h-1.5 w-12 bg-gray-700 rounded-full"></div>
@@ -236,6 +232,15 @@ const Login = () => {
                 S'inscrire
               </button>
             </p>
+            <div className="pt-2 border-t border-[#27272A]/30">
+              <button
+                onClick={() => navigate('/demo')}
+                className="text-gray-400 text-xs hover:text-[#ff6a00] transition-colors flex items-center justify-center gap-2 mx-auto group"
+              >
+                <Zap className="w-3 h-3 text-[#ff6a00] group-hover:animate-pulse" />
+                Pas encore convaincu ? <span className="underline decoration-[#ff6a00]/30 group-hover:decoration-[#ff6a00]">Explorer l'app en mode démo</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>

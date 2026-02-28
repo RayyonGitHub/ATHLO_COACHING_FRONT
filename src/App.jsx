@@ -11,6 +11,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import MainLayout from './components/layouts/MainLayout';
 import Dashboard from './pages/Dashboard';
 import ClientList from './components/ClientList';
+import DemoDashboard from './pages/DemoDashboard';
 import AthleteDashboard from './pages/AthleteDashboard'; 
 
 // Onboarding Pages
@@ -104,6 +105,8 @@ function App() {
 
         {/* REDIRECTION PAR DÉFAUT */}
         <Route path="*" element={<Navigate to="/login" replace />} />
+
+        <Route path="/demo" element={<DemoDashboard />} />
       </Routes>
     </Router>
   );

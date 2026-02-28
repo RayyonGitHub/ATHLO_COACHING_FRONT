@@ -5,7 +5,7 @@ import { Zap, Dumbbell, Search, Users, Smartphone, TrendingUp, ArrowRight, Githu
 const Home = () => {
   return (
     <div className="bg-background-light dark:bg-[#0B0B0F] text-gray-900 dark:text-gray-100 antialiased selection:bg-orange-500 selection:text-white transition-colors duration-300 min-h-screen">
-      
+
       {/* NAVIGATION */}
       <nav className="fixed w-full z-50 top-0 left-0 bg-white/80 dark:bg-[#0B0B0F]/80 backdrop-blur-md border-b border-gray-200 dark:border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -16,7 +16,7 @@ const Home = () => {
               </div>
               <span className="font-bold text-xl tracking-tight dark:text-white">ATHLO</span>
             </div>
-            
+
             <div className="hidden md:flex items-center gap-8">
               <a href="#features" className="text-gray-600 dark:text-gray-400 hover:text-orange-500 transition-colors text-sm font-medium">Fonctionnalités</a>
               <a href="#" className="text-gray-600 dark:text-gray-400 hover:text-orange-500 transition-colors text-sm font-medium">Prix</a>
@@ -32,8 +32,8 @@ const Home = () => {
       {/* HERO SECTION */}
       <div className="relative pt-32 pb-16 sm:pt-48 sm:pb-32 overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10 opacity-20">
-             <div className="absolute top-24 left-1/4 w-96 h-96 bg-orange-500 rounded-full blur-[120px]"></div>
-             <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-600 rounded-full blur-[120px]"></div>
+          <div className="absolute top-24 left-1/4 w-96 h-96 bg-orange-500 rounded-full blur-[120px]"></div>
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-600 rounded-full blur-[120px]"></div>
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
@@ -41,23 +41,24 @@ const Home = () => {
             <span className="w-2 h-2 rounded-full bg-orange-500 mr-2 animate-pulse"></span>
             Nouveau: Intégration Garmin avancée
           </div>
-          
+
           <h1 className="text-5xl sm:text-7xl font-black tracking-tight mb-6 dark:text-white leading-tight">
             Dépassez vos limites avec <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-600">ATHLO</span>
           </h1>
-          
+
           <p className="mt-4 text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
             La plateforme tout-en-un pour coachs sportifs d’élite. Gérez vos athlètes, créez des programmes sur mesure et suivez les progrès en temps réel.
           </p>
-          
+
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/register" className="flex items-center justify-center px-10 py-4 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-2xl shadow-xl shadow-orange-500/25 transition-all transform hover:-translate-y-1">
               <Dumbbell className="mr-2 w-5 h-5" /> Devenir coach
             </Link>
-             {/* On le prépare pour l'Issue #F7 (Le mode Démo / Annuaire public) */}
-            <Link to="/demo" className="flex items-center justify-center px-10 py-4 border border-gray-300 dark:border-white/10 dark:text-white font-bold rounded-2xl hover:bg-gray-100 dark:hover:bg-white/5 transition-all">
-            <Search className="mr-2 w-5 h-5" /> Trouver un coach
-          </Link>
+            {/* On le prépare pour l'Issue #F7 (Le mode Démo / Annuaire public) */}
+
+            <Link to="/demo" className="flex items-center justify-center px-10 py-4 bg-white dark:bg-white/5 border-2 border-orange-500 text-orange-500 font-bold rounded-2xl hover:bg-orange-50 dark:hover:bg-orange-500/10 transition-all shadow-lg shadow-orange-500/10">
+              <TrendingUp className="mr-2 w-5 h-5" /> Essayer la démo
+            </Link>
           </div>
         </div>
       </div>
@@ -78,16 +79,16 @@ const Home = () => {
           ))}
         </div>
       </section>
-{/* ... (Garde ton code actuel jusqu'à la fin de la section STATS) ... */}
+      {/* ... (Garde ton code actuel jusqu'à la fin de la section STATS) ... */}
 
       {/* MARQUES PARTENAIRES */}
       <div className="py-12 border-b border-gray-200 dark:border-white/5 w-full bg-white dark:bg-[#0B0B0F]">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <p className="text-sm text-gray-500 dark:text-gray-500 font-medium uppercase tracking-widest mb-6">Utilisé par les meilleurs coachs et gyms</p>
           <div className="flex flex-wrap justify-center gap-8 md:gap-16 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
-            <div className="flex items-center gap-2 font-black text-xl text-gray-800 dark:text-gray-200"><Zap className="w-6 h-6"/> POWERGYM</div>
-            <div className="flex items-center gap-2 font-black text-xl text-gray-800 dark:text-gray-200"><TrendingUp className="w-6 h-6"/> FLOWSTATE</div>
-            <div className="flex items-center gap-2 font-black text-xl text-gray-800 dark:text-gray-200"><Users className="w-6 h-6"/> PEAKPERF</div>
+            <div className="flex items-center gap-2 font-black text-xl text-gray-800 dark:text-gray-200"><Zap className="w-6 h-6" /> POWERGYM</div>
+            <div className="flex items-center gap-2 font-black text-xl text-gray-800 dark:text-gray-200"><TrendingUp className="w-6 h-6" /> FLOWSTATE</div>
+            <div className="flex items-center gap-2 font-black text-xl text-gray-800 dark:text-gray-200"><Users className="w-6 h-6" /> PEAKPERF</div>
           </div>
         </div>
       </div>
