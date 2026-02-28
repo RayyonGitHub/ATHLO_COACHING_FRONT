@@ -7,6 +7,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import ClientList from './components/ClientList';
 import Home from './pages/Home';
+import DemoDashboard from './pages/DemoDashboard';
 // Onboarding Pages
 import CoachStep2 from './pages/onboarding/CoachStep2';
 import CoachStep3 from './pages/onboarding/CoachStep3';
@@ -55,6 +56,8 @@ function App() {
         {/* Redirection par défaut */}
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
+
+        <Route path="/demo" element={<DemoDashboard />} />
       </Routes>
     </Router>
   );
