@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import WorkoutTrackingModal from './WorkoutTrackingModal';
 
 const AthleteDashboard = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // 1. NOUVEAU : État pour contrôler l'affichage de la modale
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchDashboardStats = async () => {
       try {
-        // 1. On récupère le token sous le nom EXACT utilisé par ton authService
-     // On cherche 'access_token' OU 'token' pour être sûr de ne rien rater
-const token = localStorage.getItem('authToken') ;
-        
+        const token = localStorage.getItem('authToken');
         console.log("Tentative de récupération avec le token :", token ? "Token trouvé" : "TOKEN VIDE !");
 
         if (!token) {
@@ -21,7 +22,6 @@ const token = localStorage.getItem('authToken') ;
           return;
         }
 
-        // 2. Appel API avec l'en-tête Bearer
         const response = await axios.get('http://127.0.0.1:8000/api/athlete/dashboard-stats/', {
           headers: {
             Authorization: `Bearer ${token}`
@@ -34,7 +34,6 @@ const token = localStorage.getItem('authToken') ;
       } catch (err) {
         console.error("Erreur API détaillée :", err.response?.data || err.message);
         
-        // Si le serveur répond 401, c'est que le token n'est plus valide
         if (err.response?.status === 401) {
           setError("Votre session a expiré. Merci de vous reconnecter.");
         } else {
@@ -124,9 +123,16 @@ const token = localStorage.getItem('authToken') ;
                     <span className="flex items-center gap-1"><span className="material-icons-round">local_fire_department</span> {data.prochaine_seance.calories_estimees} kcal</span>
                   </div>
                 )}
-                <button className="bg-[#FF6B00] text-white px-8 py-4 rounded-xl font-bold hover:scale-105 transition-transform disabled:opacity-50" disabled={!data.prochaine_seance}>
+                
+                {/* 2. NOUVEAU : Ajout du onClick pour ouvrir la modale */}
+                <button 
+                  onClick={() => setIsModalOpen(true)}
+                  className="bg-[#FF6B00] text-white px-8 py-4 rounded-xl font-bold hover:scale-105 transition-transform disabled:opacity-50" 
+                  disabled={!data.prochaine_seance}
+                >
                   Commencer l'entraînement
                 </button>
+
               </div>
             </div>
 
@@ -147,6 +153,15 @@ const token = localStorage.getItem('authToken') ;
               </div>
             </div>
           </div>
+          
+          {/* 3. NOUVEAU : Intégration de la modale tout en bas du main */}
+          <WorkoutTrackingModal 
+            isOpen={isModalOpen} 
+            onClose={() => setIsModalOpen(false)} 
+            seanceId={data?.prochaine_seance?.id}
+            onComplete={() => window.location.reload()} 
+          />
+
         </main>
       </div>
     </div>
