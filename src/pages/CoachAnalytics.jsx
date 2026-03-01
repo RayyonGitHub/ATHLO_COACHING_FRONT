@@ -5,6 +5,7 @@ import {
 } from 'recharts';
 import { Users, CheckCircle, Flame, TrendingUp, Loader2, CalendarDays } from 'lucide-react';
 import coachService from '../services/coachService';
+
 const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
         return (
