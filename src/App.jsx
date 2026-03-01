@@ -7,10 +7,12 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import CoachAnalytics from './pages/CoachAnalytics';
 import ProgrammeList from './pages/ProgrammeList';
+import CoachCalendar from './pages/CoachCalendar';
 
 // Pages Protégées Coach/Athlète
 import ProtectedRoute from './components/ProtectedRoute';
 import MainLayout from './components/layouts/MainLayout';
+
 import Dashboard from './pages/Dashboard';
 import ClientList from './components/ClientList';
 import DemoDashboard from './pages/DemoDashboard';
@@ -68,7 +70,7 @@ function App() {
             </MainLayout>
           </ProtectedRoute>
         } />
-          <Route path="/exercices" element={
+        <Route path="/exercices" element={
           <ProtectedRoute>
             <MainLayout activePageLabel="Exercices" headerSection="Bibliothèque" headerSubSection="Base de données">
               <ExerciceManager />
@@ -77,10 +79,22 @@ function App() {
         } />
         <Route path="/programmes" element={
           <ProtectedRoute>
-                 <MainLayout activePageLabel="Programmes" headerSection="Coach" headerSubSection="Gestion des Programmes">
-                 <ProgrammeList />
-                  </MainLayout>
-         </ProtectedRoute>
+            <MainLayout activePageLabel="Programmes" headerSection="Coach" headerSubSection="Gestion des Programmes">
+              <ProgrammeList />
+            </MainLayout>
+          </ProtectedRoute>
+        } />
+        {/* === ESPACE COACH (Suite) === */}
+        <Route path="/calendar" element={
+          <ProtectedRoute>
+            <MainLayout
+              activePageLabel="Calendrier"
+              headerSection="Coach"
+              headerSubSection="Agenda & Planification"
+            >
+              <CoachCalendar />
+            </MainLayout>
+          </ProtectedRoute>
         } />
 
         {/* === ESPACE ATHLÈTE === */}
@@ -112,11 +126,11 @@ function App() {
         <Route path="/builder" element={
           <ProtectedRoute>
             <MainLayout activePageLabel="Créateur de Séance" headerSection="Programmes" headerSubSection="Builder">
-             <SessionBuilder />
+              <SessionBuilder />
             </MainLayout>
           </ProtectedRoute>
         } />
-        
+
         <Route path="/admin/salles" element={
           <AdminRoute>
             <AdminLayout>
