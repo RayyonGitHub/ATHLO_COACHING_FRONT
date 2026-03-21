@@ -2,6 +2,51 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { onboardingService } from '../../services/onboardingService';
 
+const villes = [
+  "Aix-en-Provence",
+  "Amiens",
+  "Angers",
+  "Annecy",
+  "Avignon",
+  "Bayonne",
+  "Belfort",
+  "Besançon",
+  "Bordeaux",
+  "Boulogne-Billancourt",
+  "Brest",
+  "Caen",
+  "Clermont-Ferrand",
+  "Dijon",
+  "Grenoble",
+  "Le Havre",
+  "Le Mans",
+  "Lille",
+  "Limoges",
+  "Lyon",
+  "Marseille",
+  "Metz",
+  "Montpellier",
+  "Mulhouse",
+  "Nancy",
+  "Nantes",
+  "Nice",
+  "Nîmes",
+  "Orléans",
+  "Paris",
+  "Perpignan",
+  "Poitiers",
+  "Reims",
+  "Rennes",
+  "Rouen",
+  "Saint-Étienne",
+  "Strasbourg",
+  "Toulon",
+  "Toulouse",
+  "Tours",
+  "Villeurbanne"
+];
+
+
 const CoachStep2 = () => {
   const navigate = useNavigate();
   // State pour les spécialités
@@ -10,6 +55,13 @@ const CoachStep2 = () => {
 
   // State pour les tarifs
   const [tarifs, setTarifs] = useState({ seance: 60, pack: 500, abonnement: 180 });
+  const [ville, setVille] = useState("");
+  const [searchVille, setSearchVille] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
+  
+  const filteredVilles = villes.filter(ville => 
+    ville.toLowerCase().includes(searchVille.toLowerCase())
+  );
 
   const toggleTag = (tag) => {
     if (selectedTags.includes(tag)) {
@@ -23,7 +75,9 @@ const CoachStep2 = () => {
     try {
       await onboardingService.updateCoachProfile({
         specialites_tags: selectedTags,
-        offres_tarifs: tarifs
+        specialite: selectedTags[0] || "",  // Le premier tag comme spécialité principale
+        offres_tarifs: tarifs,
+        ville: ville
       });
       navigate('/onboarding/coach/step3');
     } catch (error) {
@@ -99,6 +153,67 @@ const CoachStep2 = () => {
                 />
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* Section Localisation */}
+        <section className="mb-12">
+          <h2 className="text-2xl font-bold mb-6">Localisation</h2>
+          
+          <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-6 relative">
+            
+            <label className="block text-sm font-medium mb-2 opacity-70">
+              Ville d'activité
+            </label>
+            
+            <input
+              type="text"
+              value={searchVille}
+              onChange={(e) => {
+                setSearchVille(e.target.value);
+                setShowDropdown(true);
+              }}
+              onFocus={() => setShowDropdown(true)}
+              placeholder="Rechercher une ville..."
+              className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl py-3 px-4 text-lg outline-none focus:border-orange-500 transition-all"
+            />
+
+            {/* Dropdown */}
+            {showDropdown && (
+              <div className="absolute z-10 mt-2 w-full bg-white dark:bg-[#0B0B0F] border border-slate-200 dark:border-white/10 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                
+                {filteredVilles.length > 0 ? (
+                  filteredVilles.map((v, index) => (
+                    <div
+                      key={index}
+                      onClick={() => {
+                        setVille(v);
+                        setSearchVille(v);
+                        setShowDropdown(false);
+                      }}
+                      className="px-4 py-2 cursor-pointer hover:bg-orange-500 hover:text-white transition-all"
+                    >
+                      {v}
+                    </div>
+                  ))
+                ) : (
+                  <div className="px-4 py-2 text-gray-400">
+                    Aucune ville trouvée
+                  </div>
+                )}
+              </div>
+            )}
+
+            {ville && (
+              <p className="text-sm text-green-500 mt-3">
+                Ville sélectionnée : {ville}
+              </p>
+            )}
+
+            <p className="text-xs text-slate-500 mt-2">
+              Cette information permettra aux clients de vous trouver facilement.
+            </p>
+
           </div>
         </section>
 

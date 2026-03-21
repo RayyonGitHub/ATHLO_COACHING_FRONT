@@ -18,6 +18,13 @@ const AthleteDashboard = () => {
           return;
         }
 
+        const user = JSON.parse(localStorage.getItem('user'));
+
+        if (!user || user.role !== 'athlete') {
+            window.location.href = '/login';
+            return;
+        }
+
         const response = await axios.get('http://127.0.0.1:8000/api/athlete/dashboard-stats/', {
           headers: { Authorization: `Bearer ${token}` }
         });
