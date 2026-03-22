@@ -98,7 +98,7 @@ const AthleteDashboard = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             
-            {/* Mon Programme Actuel (Gardé ici car il est court) */}
+            {/* Mon Programme Actuel DYNAMIQUE */}
             <div className="bg-[#1E1E1E] p-6 rounded-2xl border border-[#2D2D2D] flex flex-col justify-between hover:border-[#3D3D3D] transition-colors">
               <div className="flex justify-between items-start mb-4">
                 <h3 className="font-bold text-lg text-white">Mon Programme Actuel</h3>
@@ -106,24 +106,39 @@ const AthleteDashboard = () => {
                   <span className="material-icons-round">arrow_forward</span>
                 </button>
               </div>
-              <div className="flex items-center gap-4 mb-6">
-                <div className="w-20 h-20 rounded-lg bg-[#2D2D2D] flex items-center justify-center border border-[#3D3D3D]">
-                  <span className="material-icons-round text-4xl text-gray-500">fitness_center</span>
+              
+              {data.programme_actuel ? (
+                <>
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="w-20 h-20 rounded-lg bg-[#2D2D2D] flex items-center justify-center border border-[#3D3D3D]">
+                      <span className="material-icons-round text-4xl text-[#FF6B00]">fitness_center</span>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-white truncate max-w-[150px]">{data.programme_actuel.titre}</h4>
+                      <p className="text-sm text-gray-400 mt-1">
+                        Semaine {data.programme_actuel.semaine_actuelle} sur {data.programme_actuel.semaine_totale}
+                      </p>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-sm mb-2">
+                      <span className="text-gray-400 font-medium">Progression globale</span>
+                      <span className="font-bold text-[#FF6B00]">{data.programme_actuel.progression}%</span>
+                    </div>
+                    <div className="w-full bg-[#2D2D2D] h-2 rounded-full overflow-hidden">
+                      <div 
+                        className="bg-[#FF6B00] h-full rounded-full shadow-[0_0_10px_rgba(255,107,0,0.5)] transition-all duration-1000" 
+                        style={{ width: `${data.programme_actuel.progression}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full opacity-50 py-4">
+                  <span className="material-icons-round text-4xl text-gray-500 mb-2">auto_awesome_motion</span>
+                  <p className="text-sm text-gray-400">Aucun programme actif</p>
                 </div>
-                <div>
-                  <h4 className="font-semibold text-white">Force & Hypertrophie</h4>
-                  <p className="text-sm text-gray-400 mt-1">Semaine 4 sur 8</p>
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="text-gray-400 font-medium">Progression globale</span>
-                  <span className="font-bold text-[#FF6B00]">45%</span>
-                </div>
-                <div className="w-full bg-[#2D2D2D] h-2 rounded-full overflow-hidden">
-                  <div className="bg-[#FF6B00] h-full w-[45%] rounded-full shadow-[0_0_10px_rgba(255,107,0,0.5)]"></div>
-                </div>
-              </div>
+              )}
             </div>
 
             {/* Boutons d'actions rapides */}
