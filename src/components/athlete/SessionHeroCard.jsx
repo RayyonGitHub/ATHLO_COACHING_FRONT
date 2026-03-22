@@ -3,7 +3,9 @@ import React from 'react';
 const SessionHeroCard = ({ seance, onStart }) => {
   return (
     <div className="relative overflow-hidden rounded-2xl bg-[#1E1E1E] border border-[#2D2D2D] group">
+      {/* Effet de lumière en fond */}
       <div className="absolute top-0 right-0 w-64 h-64 bg-[#FF6B00]/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
+      
       <div className="relative p-6 lg:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
           <div className="flex items-center gap-2 mb-3">
@@ -17,8 +19,12 @@ const SessionHeroCard = ({ seance, onStart }) => {
           
           {seance && (
             <p className="text-gray-400 flex items-center gap-4 text-sm mb-6">
-              <span className="flex items-center gap-1"><span className="material-icons-round text-base">timer</span> {seance.duree_estimee} min</span>
-              <span className="flex items-center gap-1"><span className="material-icons-round text-base">local_fire_department</span> {seance.calories_estimees} kcal</span>
+              <span className="flex items-center gap-1">
+                <span className="material-icons-round text-base">timer</span> {seance.duree_estimee} min
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="material-icons-round text-base">local_fire_department</span> {seance.calories_estimees} kcal
+              </span>
             </p>
           )}
 
@@ -37,15 +43,7 @@ const SessionHeroCard = ({ seance, onStart }) => {
           </div>
         </div>
         
-        {seance && (
-          <div className="hidden md:flex flex-col items-center p-4 rounded-xl bg-[#2D2D2D] border border-[#3D3D3D] min-w-[140px]">
-            <span className="text-xs text-gray-400 uppercase font-bold tracking-wide mb-2">Début dans</span>
-            <div className="text-3xl font-mono font-bold text-white mb-1">04:23:12</div>
-            <div className="w-full bg-[#121212] h-1.5 rounded-full mt-2 overflow-hidden">
-              <div className="bg-[#FF6B00] h-full w-2/3 rounded-full"></div>
-            </div>
-          </div>
-        )}
+        {/* Le bloc "Début dans" a été supprimé d'ici ! */}
       </div>
     </div>
   );
