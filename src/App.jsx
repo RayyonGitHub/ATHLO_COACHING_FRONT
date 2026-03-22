@@ -12,6 +12,7 @@ import CoachCalendar from './pages/CoachCalendar';
 // Pages Protégées Coach/Athlète
 import ProtectedRoute from './components/ProtectedRoute';
 import MainLayout from './components/layouts/MainLayout';
+import AthleteLayout from './components/layouts/AthleteLayout'; // <-- NOUVEL IMPORT ICI
 
 import Dashboard from './pages/Dashboard';
 import ClientList from './components/ClientList';
@@ -37,6 +38,9 @@ import SessionBuilder from './components/SessionBuilder';
 import ExerciceManager from './pages/ExerciceManager';
 
 function App() {
+  // Optionnel : Récupérer l'utilisateur courant pour le Layout Athlète
+  const currentUser = JSON.parse(localStorage.getItem('user')) || {};
+
   return (
     <Router>
       <Routes>
@@ -98,12 +102,18 @@ function App() {
           </ProtectedRoute>
         } />
 
-        {/* === ESPACE ATHLÈTE === */}
-        <Route path="/athlete/dashboard" element={
+        {/* === ESPACE ATHLÈTE (NOUVEAU LAYOUT) === */}
+        <Route path="/athlete" element={
           <ProtectedRoute>
-            <AthleteDashboard />
+            <AthleteLayout user={currentUser} />
           </ProtectedRoute>
-        } />
+        }>
+          {/* Les sous-routes s'afficheront à la place de l'<Outlet /> dans AthleteLayout */}
+          <Route path="dashboard" element={<AthleteDashboard />} />
+          <Route path="calendar" element={<div className="text-white text-center mt-20">Page Calendrier en construction 🚧</div>} />
+          <Route path="programs" element={<div className="text-white text-center mt-20">Page Programmes en construction 🚧</div>} />
+          <Route path="stats" element={<div className="text-white text-center mt-20">Page Statistiques en construction 🚧</div>} />
+        </Route>
 
         {/* === ESPACE PROSPECT === */}
         <Route path="/prospect/dashboard" element={
