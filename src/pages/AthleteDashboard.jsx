@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import WorkoutTrackingModal from './WorkoutTrackingModal';
+import SessionHeroCard from '../components/athlete/SessionHeroCard';
+import DailyGoalsWidget from '../components/athlete/DailyGoalsWidget';
+import HealthStatsWidget from '../components/athlete/HealthStatsWidget';
 
 const AthleteDashboard = () => {
   const [data, setData] = useState(null);
@@ -19,7 +22,6 @@ const AthleteDashboard = () => {
         }
 
         const user = JSON.parse(localStorage.getItem('user'));
-
         if (!user || user.role !== 'athlete') {
             window.location.href = '/login';
             return;
@@ -63,14 +65,10 @@ const AthleteDashboard = () => {
     );
   }
 
-  // Calcul dynamique pour l'anneau orange (Complétion)
-  const completionPercentage = data.stats_sante?.completion_jour || 0;
-  const dashoffsetOrange = 552 - (552 * completionPercentage) / 100;
-
   return (
     <div className="flex flex-col gap-8 animate-in fade-in duration-500">
       
-      {/* SECTION BIENVENUE (Spécifique au Dashboard) */}
+      {/* SECTION BIENVENUE */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl lg:text-3xl font-bold text-white">
@@ -93,58 +91,14 @@ const AthleteDashboard = () => {
         {/* COLONNE GAUCHE (8) */}
         <div className="lg:col-span-8 flex flex-col gap-8">
           
-          {/* CARTE PROCHAINE SÉANCE */}
-          <div className="relative overflow-hidden rounded-2xl bg-[#1E1E1E] border border-[#2D2D2D] group">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-[#FF6B00]/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
-            <div className="relative p-6 lg:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#FF6B00]/10 text-[#FF6B00] border border-[#FF6B00]/20">Prochaine Séance</span>
-                  <span className="text-gray-400 text-sm">Aujourd'hui</span>
-                </div>
-                
-                <h2 className="text-3xl font-bold text-white mb-2">
-                  {data.prochaine_seance ? data.prochaine_seance.titre : "Repos Mérité"}
-                </h2>
-                
-                {data.prochaine_seance && (
-                  <p className="text-gray-400 flex items-center gap-4 text-sm mb-6">
-                    <span className="flex items-center gap-1"><span className="material-icons-round text-base">timer</span> {data.prochaine_seance.duree_estimee} min</span>
-                    <span className="flex items-center gap-1"><span className="material-icons-round text-base">local_fire_department</span> {data.prochaine_seance.calories_estimees} kcal</span>
-                  </p>
-                )}
+          <SessionHeroCard 
+            seance={data.prochaine_seance} 
+            onStart={() => setIsModalOpen(true)} 
+          />
 
-                <div className="flex gap-3">
-                  <button 
-                    onClick={() => setIsModalOpen(true)}
-                    disabled={!data.prochaine_seance}
-                    className="bg-gradient-to-r from-[#FF6B00] to-[#FF9E00] text-white px-6 py-3 rounded-xl font-semibold shadow-lg shadow-[#FF6B00]/20 hover:shadow-[#FF6B00]/40 hover:scale-105 transition-all flex items-center gap-2 disabled:opacity-50 disabled:hover:scale-100"
-                  >
-                    <span className="material-icons-round">play_arrow</span>
-                    Commencer
-                  </button>
-                  <button className="px-6 py-3 rounded-xl font-semibold text-gray-300 border border-[#2D2D2D] hover:bg-[#2D2D2D] transition-all">
-                    Détails
-                  </button>
-                </div>
-              </div>
-              
-              {data.prochaine_seance && (
-                <div className="hidden md:flex flex-col items-center p-4 rounded-xl bg-[#2D2D2D] border border-[#3D3D3D] min-w-[140px]">
-                  <span className="text-xs text-gray-400 uppercase font-bold tracking-wide mb-2">Début dans</span>
-                  <div className="text-3xl font-mono font-bold text-white mb-1">04:23:12</div>
-                  <div className="w-full bg-[#121212] h-1.5 rounded-full mt-2 overflow-hidden">
-                    <div className="bg-[#FF6B00] h-full w-2/3 rounded-full"></div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* GRILLE : PROGRAMME & ACTIONS */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             
-            {/* Mon Programme Actuel */}
+            {/* Mon Programme Actuel (Gardé ici car il est court) */}
             <div className="bg-[#1E1E1E] p-6 rounded-2xl border border-[#2D2D2D] flex flex-col justify-between hover:border-[#3D3D3D] transition-colors">
               <div className="flex justify-between items-start mb-4">
                 <h3 className="font-bold text-lg text-white">Mon Programme Actuel</h3>
@@ -178,13 +132,13 @@ const AthleteDashboard = () => {
                 <div className="w-12 h-12 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center group-hover:scale-110 transition-transform">
                   <span className="material-icons-round text-2xl">calendar_month</span>
                 </div>
-                <span className="font-medium text-sm text-gray-200">Réserver une séance</span>
+                <span className="font-medium text-sm text-gray-200">Réserver séance</span>
               </button>
               <button className="bg-[#1E1E1E] p-4 rounded-2xl border border-[#2D2D2D] flex flex-col items-center justify-center gap-3 hover:bg-[#2D2D2D] transition-all group text-center">
                 <div className="w-12 h-12 rounded-full bg-purple-500/10 text-purple-500 flex items-center justify-center group-hover:scale-110 transition-transform">
                   <span className="material-icons-round text-2xl">chat_bubble</span>
                 </div>
-                <span className="font-medium text-sm text-gray-200">Contacter mon coach</span>
+                <span className="font-medium text-sm text-gray-200">Contacter coach</span>
               </button>
               <button className="bg-[#1E1E1E] p-4 rounded-2xl border border-[#2D2D2D] flex flex-col items-center justify-center gap-3 hover:bg-[#2D2D2D] transition-all group text-center">
                 <div className="w-12 h-12 rounded-full bg-green-500/10 text-green-500 flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -199,123 +153,24 @@ const AthleteDashboard = () => {
                 <span className="font-medium text-sm text-gray-200">Moniteurs</span>
               </button>
             </div>
-
           </div>
         </div>
 
         {/* COLONNE DROITE (4) */}
         <div className="lg:col-span-4 flex flex-col gap-6">
           
-          {/* OBJECTIFS QUOTIDIENS (Les 3 anneaux) */}
-          <div className="bg-[#1E1E1E] p-6 rounded-2xl border border-[#2D2D2D]">
-            <h3 className="font-bold text-lg text-white mb-6">Objectifs Quotidiens</h3>
-            <div className="flex justify-center mb-6 relative">
-              <div className="relative w-48 h-48">
-                <svg className="w-full h-full transform -rotate-90">
-                  {/* Anneau Bleu (Hydratation) */}
-                  <circle className="text-[#2D2D2D]" cx="96" cy="96" fill="none" r="44" stroke="currentColor" strokeWidth="12"></circle>
-                  <circle cx="96" cy="96" fill="none" r="44" stroke="#3B82F6" strokeDasharray="276" strokeDashoffset="180" strokeLinecap="round" strokeWidth="12"></circle>
-                  
-                  {/* Anneau Jaune (Pas) */}
-                  <circle className="text-[#2D2D2D]" cx="96" cy="96" fill="none" r="66" stroke="currentColor" strokeWidth="12"></circle>
-                  <circle cx="96" cy="96" fill="none" r="66" stroke="#FACC15" strokeDasharray="414" strokeDashoffset="100" strokeLinecap="round" strokeWidth="12"></circle>
-                  
-                  {/* Anneau Orange (Calories/Complétion Dynamique) */}
-                  <circle className="text-[#2D2D2D]" cx="96" cy="96" fill="none" r="88" stroke="currentColor" strokeWidth="12"></circle>
-                  <circle cx="96" cy="96" fill="none" r="88" stroke="#FF6B00" strokeDasharray="552" strokeDashoffset={dashoffsetOrange} strokeLinecap="round" strokeWidth="12"></circle>
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                  <span className="text-3xl font-bold text-white">{completionPercentage}%</span>
-                  <span className="text-xs text-gray-400 uppercase">Complété</span>
-                </div>
-              </div>
-            </div>
-            
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <span className="w-3 h-3 rounded-full bg-[#FF6B00]"></span>
-                  <span className="text-sm font-medium text-gray-300">Calories</span>
-                </div>
-                <span className="text-sm font-bold text-white">{data.stats_sante?.calories || 0} / 2400</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <span className="w-3 h-3 rounded-full bg-[#FACC15]"></span>
-                  <span className="text-sm font-medium text-gray-300">Pas</span>
-                </div>
-                <span className="text-sm font-bold text-white">8,432 / 10k</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <span className="w-3 h-3 rounded-full bg-[#3B82F6]"></span>
-                  <span className="text-sm font-medium text-gray-300">Hydratation</span>
-                </div>
-                <span className="text-sm font-bold text-white">1.2L / 2.5L</span>
-              </div>
-            </div>
-          </div>
-
-          {/* STATS DE SANTÉ */}
-          <div className="bg-[#1E1E1E] p-6 rounded-2xl border border-[#2D2D2D] flex-1">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="font-bold text-lg text-white">Stats de Santé</h3>
-              <div className="flex -space-x-2">
-                <div className="w-8 h-8 rounded-full bg-[#2D2D2D] border border-[#3D3D3D] flex items-center justify-center">
-                  <span className="material-icons-round text-sm text-[#FC4C02]">directions_run</span>
-                </div>
-                <div className="w-8 h-8 rounded-full bg-[#2D2D2D] border border-[#3D3D3D] flex items-center justify-center">
-                  <span className="material-icons-round text-sm text-white">watch</span>
-                </div>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-1 gap-4">
-              <div className="p-4 rounded-xl bg-red-500/5 border border-red-500/10 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-red-500/10 rounded-lg text-red-500">
-                    <span className="material-icons-round">favorite</span>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-400 font-medium">Fréquence Cardiaque</p>
-                    <p className="font-bold text-white text-lg">72 <span className="text-xs font-normal text-gray-500">bpm</span></p>
-                  </div>
-                </div>
-                <span className="text-xs text-green-500 font-bold bg-green-500/10 px-2 py-1 rounded">-3%</span>
-              </div>
-              
-              <div className="p-4 rounded-xl bg-indigo-500/5 border border-indigo-500/10 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-indigo-500/10 rounded-lg text-indigo-500">
-                    <span className="material-icons-round">bedtime</span>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-400 font-medium">Sommeil</p>
-                    <p className="font-bold text-white text-lg">7h 42m</p>
-                  </div>
-                </div>
-                <span className="text-xs text-green-500 font-bold bg-green-500/10 px-2 py-1 rounded">+12%</span>
-              </div>
-              
-              <div className="p-4 rounded-xl bg-green-500/5 border border-green-500/10 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-green-500/10 rounded-lg text-green-500">
-                    <span className="material-icons-round">battery_charging_full</span>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-400 font-medium">Récupération</p>
-                    <p className="font-bold text-white text-lg">{data.stats_sante?.recuperation || 94}%</p>
-                  </div>
-                </div>
-                <span className="text-xs text-gray-400">Prêt à performer</span>
-              </div>
-            </div>
-          </div>
+          <DailyGoalsWidget 
+            calories={data.stats_sante?.calories || 0} 
+            completionPercentage={data.stats_sante?.completion_jour || 0} 
+          />
+          
+          <HealthStatsWidget 
+            recuperation={data.stats_sante?.recuperation || 94} 
+          />
 
         </div>
       </div>
       
-      {/* LA MODALE QU'ON A CRÉÉE */}
       <WorkoutTrackingModal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
