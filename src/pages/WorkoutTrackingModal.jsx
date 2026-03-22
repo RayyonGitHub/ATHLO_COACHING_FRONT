@@ -117,7 +117,7 @@ const WorkoutTrackingModal = ({ isOpen, onClose, seanceId, onComplete }) => {
           seance_exercice: exo.id,
           series_realisees: exo.series, // Pour l'instant on suppose que l'athlète a tout fait
           reps_realisees: parseInt(exo.reps) || 10,
-          poids_utilise: 0 // Tu pourras rajouter un champ input pour le poids plus tard !
+          poids_utilise: 0 
         }, {
           headers: { Authorization: `Bearer ${token}` }
         });
