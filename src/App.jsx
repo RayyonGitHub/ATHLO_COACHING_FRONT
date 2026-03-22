@@ -17,6 +17,7 @@ import Dashboard from './pages/Dashboard';
 import ClientList from './components/ClientList';
 import DemoDashboard from './pages/DemoDashboard';
 import AthleteDashboard from './pages/AthleteDashboard';
+import ProspectDashboard from './pages/ProspectDashboard';
 
 // Onboarding Pages
 import CoachStep2 from './pages/onboarding/CoachStep2';
@@ -101,6 +102,13 @@ function App() {
         <Route path="/athlete/dashboard" element={
           <ProtectedRoute>
             <AthleteDashboard />
+          </ProtectedRoute>
+        } />
+
+        {/* === ESPACE PROSPECT === */}
+        <Route path="/prospect/dashboard" element={
+          <ProtectedRoute>
+            <ProspectDashboard />
           </ProtectedRoute>
         } />
 

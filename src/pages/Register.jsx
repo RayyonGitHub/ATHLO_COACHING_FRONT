@@ -17,7 +17,7 @@ const Register = () => {
 
   const roles = [
     { id: 'coach', label: 'Coach', icon: Dumbbell },
-    { id: 'athlete', label: 'Athlète', icon: Users },
+    { id: 'prospect', label: 'Prospect', icon: Users },
   ];
 
   const handleInputChange = (e) => {
@@ -34,18 +34,18 @@ const Register = () => {
     setError('');
 
     try {
-      // 1. Inscription
+      // 1. Inscription uniquement
       await authService.register({ ...formData, role: selectedRole });
       
-      // 2. Connexion Automatique (nécessaire pour accéder aux étapes protégées suivantes)
       await authService.login({ email: formData.email, password: formData.password });
-
-      // 3. Redirection immédiate vers l'étape 2
-      if (selectedRole === 'coach') {
-        navigate('/onboarding/coach/step2');
-      } else {
-        navigate('/onboarding/athlete/step2');
+      
+      // 2. Redirection vers login
+      if (selectedRole === 'coach') { 
+        navigate('/onboarding/coach/step2'); 
+      } else { 
+        navigate('/login');
       }
+
     } catch (err) {
       setError(err.response?.data?.message || "Erreur lors de l'inscription");
     } finally {

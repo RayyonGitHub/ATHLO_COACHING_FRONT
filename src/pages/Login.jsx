@@ -38,7 +38,7 @@ console.log("1. Envoi de la demande de connexion...");
 
       const role = response.user?.role;
       console.log("3. Rôle détecté :", role);
-
+/*
       if (role === 'coach') {
           console.log("4. Redirection vers l'espace Coach");
           navigate('/clients');
@@ -49,7 +49,17 @@ console.log("1. Envoi de la demande de connexion...");
           console.log("4. Rôle non reconnu, redirection accueil");
           navigate('/');
       }
-
+*/
+      if (role === 'coach') {
+          navigate('/dashboard');
+      } else if (role === 'athlete') {
+          navigate('/athlete/dashboard');
+      } else if (role === 'prospect') {
+          navigate('/prospect/dashboard');
+      } else {
+          console.log("Rôle inconnu :", role);
+          navigate('/login');
+      }
     } catch (err) {
       console.error("ERREUR DE CONNEXION :", err);
       // Gestion de l'erreur 401 si les identifiants sont faux ou le profil inexistant
