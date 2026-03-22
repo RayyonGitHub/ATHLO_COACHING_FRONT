@@ -43,7 +43,7 @@ const Register = () => {
       if (selectedRole === 'coach') { 
         navigate('/onboarding/coach/step2'); 
       } else { 
-        navigate('/login');
+         navigate('/onboarding/athlete/step2');
       }
 
     } catch (err) {
