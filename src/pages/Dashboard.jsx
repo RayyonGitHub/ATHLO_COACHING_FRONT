@@ -11,7 +11,7 @@ function Dashboard() {
   }, []);
 
   const loadClients = async () => {
-    try {
+    try { 
       setLoading(true);
       const data = await clientService.getAllClients();
       setClients(data);

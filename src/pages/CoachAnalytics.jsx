@@ -70,10 +70,10 @@ const CoachAnalytics = () => {
                 />
                 <KPICard
                     title="Volume"
-                    value={`${data?.total_volume} kcal`}
+                    value={`${data?.total_volume} kg`} 
                     icon={<Flame className="w-4 h-4 text-orange-600" />}
                     borderColor="border-orange-500"
-                />
+/>
             </div>
 
 
