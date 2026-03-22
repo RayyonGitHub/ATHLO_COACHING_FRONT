@@ -12,12 +12,15 @@ import CoachCalendar from './pages/CoachCalendar';
 // Pages Protégées Coach/Athlète
 import ProtectedRoute from './components/ProtectedRoute';
 import MainLayout from './components/layouts/MainLayout';
+import AthleteLayout from './components/layouts/AthleteLayout';
 
 import Dashboard from './pages/Dashboard';
 import ClientList from './components/ClientList';
 import DemoDashboard from './pages/DemoDashboard';
 import AthleteDashboard from './pages/AthleteDashboard';
+import AthleteCalendar from './pages/AthleteCalendar'; // <-- NOUVEL IMPORT
 import ProspectDashboard from './pages/ProspectDashboard';
+import AthleteStats from './pages/AthleteStats';
 
 // Onboarding Pages
 import CoachStep2 from './pages/onboarding/CoachStep2';
@@ -37,6 +40,8 @@ import SessionBuilder from './components/SessionBuilder';
 import ExerciceManager from './pages/ExerciceManager';
 
 function App() {
+  const currentUser = JSON.parse(localStorage.getItem('user')) || {};
+
   return (
     <Router>
       <Routes>
@@ -45,20 +50,16 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/* === ROUTES ONBOARDING (Protégées) === */}
+        {/* === ROUTES ONBOARDING === */}
         <Route path="/onboarding/coach/step2" element={<ProtectedRoute><CoachStep2 /></ProtectedRoute>} />
         <Route path="/onboarding/coach/step3" element={<ProtectedRoute><CoachStep3 /></ProtectedRoute>} />
         <Route path="/onboarding/athlete/step2" element={<ProtectedRoute><AthleteStep2 /></ProtectedRoute>} />
         <Route path="/onboarding/athlete/step3" element={<ProtectedRoute><AthleteStep3 /></ProtectedRoute>} />
 
-        {/* === ESPACE COACH (Avec Layout latéral) === */}
+        {/* === ESPACE COACH === */}
         <Route path="/dashboard" element={
           <ProtectedRoute>
-            <MainLayout
-              activePageLabel="Dashboard"
-              headerSection="Coach"
-              headerSubSection="Analyses & Performance"
-            >
+            <MainLayout activePageLabel="Dashboard" headerSection="Coach" headerSubSection="Analyses & Performance">
               <CoachAnalytics />
             </MainLayout>
           </ProtectedRoute>
@@ -71,6 +72,7 @@ function App() {
             </MainLayout>
           </ProtectedRoute>
         } />
+
         <Route path="/exercices" element={
           <ProtectedRoute>
             <MainLayout activePageLabel="Exercices" headerSection="Bibliothèque" headerSubSection="Base de données">
@@ -78,6 +80,7 @@ function App() {
             </MainLayout>
           </ProtectedRoute>
         } />
+
         <Route path="/programmes" element={
           <ProtectedRoute>
             <MainLayout activePageLabel="Programmes" headerSection="Coach" headerSubSection="Gestion des Programmes">
@@ -85,25 +88,26 @@ function App() {
             </MainLayout>
           </ProtectedRoute>
         } />
-        {/* === ESPACE COACH (Suite) === */}
+
         <Route path="/calendar" element={
           <ProtectedRoute>
-            <MainLayout
-              activePageLabel="Calendrier"
-              headerSection="Coach"
-              headerSubSection="Agenda & Planification"
-            >
+            <MainLayout activePageLabel="Calendrier" headerSection="Coach" headerSubSection="Agenda & Planification">
               <CoachCalendar />
             </MainLayout>
           </ProtectedRoute>
         } />
 
         {/* === ESPACE ATHLÈTE === */}
-        <Route path="/athlete/dashboard" element={
-          <ProtectedRoute>
-            <AthleteDashboard />
+        <Route path="/athlete" element={
+          <ProtectedRoute roleRequired="athlete">
+            <AthleteLayout user={currentUser} />
           </ProtectedRoute>
-        } />
+        }>
+          <Route path="dashboard" element={<AthleteDashboard />} />
+          <Route path="calendar" element={<AthleteCalendar />} /> {/* <-- BRANCHÉ ICI */}
+          <Route path="programmes" element={<div className="text-white text-center mt-20 italic">Vos programmes s'afficheront ici bientôt 🚧</div>} />
+          <Route path="statistiques" element={<AthleteStats />} />
+        </Route>
 
         {/* === ESPACE PROSPECT === */}
         <Route path="/prospect/dashboard" element={
@@ -112,24 +116,11 @@ function App() {
           </ProtectedRoute>
         } />
 
-        {/* === ESPACE SUPER-ADMIN (Isolé) === */}
+        {/* === ESPACE ADMIN === */}
         <Route path="/admin-login" element={<AdminLogin />} />
-
-        <Route path="/admin/dashboard" element={
-          <AdminRoute>
-            <AdminLayout>
-              <AdminDashboard />
-            </AdminLayout>
-          </AdminRoute>
-        } />
-
-        <Route path="/admin/coachs" element={
-          <AdminRoute>
-            <AdminLayout>
-              <AdminCoachList />
-            </AdminLayout>
-          </AdminRoute>
-        } />
+        <Route path="/admin/dashboard" element={<AdminRoute><AdminLayout><AdminDashboard /></AdminLayout></AdminRoute>} />
+        <Route path="/admin/coachs" element={<AdminRoute><AdminLayout><AdminCoachList /></AdminLayout></AdminRoute>} />
+        <Route path="/admin/salles" element={<AdminRoute><AdminLayout><AdminGymList /></AdminLayout></AdminRoute>} />
 
         <Route path="/builder" element={
           <ProtectedRoute>
@@ -139,27 +130,9 @@ function App() {
           </ProtectedRoute>
         } />
 
-        <Route path="/admin/salles" element={
-          <AdminRoute>
-            <AdminLayout>
-              <AdminGymList />
-            </AdminLayout>
-          </AdminRoute>
-        } />
-
-        <Route path="/admin/library" element={
-          <AdminRoute>
-            <AdminLayout>
-              <div className="p-8 text-white">Modération Exercices (WIP)</div>
-            </AdminLayout>
-          </AdminRoute>
-        } />
-
         {/* REDIRECTION PAR DÉFAUT */}
         <Route path="*" element={<Navigate to="/login" replace />} />
-
         <Route path="/demo" element={<DemoDashboard />} />
-        <Route path="/coach/analytics" element={<CoachAnalytics />} />
       </Routes>
     </Router>
   );
