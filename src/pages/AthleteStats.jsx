@@ -1,78 +1,81 @@
-import React, { useState, useEffect } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, PieChart, Pie, Cell } from 'recharts';
-import { TrendingUp, Activity, Target, Award } from 'lucide-react';
-import axios from 'axios';
+import React from 'react';
+import { 
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell, BarChart, Bar
+} from 'recharts';
+import { TrendingUp, Award, Zap, Target, Activity } from 'lucide-react';
 
-// Données fictives en attendant le branchement API réel
+// === DONNÉES SIMULÉES (MOCKS) ===
+// Ces données seront bientôt remplacées par ton API Django
 const dataVolume = [
-  { date: '01/03', volume: 1200 },
-  { date: '05/03', volume: 1500 },
-  { date: '10/03', volume: 1400 },
-  { date: '15/03', volume: 2100 },
-  { date: '20/03', volume: 2500 },
+  { day: 'Lun', volume: 1200 }, { day: 'Mar', volume: 1900 },
+  { day: 'Mer', volume: 1500 }, { day: 'Jeu', volume: 2100 },
+  { day: 'Ven', volume: 2800 }, { day: 'Sam', volume: 2400 },
+  { day: 'Dim', volume: 0 },
 ];
 
-const dataMuscles = [
-  { name: 'Jambes', value: 400 },
-  { name: 'Pectoraux', value: 300 },
-  { name: 'Dos', value: 300 },
-  { name: 'Cardio', value: 200 },
+const muscleData = [
+  { name: 'Jambes', value: 45 }, { name: 'Pectoraux', value: 25 },
+  { name: 'Dos', value: 20 }, { name: 'Épaules', value: 10 },
 ];
 
-const COLORS = ['#FF6B00', '#FF9E00', '#3D3D3D', '#6366f1'];
+const COLORS = ['#FF6B00', '#FF9E00', '#4F46E5', '#10B981'];
 
 const AthleteStats = () => {
   return (
-    <div className="flex flex-col gap-8 pb-10 animate-in fade-in duration-700">
-      <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">
-        Mes <span className="text-[#FF6B00]">Performances</span>
-      </h2>
+    <div className="flex flex-col gap-8 pb-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div>
+        <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">
+          Analyse de <span className="text-[#FF6B00]">Performance</span>
+        </h2>
+        <p className="text-gray-500 text-sm font-medium">Visualisez vos progrès et dépassez vos limites.</p>
+      </div>
 
       {/* --- CARTES DE RÉSUMÉ --- */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard icon={<TrendingUp className="text-[#FF6B00]"/>} label="Volume Total" value="+15%" subLabel="vs mois dernier" />
-        <StatCard icon={<Activity className="text-blue-400"/>} label="Fréquence" value="4.2" subLabel="séances / semaine" />
-        <StatCard icon={<Target className="text-green-500"/>} label="Objectif" value="85%" subLabel="du programme complété" />
-        <StatCard icon={<Award className="text-purple-500"/>} label="Records" value="12" subLabel="battus ce mois" />
+        <StatCard icon={<TrendingUp className="text-[#FF6B00]"/>} label="Volume Hebdo" value="12.5k" unit="kg" />
+        <StatCard icon={<Zap className="text-yellow-400"/>} label="Intensité Moy." value="82" unit="%" />
+        <StatCard icon={<Award className="text-purple-400"/>} label="Nouveaux PR" value="4" unit="records" />
+        <StatCard icon={<Activity className="text-blue-400"/>} label="Régularité" value="95" unit="%" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        {/* GRAPHE D'ÉVOLUTION DU VOLUME */}
+        {/* GRAPHIQUE ÉVOLUTION VOLUME (AreaChart) */}
         <div className="lg:col-span-8 bg-[#1E1E1E] border border-[#2D2D2D] rounded-3xl p-6 lg:p-8">
           <h3 className="text-white font-bold text-lg mb-6 flex items-center gap-2">
-            Évolution du Volume <span className="text-xs text-gray-500 font-normal uppercase tracking-widest">(kg soulevés)</span>
+            Progression du Volume <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest px-2 py-1 bg-black/20 rounded-md">7 derniers jours</span>
           </h3>
-          <div className="h-[350px] w-full">
+          <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={dataVolume}>
                 <defs>
-                  <linearGradient id="colorVolume" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#FF6B00" stopOpacity={0.3}/>
+                  <linearGradient id="colorVol" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#FF6B00" stopOpacity={0.4}/>
                     <stop offset="95%" stopColor="#FF6B00" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#2D2D2D" vertical={false} />
-                <XAxis dataKey="date" stroke="#666" fontSize={12} tickLine={false} axisLine={false} />
+                <XAxis dataKey="day" stroke="#666" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis stroke="#666" fontSize={12} tickLine={false} axisLine={false} />
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#121212', border: '1px solid #2D2D2D', borderRadius: '12px' }}
-                  itemStyle={{ color: '#FF6B00', fontWeight: 'bold' }}
+                  itemStyle={{ color: '#FF6B00' }}
                 />
-                <Area type="monotone" dataKey="volume" stroke="#FF6B00" strokeWidth={4} fillOpacity={1} fill="url(#colorVolume)" />
+                <Area type="monotone" dataKey="volume" stroke="#FF6B00" strokeWidth={3} fillOpacity={1} fill="url(#colorVol)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* RÉPARTITION MUSCULAIRE */}
-        <div className="lg:col-span-4 bg-[#1E1E1E] border border-[#2D2D2D] rounded-3xl p-6 lg:p-8 flex flex-col">
-          <h3 className="text-white font-bold text-lg mb-6">Répartition par Muscle</h3>
-          <div className="h-[250px] w-full">
+        {/* RÉPARTITION MUSCULAIRE (PieChart) */}
+        <div className="lg:col-span-4 bg-[#1E1E1E] border border-[#2D2D2D] rounded-3xl p-6 lg:p-8 flex flex-col justify-center">
+          <h3 className="text-white font-bold text-lg mb-6">Focus Musculaire</h3>
+          <div className="h-[220px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={dataMuscles} innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
-                  {dataMuscles.map((entry, index) => (
+                <Pie data={muscleData} innerRadius={60} outerRadius={80} paddingAngle={8} dataKey="value">
+                  {muscleData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
@@ -80,14 +83,14 @@ const AthleteStats = () => {
               </PieChart>
             </ResponsiveContainer>
           </div>
-          <div className="space-y-3 mt-4">
-            {dataMuscles.map((m, i) => (
-              <div key={i} className="flex items-center justify-between text-sm">
+          <div className="mt-6 space-y-2">
+            {muscleData.map((m, i) => (
+              <div key={i} className="flex justify-between items-center text-xs">
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[i] }}></div>
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[i] }}></div>
                   <span className="text-gray-400">{m.name}</span>
                 </div>
-                <span className="text-white font-bold">{m.value} reps</span>
+                <span className="text-white font-bold">{m.value}%</span>
               </div>
             ))}
           </div>
@@ -98,14 +101,16 @@ const AthleteStats = () => {
   );
 };
 
-const StatCard = ({ icon, label, value, subLabel }) => (
-  <div className="bg-[#1E1E1E] border border-[#2D2D2D] p-6 rounded-2xl">
+const StatCard = ({ icon, label, value, unit }) => (
+  <div className="bg-[#1E1E1E] border border-[#2D2D2D] p-5 rounded-2xl hover:border-[#FF6B00]/40 transition-colors group">
     <div className="flex justify-between items-start mb-4">
-      <div className="p-2 bg-black/20 rounded-lg">{icon}</div>
+      <div className="p-2 bg-black/30 rounded-lg group-hover:scale-110 transition-transform">{icon}</div>
     </div>
-    <div className="text-2xl font-black text-white mb-1">{value}</div>
-    <div className="text-xs font-bold text-gray-500 uppercase tracking-widest">{label}</div>
-    <div className="text-[10px] text-gray-600 mt-2 font-medium">{subLabel}</div>
+    <div className="flex items-baseline gap-1">
+      <span className="text-3xl font-black text-white italic">{value}</span>
+      <span className="text-[10px] font-bold text-gray-500 uppercase">{unit}</span>
+    </div>
+    <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1">{label}</div>
   </div>
 );
 
