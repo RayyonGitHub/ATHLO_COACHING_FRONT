@@ -4,8 +4,10 @@ import WorkoutTrackingModal from './WorkoutTrackingModal';
 import SessionHeroCard from '../components/athlete/SessionHeroCard';
 import DailyGoalsWidget from '../components/athlete/DailyGoalsWidget';
 import HealthStatsWidget from '../components/athlete/HealthStatsWidget';
+import { useNavigate } from 'react-router-dom';
 
 const AthleteDashboard = () => {
+  const navigate = useNavigate(); // <-- Ajoute cette ligne ici
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -91,21 +93,26 @@ const AthleteDashboard = () => {
         {/* COLONNE GAUCHE (8) */}
         <div className="lg:col-span-8 flex flex-col gap-8">
           
-          <SessionHeroCard 
+         <SessionHeroCard 
             seance={data.prochaine_seance} 
             onStart={() => setIsModalOpen(true)} 
+            onDetails={() => navigate('/athlete/calendar')} 
           />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             
             {/* Mon Programme Actuel DYNAMIQUE */}
-            <div className="bg-[#1E1E1E] p-6 rounded-2xl border border-[#2D2D2D] flex flex-col justify-between hover:border-[#3D3D3D] transition-colors">
-              <div className="flex justify-between items-start mb-4">
-                <h3 className="font-bold text-lg text-white">Mon Programme Actuel</h3>
-                <button className="text-[#FF6B00] hover:text-[#FF9E00] transition-colors">
-                  <span className="material-icons-round">arrow_forward</span>
-                </button>
-              </div>
+            {/* Mon Programme Actuel DYNAMIQUE */}
+              <div 
+                onClick={() => navigate('/athlete/programmes')}
+                className="bg-[#1E1E1E] p-6 rounded-2xl border border-[#2D2D2D] flex flex-col justify-between hover:border-[#3D3D3D] transition-colors cursor-pointer group"
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <h3 className="font-bold text-lg text-white group-hover:text-[#FF6B00] transition-colors">Mon Programme Actuel</h3>
+                  <button className="text-[#FF6B00] hover:text-[#FF9E00] transition-colors group-hover:translate-x-1 transform duration-300">
+                    <span className="material-icons-round">arrow_forward</span>
+                  </button>
+                </div>
               
               {data.programme_actuel ? (
                 <>

@@ -110,10 +110,10 @@ function App() {
         }>
           {/* Les sous-routes s'afficheront à la place de l'<Outlet /> dans AthleteLayout */}
           <Route path="dashboard" element={<AthleteDashboard />} />
-          <Route path="calendar" element={<div className="text-white text-center mt-20">Page Calendrier en construction 🚧</div>} />
-          <Route path="programs" element={<div className="text-white text-center mt-20">Page Programmes en construction 🚧</div>} />
-          <Route path="stats" element={<div className="text-white text-center mt-20">Page Statistiques en construction 🚧</div>} />
-        </Route>
+         <Route path="calendar" element={<div className="text-white text-center mt-20">Page Calendrier en construction 🚧</div>} />
+          <Route path="programmes" element={<div className="text-white text-center mt-20">Page Programmes en construction 🚧</div>} />
+          <Route path="statistiques" element={<div className="text-white text-center mt-20">Page Statistiques en construction 🚧</div>} />
+          </Route>
 
         {/* === ESPACE PROSPECT === */}
         <Route path="/prospect/dashboard" element={
