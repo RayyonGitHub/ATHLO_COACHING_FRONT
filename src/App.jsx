@@ -20,6 +20,7 @@ import DemoDashboard from './pages/DemoDashboard';
 import AthleteDashboard from './pages/AthleteDashboard';
 import AthleteCalendar from './pages/AthleteCalendar'; // <-- NOUVEL IMPORT
 import ProspectDashboard from './pages/ProspectDashboard';
+import AthleteStats from './pages/AthleteStats';
 
 // Onboarding Pages
 import CoachStep2 from './pages/onboarding/CoachStep2';
@@ -105,7 +106,7 @@ function App() {
           <Route path="dashboard" element={<AthleteDashboard />} />
           <Route path="calendar" element={<AthleteCalendar />} /> {/* <-- BRANCHÉ ICI */}
           <Route path="programmes" element={<div className="text-white text-center mt-20 italic">Vos programmes s'afficheront ici bientôt 🚧</div>} />
-          <Route path="statistiques" element={<div className="text-white text-center mt-20 italic">Vos statistiques de performance arrivent 🚧</div>} />
+          <Route path="statistiques" element={<AthleteStats />} />
         </Route>
 
         {/* === ESPACE PROSPECT === */}
