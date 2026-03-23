@@ -225,44 +225,56 @@ const CoachCalendar = () => {
     };
 
     const confirmRemoveParticipant = async () => {
-        if (!participantToRemove) return;
+    if (!participantToRemove) return;
 
-        try {
-            const token = authService.getToken();
-            if (!token) return;
+    try {
+        const token = authService.getToken();
+        if (!token) return;
 
-            await axios.delete(`http://localhost:8000/api/inscriptions/${participantToRemove.id}/`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+        // 1. Suppression du participant
+        await axios.delete(`http://localhost:8000/api/inscriptions/${participantToRemove.id}/`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
 
-            fetchSeances();
-
-            setSelectedEvent(prev => {
-                const isConfirmed = participantToRemove.statut === 'CONFIRME';
-                let newParticipants = prev.participants.filter(p => p.id !== participantToRemove.id);
-                let newNombreInscrits = isConfirmed ? prev.nombre_inscrits - 1 : prev.nombre_inscrits;
-
-                if (isConfirmed && newNombreInscrits < prev.capacite_max) {
-                    const firstWaitingIndex = newParticipants.findIndex(p => p.statut === 'ATTENTE');
-                    if (firstWaitingIndex !== -1) {
-                        const promotedParticipant = { ...newParticipants[firstWaitingIndex], statut: 'CONFIRME' };
-                        newParticipants = [
-                            ...newParticipants.slice(0, firstWaitingIndex),
-                            promotedParticipant,
-                            ...newParticipants.slice(firstWaitingIndex + 1)
-                        ];
-                        newNombreInscrits += 1;
-                    }
-                }
-                return { ...prev, participants: newParticipants, nombre_inscrits: newNombreInscrits };
-            });
-
-            setIsRemoveParticipantModalOpen(false);
-            setParticipantToRemove(null);
-        } catch (error) {
-            alert("Erreur lors du retrait du participant.");
+        // 2. Promotion du premier en liste d'attente → CONFIRME en BDD
+        let promotedId = null;
+        if (participantToRemove.statut === 'CONFIRME') {
+            const firstWaiting = selectedEvent?.participants?.find(
+                p => p.statut === 'ATTENTE' && p.id !== participantToRemove.id
+            );
+            if (firstWaiting) {
+                await axios.patch(
+                    `http://localhost:8000/api/inscriptions/${firstWaiting.id}/status/`,
+                    { statut: 'CONFIRME' },
+                    { headers: { 'Authorization': `Bearer ${token}` } }
+                );
+                promotedId = firstWaiting.id;
+            }
         }
-    };
+
+        // 3. Mise à jour immédiate de selectedEvent pour la modale
+        setSelectedEvent(prev => {
+            let newParticipants = prev.participants.filter(p => p.id !== participantToRemove.id);
+            // Si quelqu'un a été promu, on met à jour son statut aussi
+            if (promotedId) {
+                newParticipants = newParticipants.map(p =>
+                    p.id === promotedId ? { ...p, statut: 'CONFIRME' } : p
+                );
+            }
+            return { ...prev, participants: newParticipants };
+        });
+
+        // 4. Fermeture de la modale
+        setIsRemoveParticipantModalOpen(false);
+        setParticipantToRemove(null);
+
+        // 5. Rechargement en arrière-plan pour sync
+        fetchSeances();
+
+    } catch (error) {
+        alert("Erreur lors du retrait du participant.");
+    }
+};
 
     const handleAttendance = async (inscriptionId, newStatus) => {
         try {
@@ -286,27 +298,43 @@ const CoachCalendar = () => {
         }
     };
 
-    // --- RENDU DES ÉVÉNEMENTS ---
+    // --- RENDU DES ÉVÉNEMENTS (Version Ultra-Robuste) ---
     const events = seances.map(s => {
-        let bgColor = s.completed ? '#64748b' : '#4f46e5';
-        if (!s.completed && s.is_collective) bgColor = '#f97316';
-        else if (!s.completed && s.type === 'indisponibilite') bgColor = '#9ca3af';
-        else if (!s.completed && s.type === 'conge') bgColor = '#10b981';
+    let bgColor = '#4f46e5'; // Bleu/indigo par défaut (séance individuelle)
+    if (s.completed || s.est_completee) {
+        bgColor = '#64748b'; // Gris (Terminé)
+    } else if (s.type === 'conge' || s.est_conge) {
+        bgColor = '#10b981'; // Vert (Congé)
+    } else if (s.type === 'indisponibilite') {
+        bgColor = '#9ca3af'; // Gris clair (Indispo)
+    } else if (s.is_collective || s.est_collective) {
+        bgColor = '#f97316'; // Orange (Collectif)
+    }
 
-        let displayTitle = s.title;
-        if (s.completed) displayTitle = "[Terminé] " + displayTitle;
+    // 2. Gestion du titre
+    let displayTitle = s.title || s.titre || "Sans titre";
+    if (s.completed || s.est_completee) displayTitle = "[Terminé] " + displayTitle;
+    if (s.is_collective || s.est_collective) {
+        const trueCount = s.participants
+            ? s.participants.filter(p => ['CONFIRME', 'PRESENT', 'ABSENT'].includes(p.statut)).length
+            : (s.nombre_inscrits || 0);
+        displayTitle += ` (${trueCount}/${s.capacite_max || 1})`;
+    }
 
-        // FIX 1 : On compte le "vrai" nombre de participants (Confirmés + Présents + Absents)
-        if (s.is_collective) {
-            const trueCount = s.participants ? s.participants.filter(p => ['CONFIRME', 'PRESENT', 'ABSENT'].includes(p.statut)).length : (s.nombre_inscrits || 0);
-            displayTitle += ` (${trueCount}/${s.capacite_max || 1})`;
-        }
-
+    // 3. RECONSTRUCTION DES DATES (Le point critique)
+    let startStr = s.start;
+    if (!startStr && s.jour_prevu) {
+        startStr = s.heure_debut ? `${s.jour_prevu}T${s.heure_debut}` : s.jour_prevu;
+    }
+    let endStr = s.end;
+    if (!endStr && s.jour_prevu) {
+        endStr = s.heure_fin ? `${s.jour_prevu}T${s.heure_fin}` : startStr;
+    }
         return {
             id: s.id,
             title: displayTitle,
-            start: sanitizeDate(s.start),
-            end: sanitizeDate(s.end),
+            start: sanitizeDate(startStr),
+            end: sanitizeDate(endStr),
             backgroundColor: bgColor,
             borderColor: bgColor,
             extendedProps: { originalSeance: s }
