@@ -1,6 +1,6 @@
 import React from 'react';
 
-const HealthStatsWidget = ({ recuperation = 94 }) => {
+const HealthStatsWidget = ({ recuperation = 94, fcRepos = 72, sommeil = "7h 42m" }) => {
   return (
     <div className="bg-[#1E1E1E] p-6 rounded-2xl border border-[#2D2D2D] flex-1">
       <div className="flex justify-between items-center mb-6">
@@ -23,7 +23,8 @@ const HealthStatsWidget = ({ recuperation = 94 }) => {
             </div>
             <div>
               <p className="text-xs text-gray-400 font-medium">Fréquence Cardiaque</p>
-              <p className="font-bold text-white text-lg">72 <span className="text-xs font-normal text-gray-500">bpm</span></p>
+              {/* NOUVEAU ICI : {fcRepos} */}
+              <p className="font-bold text-white text-lg">{fcRepos} <span className="text-xs font-normal text-gray-500">bpm</span></p>
             </div>
           </div>
           <span className="text-xs text-green-500 font-bold bg-green-500/10 px-2 py-1 rounded">-3%</span>
@@ -36,7 +37,8 @@ const HealthStatsWidget = ({ recuperation = 94 }) => {
             </div>
             <div>
               <p className="text-xs text-gray-400 font-medium">Sommeil</p>
-              <p className="font-bold text-white text-lg">7h 42m</p>
+              {/* NOUVEAU ICI : {sommeil} */}
+              <p className="font-bold text-white text-lg">{sommeil}</p>
             </div>
           </div>
           <span className="text-xs text-green-500 font-bold bg-green-500/10 px-2 py-1 rounded">+12%</span>

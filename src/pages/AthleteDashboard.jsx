@@ -11,11 +11,11 @@ const AthleteDashboard = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
-  // Modale pour la séance en cours
   const [isModalOpen, setIsModalOpen] = useState(false);
-  // NOUVEAU : Modale pour le repos
   const [isNoSessionModalOpen, setIsNoSessionModalOpen] = useState(false);
+  
+  // NOUVEAU: État pour la synchronisation de la montre
+  const [isSyncing, setIsSyncing] = useState(false);
 
   useEffect(() => {
     const fetchDashboardStats = async () => {
@@ -52,6 +52,16 @@ const AthleteDashboard = () => {
     fetchDashboardStats();
   }, []);
 
+  // NOUVEAU: Fonction de synchronisation factice
+  const handleSyncWatch = () => {
+    setIsSyncing(true);
+    setTimeout(() => {
+      setIsSyncing(false);
+      // Optionnel : un petit effet rafraîchissant visuel
+      window.location.reload();
+    }, 1500);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -85,19 +95,36 @@ const AthleteDashboard = () => {
             <span className="inline-block w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
           </p>
         </div>
-        <button 
-          onClick={() => {
-            if (data?.prochaine_seance?.id) {
-              setIsModalOpen(true);
-            } else {
-              setIsNoSessionModalOpen(true); // <-- Ouvre la belle modale au lieu de l'alert()
-            }
-          }}
-          className="hidden md:flex items-center gap-2 bg-[#1E1E1E] text-white px-5 py-2.5 rounded-xl border border-[#2D2D2D] hover:border-[#FF6B00] transition-all shadow-sm"
-        >
-          <span className="material-icons-round text-[#FF6B00] text-xl">add</span>
-          <span className="font-medium text-sm">Enregistrer une activité</span>
-        </button>
+        
+        <div className="hidden md:flex items-center gap-3">
+          {/* NOUVEAU BOUTON SYNCHRO */}
+          <button 
+            onClick={handleSyncWatch}
+            disabled={isSyncing}
+            className="flex items-center gap-2 bg-[#1E1E1E] text-gray-300 px-4 py-2.5 rounded-xl border border-[#2D2D2D] hover:border-blue-500 hover:text-blue-400 transition-all shadow-sm disabled:opacity-50"
+          >
+            <span className={`material-icons-round text-blue-500 ${isSyncing ? 'animate-spin' : ''}`}>
+              {isSyncing ? 'sync' : 'watch'}
+            </span>
+            <span className="font-medium text-sm">
+              {isSyncing ? "Synchronisation..." : "Ma Montre"}
+            </span>
+          </button>
+
+          <button 
+            onClick={() => {
+              if (data?.prochaine_seance?.id) {
+                setIsModalOpen(true);
+              } else {
+                setIsNoSessionModalOpen(true);
+              }
+            }}
+            className="flex items-center gap-2 bg-[#1E1E1E] text-white px-5 py-2.5 rounded-xl border border-[#2D2D2D] hover:border-[#FF6B00] transition-all shadow-sm"
+          >
+            <span className="material-icons-round text-[#FF6B00] text-xl">add</span>
+            <span className="font-medium text-sm">Enregistrer une activité</span>
+          </button>
+        </div>
       </div>
 
       {/* GRILLE PRINCIPALE */}
@@ -134,7 +161,7 @@ const AthleteDashboard = () => {
                     <div>
                       <h4 className="font-semibold text-white truncate max-w-[150px]">{data.programme_actuel.titre}</h4>
                       <p className="text-sm text-gray-400 mt-1">
-                        Semaine {data.programme_actuel.semaine_actuelle} sur {data.programme_actuel.semaine_totale}
+                        Semaine {data.programme_actuel.semaine_actuelle || 1} sur {data.programme_actuel.semaine_totale || 4}
                       </p>
                     </div>
                   </div>
@@ -194,12 +221,16 @@ const AthleteDashboard = () => {
           
           <DailyGoalsWidget 
             calories={data.stats_sante?.calories || 0} 
-            caloriesMax={data.stats_sante?.calories_max || 2400}
-            completionPercentage={data.stats_sante?.completion_jour || 0} 
+            caloriesMax={data.stats_sante?.calories_max || 2400} 
+            completionPercentage={data.stats_sante?.completion_jour || 0}
+            pas={data.stats_sante?.pas || 8432}           // <-- NOUVEAU
+            hydratation={data.stats_sante?.hydratation || 1.2} // <-- NOUVEAU
           />
           
           <HealthStatsWidget 
             recuperation={data.stats_sante?.recuperation || 94} 
+            fcRepos={data.stats_sante?.fc_repos || 72}     // <-- NOUVEAU
+            sommeil={data.stats_sante?.sommeil || "7h 42m"} // <-- NOUVEAU
           />
 
         </div>
@@ -213,7 +244,7 @@ const AthleteDashboard = () => {
         onComplete={() => window.location.reload()} 
       />
 
-      {/* --- NOUVELLE MODALE "REPOS MÉRITÉ" --- */}
+      {/* MODALE "REPOS MÉRITÉ" */}
       {isNoSessionModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
           <div className="bg-[#1E1E1E] border border-[#2D2D2D] rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl scale-in-center animate-in zoom-in-95 duration-300">

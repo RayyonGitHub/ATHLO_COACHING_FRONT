@@ -1,6 +1,6 @@
 import React from 'react';
 
-const DailyGoalsWidget = ({ calories = 0, completionPercentage = 0, caloriesMax = 2400 }) => {
+const DailyGoalsWidget = ({ calories = 0, completionPercentage = 0, caloriesMax = 2400, pas = 8432, hydratation = 1.2 }) => {
   const dashoffsetOrange = 552 - (552 * completionPercentage) / 100;
 
   return (
@@ -29,7 +29,6 @@ const DailyGoalsWidget = ({ calories = 0, completionPercentage = 0, caloriesMax 
             <span className="w-3 h-3 rounded-full bg-[#FF6B00]"></span>
             <span className="text-sm font-medium text-gray-300">Calories</span>
           </div>
-          {/* C'EST ICI LE CHANGEMENT CLÉ : {caloriesMax} au lieu de 2400 */}
           <span className="text-sm font-bold text-white">{calories} / {caloriesMax}</span>
         </div>
         <div className="flex items-center justify-between">
@@ -37,14 +36,16 @@ const DailyGoalsWidget = ({ calories = 0, completionPercentage = 0, caloriesMax 
             <span className="w-3 h-3 rounded-full bg-[#FACC15]"></span>
             <span className="text-sm font-medium text-gray-300">Pas</span>
           </div>
-          <span className="text-sm font-bold text-white">8,432 / 10k</span>
+          {/* NOUVEAU ICI */}
+          <span className="text-sm font-bold text-white">{pas.toLocaleString()} / 10k</span>
         </div>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="w-3 h-3 rounded-full bg-[#3B82F6]"></span>
             <span className="text-sm font-medium text-gray-300">Hydratation</span>
           </div>
-          <span className="text-sm font-bold text-white">1.2L / 2.5L</span>
+          {/* NOUVEAU ICI */}
+          <span className="text-sm font-bold text-white">{hydratation}L / 2.5L</span>
         </div>
       </div>
     </div>
