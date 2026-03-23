@@ -18,6 +18,7 @@ import AthleteDashboard from './pages/AthleteDashboard';
 import AthleteCalendar from './pages/AthleteCalendar';
 import ProspectDashboard from './pages/ProspectDashboard';
 import AthleteStats from './pages/AthleteStats';
+import AthleteProgrammes from './pages/AthleteProgrammes'; // <-- NOUVEL IMPORT ICI
 
 import CoachStep2 from './pages/onboarding/CoachStep2';
 import CoachStep3 from './pages/onboarding/CoachStep3';
@@ -137,7 +138,7 @@ function App() {
         >
           <Route path="dashboard" element={<AthleteDashboard />} />
           <Route path="calendar" element={<AthleteCalendar />} />
-          <Route path="programmes" element={<div className="text-white text-center mt-20 italic">Vos programmes s'afficheront ici bientôt 🚧</div>} />
+          <Route path="programmes" element={<AthleteProgrammes />} /> {/* <-- ROUTE MISE À JOUR ICI */}
           <Route path="statistiques" element={<AthleteStats />} />
           <Route path="messages" element={<Messages />} />
         </Route>
