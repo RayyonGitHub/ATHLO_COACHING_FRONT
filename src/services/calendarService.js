@@ -3,17 +3,32 @@ import api from './api';
 const calendarService = {
     getCoachCalendar: async () => {
         try {
-            // 1. On demande au backend les infos du coach actuellement connecté
-            const meResponse = await api.get('/coach/me/');
-            const monCoachId = meResponse.data.id; // On récupère l'ID dynamique !
+            const me = await api.get('/coach/me/');
+            const coachId = me.data.id;
+            if (!coachId) throw new Error("ID du coach introuvable.");
 
-            if (!monCoachId) {
-                throw new Error("Impossible de récupérer l'ID du coach connecté.");
-            }
+            // Double appel : séances ET indisponibilités (comme dans ta branche métier)
+            const [seancesRes, indisposRes] = await Promise.all([
+                api.get(`/calendar/coach/${coachId}/`),
+                api.get('/indisponibilites/')
+            ]);
 
-            // 2. On utilise cet ID pour récupérer SON calendrier
-            const response = await api.get(`/calendar/coach/${monCoachId}/`); 
-            return response.data;
+            // Formatage des indispos pour qu'elles aient la même forme que les séances
+            const indisposFormatted = indisposRes.data.map(i => ({
+                id: `indispo-${i.id}`,
+                db_id: i.id,
+                title: i.titre,
+                start: i.heure_debut ? `${i.jour_prevu}T${i.heure_debut}` : i.jour_prevu,
+                end: i.heure_fin   ? `${i.jour_prevu}T${i.heure_fin}`   : null,
+                type: i.est_conge ? 'conge' : 'indisponibilite',
+                is_collective: false,
+                completed: false,
+                capacite_max: 1,
+                nombre_inscrits: 0,
+                participants: []
+            }));
+
+            return [...seancesRes.data, ...indisposFormatted];
         } catch (error) {
             console.error("Erreur calendrier", error);
             throw error;
@@ -22,17 +37,15 @@ const calendarService = {
 
     getExportUrl: async () => {
         try {
-            const meResponse = await api.get('/coach/me/');
-            const monCoachId = meResponse.data.id; 
-            if (!monCoachId) throw new Error("ID du coach introuvable.");
-
-            // Retourne l'URL complète que Google Calendar devra interroger
-            return `http://localhost:8000/api/calendar/export/${monCoachId}/`;
+            const me = await api.get('/coach/me/');
+            if (!me.data.id) throw new Error("ID du coach introuvable.");
+            return `http://localhost:8000/api/calendar/export/${me.data.id}/`;
         } catch (error) {
             console.error("Erreur récupération URL d'export", error);
             throw error;
         }
     },
+
     createSeance: async (seanceData) => {
         try {
             const response = await api.post('/seances/', seanceData);
@@ -43,7 +56,6 @@ const calendarService = {
         }
     },
 
-    // NOUVEAU : Créer une indisponibilité ou un congé
     createIndisponibilite: async (indispoData) => {
         try {
             const response = await api.post('/indisponibilites/', indispoData);

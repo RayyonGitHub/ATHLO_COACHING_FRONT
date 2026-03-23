@@ -86,7 +86,8 @@ const CoachAnalytics = () => {
                 </div>
 
                 {/* Zone de rendu du graphique */}
-                <div className="flex-1 w-full mt-2">
+                
+                <div className="flex-1 w-full mt-2 h-64 min-h-[200px]"> {/* <- AJOUTE h-64 et min-h-[200px] ICI */}
                     <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={data?.chart_data} margin={{ top: 5, right: 10, left: -25, bottom: 0 }}>
                             <defs>
