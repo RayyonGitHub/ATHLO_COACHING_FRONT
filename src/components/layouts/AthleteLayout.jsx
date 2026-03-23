@@ -11,7 +11,6 @@ const AthleteLayout = ({ user }) => {
     <div className="bg-[#121212] text-gray-100 min-h-screen font-sans">
       <div className="flex h-screen overflow-hidden">
 
-        {/* SIDEBAR */}
         <aside className="w-20 lg:w-64 flex flex-col justify-between bg-[#1E1E1E] border-r border-[#2D2D2D] transition-all duration-300 z-20">
           <div>
             <div className="h-20 flex items-center justify-center lg:justify-start lg:px-8 border-b border-[#2D2D2D]">
@@ -62,7 +61,6 @@ const AthleteLayout = ({ user }) => {
           </div>
         </aside>
 
-        {/* MAIN CONTENT AREA */}
         <main className="flex-1 overflow-y-auto relative bg-[#121212] flex flex-col">
           <header className="sticky top-0 z-10 bg-[#121212]/80 backdrop-blur-md px-8 py-6 flex justify-between items-center border-b border-[#2D2D2D]">
             <div>

@@ -1,7 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
-// Pages Publiques
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -9,12 +8,10 @@ import CoachAnalytics from './pages/CoachAnalytics';
 import ProgrammeList from './pages/ProgrammeList';
 import CoachCalendar from './pages/CoachCalendar';
 
-// Pages Protégées Coach/Athlète
 import ProtectedRoute from './components/ProtectedRoute';
 import MainLayout from './components/layouts/MainLayout';
 import AthleteLayout from './components/layouts/AthleteLayout';
 
-import Dashboard from './pages/Dashboard';
 import ClientList from './components/ClientList';
 import DemoDashboard from './pages/DemoDashboard';
 import AthleteDashboard from './pages/AthleteDashboard';
@@ -22,13 +19,11 @@ import AthleteCalendar from './pages/AthleteCalendar';
 import ProspectDashboard from './pages/ProspectDashboard';
 import AthleteStats from './pages/AthleteStats';
 
-// Onboarding Pages
 import CoachStep2 from './pages/onboarding/CoachStep2';
 import CoachStep3 from './pages/onboarding/CoachStep3';
 import AthleteStep2 from './pages/onboarding/AthleteStep2';
 import AthleteStep3 from './pages/onboarding/AthleteStep3';
 
-// Pages Admin
 import AdminRoute from './components/AdminRoute';
 import AdminLogin from './pages/admin/AdminLogin';
 import AdminLayout from './components/layouts/AdminLayout';
@@ -46,80 +41,100 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* === ROUTES PUBLIQUES === */}
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/* === ROUTES ONBOARDING === */}
         <Route path="/onboarding/coach/step2" element={<ProtectedRoute><CoachStep2 /></ProtectedRoute>} />
         <Route path="/onboarding/coach/step3" element={<ProtectedRoute><CoachStep3 /></ProtectedRoute>} />
         <Route path="/onboarding/athlete/step2" element={<ProtectedRoute><AthleteStep2 /></ProtectedRoute>} />
         <Route path="/onboarding/athlete/step3" element={<ProtectedRoute><AthleteStep3 /></ProtectedRoute>} />
 
-        {/* === ESPACE COACH === */}
-        <Route path="/dashboard" element={
-          <ProtectedRoute>
-            <MainLayout activePageLabel="Dashboard" headerSection="Coach" headerSubSection="Analyses & Performance">
-              <CoachAnalytics />
-            </MainLayout>
-          </ProtectedRoute>
-        } />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <MainLayout activePageLabel="Dashboard" headerSection="Coach" headerSubSection="Analyses & Performance">
+                <CoachAnalytics />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
 
-        <Route path="/clients" element={
-          <ProtectedRoute>
-            <MainLayout activePageLabel="Mes Clients" headerSection="Coach" headerSubSection="Annuaire Clients">
-              <ClientList />
-            </MainLayout>
-          </ProtectedRoute>
-        } />
+        <Route
+          path="/clients"
+          element={
+            <ProtectedRoute>
+              <MainLayout activePageLabel="Mes Clients" headerSection="Coach" headerSubSection="Annuaire Clients">
+                <ClientList />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
 
-        <Route path="/exercices" element={
-          <ProtectedRoute>
-            <MainLayout activePageLabel="Exercices" headerSection="Bibliothèque" headerSubSection="Base de données">
-              <ExerciceManager />
-            </MainLayout>
-          </ProtectedRoute>
-        } />
+        <Route
+          path="/exercices"
+          element={
+            <ProtectedRoute>
+              <MainLayout activePageLabel="Exercices" headerSection="Bibliothèque" headerSubSection="Base de données">
+                <ExerciceManager />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
 
-        <Route path="/programmes" element={
-          <ProtectedRoute>
-            <MainLayout activePageLabel="Programmes" headerSection="Coach" headerSubSection="Gestion des Programmes">
-              <ProgrammeList />
-            </MainLayout>
-          </ProtectedRoute>
-        } />
+        <Route
+          path="/programmes"
+          element={
+            <ProtectedRoute>
+              <MainLayout activePageLabel="Programmes" headerSection="Coach" headerSubSection="Gestion des Programmes">
+                <ProgrammeList />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
 
-        <Route path="/calendar" element={
-          <ProtectedRoute>
-            <MainLayout activePageLabel="Calendrier" headerSection="Coach" headerSubSection="Agenda & Planification">
-              <CoachCalendar />
-            </MainLayout>
-          </ProtectedRoute>
-        } />
+        <Route
+          path="/calendar"
+          element={
+            <ProtectedRoute>
+              <MainLayout activePageLabel="Calendrier" headerSection="Coach" headerSubSection="Agenda & Planification">
+                <CoachCalendar />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
 
-        <Route path="/messages" element={
-          <ProtectedRoute>
-            <MainLayout activePageLabel="Messagerie" headerSection="Coach" headerSubSection="Conversations">
-              <Messages />
-            </MainLayout>
-          </ProtectedRoute>
-        } />
+        <Route
+          path="/messages"
+          element={
+            <ProtectedRoute>
+              <MainLayout activePageLabel="Messagerie" headerSection="Coach" headerSubSection="Conversations">
+                <Messages />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
 
-        <Route path="/builder" element={
-          <ProtectedRoute>
-            <MainLayout activePageLabel="Créateur de Séance" headerSection="Programmes" headerSubSection="Builder">
-              <SessionBuilder />
-            </MainLayout>
-          </ProtectedRoute>
-        } />
+        <Route
+          path="/builder"
+          element={
+            <ProtectedRoute>
+              <MainLayout activePageLabel="Créateur de Séance" headerSection="Programmes" headerSubSection="Builder">
+                <SessionBuilder />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
 
-        {/* === ESPACE ATHLÈTE === */}
-        <Route path="/athlete" element={
-          <ProtectedRoute roleRequired="athlete">
-            <AthleteLayout user={currentUser} />
-          </ProtectedRoute>
-        }>
+        <Route
+          path="/athlete"
+          element={
+            <ProtectedRoute roleRequired="athlete">
+              <AthleteLayout user={currentUser} />
+            </ProtectedRoute>
+          }
+        >
           <Route path="dashboard" element={<AthleteDashboard />} />
           <Route path="calendar" element={<AthleteCalendar />} />
           <Route path="programmes" element={<div className="text-white text-center mt-20 italic">Vos programmes s'afficheront ici bientôt 🚧</div>} />
@@ -127,14 +142,15 @@ function App() {
           <Route path="messages" element={<Messages />} />
         </Route>
 
-        {/* === ESPACE PROSPECT === */}
-        <Route path="/prospect/dashboard" element={
-          <ProtectedRoute>
-            <ProspectDashboard />
-          </ProtectedRoute>
-        } />
+        <Route
+          path="/prospect/dashboard"
+          element={
+            <ProtectedRoute>
+              <ProspectDashboard />
+            </ProtectedRoute>
+          }
+        />
 
-        {/* === ESPACE ADMIN === */}
         <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/admin/dashboard" element={<AdminRoute><AdminLayout><AdminDashboard /></AdminLayout></AdminRoute>} />
         <Route path="/admin/coachs" element={<AdminRoute><AdminLayout><AdminCoachList /></AdminLayout></AdminRoute>} />
@@ -142,7 +158,6 @@ function App() {
 
         <Route path="/demo" element={<DemoDashboard />} />
 
-        {/* REDIRECTION PAR DÉFAUT */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </Router>
