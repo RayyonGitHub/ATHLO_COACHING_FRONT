@@ -1,18 +1,17 @@
 import React, { useState } from 'react';
-import { LayoutDashboard, Users, Dumbbell, Calendar, Settings, ChevronRight, LogOut, Menu, Activity} from 'lucide-react';
-import { useNavigate, Link } from 'react-router-dom';
+import { LayoutDashboard, Users, Dumbbell, Calendar, Settings, ChevronRight, LogOut, Menu, Activity, MessageCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { authService } from '../../services/authService';
-
 
 const logo = new URL('../../assets/images/logo.png', import.meta.url).href;
 
 interface SidebarProps {
-  activePage?: string; 
+  activePage?: string;
 }
 
 const Sidebar = ({ activePage = "Dashboard" }: SidebarProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   const menuItems = [
     { icon: <LayoutDashboard size={20} />, label: 'Dashboard', path: '/dashboard' },
@@ -20,16 +19,17 @@ const Sidebar = ({ activePage = "Dashboard" }: SidebarProps) => {
     { icon: <Dumbbell size={20} />, label: 'Programmes', path: '/programmes' },
     { icon: <Activity size={20} />, label: 'Exercices', path: '/exercices' },
     { icon: <Calendar size={20} />, label: 'Calendrier', path: '/calendar' },
+    { icon: <MessageCircle size={20} />, label: 'Messagerie', path: '/messages' },
     { icon: <Settings size={20} />, label: 'Paramètres', path: '/settings' },
   ];
 
   const handleLogout = () => {
-    authService.logout(); 
-    navigate('/'); 
+    authService.logout();
+    navigate('/');
   };
 
   return (
-    <aside 
+    <aside
       className={`bg-indigo-900 h-screen flex flex-col text-white shadow-2xl z-50 transition-all duration-300 ease-in-out relative ${
         isCollapsed ? 'w-20' : 'w-64'
       }`}
@@ -41,7 +41,7 @@ const Sidebar = ({ activePage = "Dashboard" }: SidebarProps) => {
           </div>
         )}
 
-        <button 
+        <button
           onClick={() => setIsCollapsed(!isCollapsed)}
           className="p-3.5 rounded-xl bg-indigo-800/50 hover:bg-indigo-700/50 text-indigo-300 hover:text-white transition-all shadow-sm group"
         >
@@ -52,14 +52,14 @@ const Sidebar = ({ activePage = "Dashboard" }: SidebarProps) => {
       <nav className="flex-1 px-3 space-y-2">
         {menuItems.map((item, index) => {
           const isActive = activePage === item.label;
-          
+
           return (
             <button
               key={index}
-              onClick={() => item.path && navigate(item.path)} 
+              onClick={() => item.path && navigate(item.path)}
               className={`w-full flex items-center p-3.5 rounded-xl transition-all duration-200 group relative ${
-                isActive 
-                  ? 'bg-orange-500 text-white shadow-lg shadow-orange-600/20' 
+                isActive
+                  ? 'bg-orange-500 text-white shadow-lg shadow-orange-600/20'
                   : 'hover:bg-indigo-800/50 text-indigo-300 hover:text-white'
               } ${isCollapsed ? 'justify-center' : 'justify-between'}`}
             >
@@ -76,7 +76,7 @@ const Sidebar = ({ activePage = "Dashboard" }: SidebarProps) => {
       </nav>
 
       <div className="p-4 border-t border-indigo-800/50">
-        <button 
+        <button
           onClick={handleLogout}
           className={`w-full flex items-center p-3 hover:bg-red-500/10 rounded-xl transition-colors text-red-400 group ${
             isCollapsed ? 'justify-center' : 'space-x-3'

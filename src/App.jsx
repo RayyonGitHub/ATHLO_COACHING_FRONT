@@ -18,7 +18,7 @@ import Dashboard from './pages/Dashboard';
 import ClientList from './components/ClientList';
 import DemoDashboard from './pages/DemoDashboard';
 import AthleteDashboard from './pages/AthleteDashboard';
-import AthleteCalendar from './pages/AthleteCalendar'; // <-- NOUVEL IMPORT
+import AthleteCalendar from './pages/AthleteCalendar';
 import ProspectDashboard from './pages/ProspectDashboard';
 import AthleteStats from './pages/AthleteStats';
 
@@ -38,6 +38,7 @@ import AdminGymList from './pages/admin/AdminGymList';
 
 import SessionBuilder from './components/SessionBuilder';
 import ExerciceManager from './pages/ExerciceManager';
+import Messages from './pages/Messages';
 
 function App() {
   const currentUser = JSON.parse(localStorage.getItem('user')) || {};
@@ -97,6 +98,22 @@ function App() {
           </ProtectedRoute>
         } />
 
+        <Route path="/messages" element={
+          <ProtectedRoute>
+            <MainLayout activePageLabel="Messagerie" headerSection="Coach" headerSubSection="Conversations">
+              <Messages />
+            </MainLayout>
+          </ProtectedRoute>
+        } />
+
+        <Route path="/builder" element={
+          <ProtectedRoute>
+            <MainLayout activePageLabel="Créateur de Séance" headerSection="Programmes" headerSubSection="Builder">
+              <SessionBuilder />
+            </MainLayout>
+          </ProtectedRoute>
+        } />
+
         {/* === ESPACE ATHLÈTE === */}
         <Route path="/athlete" element={
           <ProtectedRoute roleRequired="athlete">
@@ -104,9 +121,10 @@ function App() {
           </ProtectedRoute>
         }>
           <Route path="dashboard" element={<AthleteDashboard />} />
-          <Route path="calendar" element={<AthleteCalendar />} /> {/* <-- BRANCHÉ ICI */}
+          <Route path="calendar" element={<AthleteCalendar />} />
           <Route path="programmes" element={<div className="text-white text-center mt-20 italic">Vos programmes s'afficheront ici bientôt 🚧</div>} />
           <Route path="statistiques" element={<AthleteStats />} />
+          <Route path="messages" element={<Messages />} />
         </Route>
 
         {/* === ESPACE PROSPECT === */}
@@ -122,17 +140,10 @@ function App() {
         <Route path="/admin/coachs" element={<AdminRoute><AdminLayout><AdminCoachList /></AdminLayout></AdminRoute>} />
         <Route path="/admin/salles" element={<AdminRoute><AdminLayout><AdminGymList /></AdminLayout></AdminRoute>} />
 
-        <Route path="/builder" element={
-          <ProtectedRoute>
-            <MainLayout activePageLabel="Créateur de Séance" headerSection="Programmes" headerSubSection="Builder">
-              <SessionBuilder />
-            </MainLayout>
-          </ProtectedRoute>
-        } />
+        <Route path="/demo" element={<DemoDashboard />} />
 
         {/* REDIRECTION PAR DÉFAUT */}
         <Route path="*" element={<Navigate to="/login" replace />} />
-        <Route path="/demo" element={<DemoDashboard />} />
       </Routes>
     </Router>
   );

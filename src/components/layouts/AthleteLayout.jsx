@@ -3,15 +3,14 @@ import { Link, Outlet, useLocation } from 'react-router-dom';
 
 const AthleteLayout = ({ user }) => {
   const location = useLocation();
-  const userName = user?.prenom || "Athlète";
+  const userName = user?.prenom || user?.name || "Athlète";
 
-  // Fonction pour vérifier si le lien est actif (plus précis)
   const isActive = (path) => location.pathname.includes(path);
 
   return (
     <div className="bg-[#121212] text-gray-100 min-h-screen font-sans">
       <div className="flex h-screen overflow-hidden">
-        
+
         {/* SIDEBAR */}
         <aside className="w-20 lg:w-64 flex flex-col justify-between bg-[#1E1E1E] border-r border-[#2D2D2D] transition-all duration-300 z-20">
           <div>
@@ -23,49 +22,48 @@ const AthleteLayout = ({ user }) => {
                 <span className="hidden lg:block text-2xl font-bold tracking-widest text-white">ATHLO</span>
               </div>
             </div>
-            
+
             <nav className="mt-8 flex flex-col gap-2 px-3">
-              {/* TABLEAU DE BORD */}
               <Link to="/athlete/dashboard" className={`flex items-center gap-4 px-3 py-3 lg:px-5 lg:py-3 rounded-xl transition-colors group ${isActive('dashboard') ? 'bg-[#FF6B00]/10 text-[#FF6B00] font-medium' : 'text-gray-400 hover:bg-[#2D2D2D]'}`}>
                 <span className="material-icons-round text-2xl">dashboard</span>
                 <span className="hidden lg:block">Tableau de bord</span>
               </Link>
-              
-              {/* CALENDRIER */}
+
               <Link to="/athlete/calendar" className={`flex items-center gap-4 px-3 py-3 lg:px-5 lg:py-3 rounded-xl transition-colors group ${isActive('calendar') ? 'bg-[#FF6B00]/10 text-[#FF6B00] font-medium' : 'text-gray-400 hover:bg-[#2D2D2D]'}`}>
                 <span className="material-icons-round text-2xl group-hover:text-[#FF6B00]">calendar_today</span>
                 <span className="hidden lg:block font-medium">Calendrier</span>
               </Link>
-              
-              {/* PROGRAMMES (Corrigé: programs -> programmes) */}
+
               <Link to="/athlete/programmes" className={`flex items-center gap-4 px-3 py-3 lg:px-5 lg:py-3 rounded-xl transition-colors group ${isActive('programmes') ? 'bg-[#FF6B00]/10 text-[#FF6B00] font-medium' : 'text-gray-400 hover:bg-[#2D2D2D]'}`}>
                 <span className="material-icons-round text-2xl group-hover:text-[#FF6B00]">fitness_center</span>
                 <span className="hidden lg:block font-medium">Programmes</span>
               </Link>
-              
-              {/* STATISTIQUES (Corrigé: stats -> statistiques) */}
+
               <Link to="/athlete/statistiques" className={`flex items-center gap-4 px-3 py-3 lg:px-5 lg:py-3 rounded-xl transition-colors group ${isActive('statistiques') ? 'bg-[#FF6B00]/10 text-[#FF6B00] font-medium' : 'text-gray-400 hover:bg-[#2D2D2D]'}`}>
                 <span className="material-icons-round text-2xl group-hover:text-[#FF6B00]">bar_chart</span>
                 <span className="hidden lg:block font-medium">Statistiques</span>
               </Link>
+
+              <Link to="/athlete/messages" className={`flex items-center gap-4 px-3 py-3 lg:px-5 lg:py-3 rounded-xl transition-colors group ${isActive('messages') ? 'bg-[#FF6B00]/10 text-[#FF6B00] font-medium' : 'text-gray-400 hover:bg-[#2D2D2D]'}`}>
+                <span className="material-icons-round text-2xl group-hover:text-[#FF6B00]">chat</span>
+                <span className="hidden lg:block font-medium">Messagerie</span>
+              </Link>
             </nav>
           </div>
-          
+
           <div className="p-4 border-t border-[#2D2D2D]">
-             {/* Bouton déconnexion optionnel */}
-             <button 
+            <button
               onClick={() => { localStorage.clear(); window.location.href='/login'; }}
               className="flex items-center gap-4 px-3 py-3 lg:px-5 lg:py-3 rounded-xl text-red-500 hover:bg-red-500/10 transition-colors w-full"
-             >
-                <span className="material-icons-round text-2xl">logout</span>
-                <span className="hidden lg:block font-medium">Déconnexion</span>
-             </button>
+            >
+              <span className="material-icons-round text-2xl">logout</span>
+              <span className="hidden lg:block font-medium">Déconnexion</span>
+            </button>
           </div>
         </aside>
 
         {/* MAIN CONTENT AREA */}
         <main className="flex-1 overflow-y-auto relative bg-[#121212] flex flex-col">
-          
           <header className="sticky top-0 z-10 bg-[#121212]/80 backdrop-blur-md px-8 py-6 flex justify-between items-center border-b border-[#2D2D2D]">
             <div>
               <h1 className="text-2xl lg:text-3xl font-bold text-white">
@@ -80,10 +78,9 @@ const AthleteLayout = ({ user }) => {
             </div>
           </header>
 
-          <div className="flex-1 p-6 lg:p-8">
-            <Outlet /> 
+          <div className="flex-1 p-6 lg:p-8 min-h-0">
+            <Outlet />
           </div>
-
         </main>
       </div>
     </div>
