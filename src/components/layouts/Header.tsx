@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bell } from 'lucide-react';
+import NotificationBell from '../NotificationBell'; // Vérifie bien ce chemin selon ton arborescence
 
 interface HeaderProps {
   section?: string;
@@ -12,9 +12,9 @@ interface HeaderProps {
 const Header = ({ 
   section = "Coach", 
   subSection = "Aperçu",
-  coachName = "Bouthayna C.", // Valeur par défaut
-  coachPlan = "Premium",      // Valeur par défaut
-  coachInitials = "BC"        // Valeur par défaut
+  coachName = "Bouthayna C.", 
+  coachPlan = "Premium",    
+  coachInitials = "BC"        
 }: HeaderProps) => {
   return (
     <header className="h-20 bg-white border-b border-gray-100 px-8 flex items-center justify-between sticky top-0 z-40">
@@ -25,10 +25,12 @@ const Header = ({
       </div>
 
       <div className="flex items-center space-x-5">
-        <button className="relative p-2.5 bg-gray-50 text-gray-400 rounded-xl hover:text-orange-500 hover:bg-orange-50 transition-all">
-          <Bell size={20} />
-          <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-orange-500 rounded-full border-2 border-white animate-pulse"></span>
-        </button>
+        
+        {/* LA CLOCHE EST ICI : Elle gère toute seule son clic et son badge rouge ! */}
+        <div className="relative p-1 bg-gray-50 rounded-xl hover:bg-orange-50 transition-all flex items-center justify-center">
+            <NotificationBell />
+        </div>
+
         <div className="h-10 w-px bg-gray-100 mx-2"></div>
         
         <div className="flex items-center space-x-3 bg-gray-50 pr-4 pl-1.5 py-1.5 rounded-2xl border border-gray-100 hover:border-orange-200 transition-all cursor-pointer group">
