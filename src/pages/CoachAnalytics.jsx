@@ -55,7 +55,7 @@ const CoachAnalytics = () => {
 
     return (
         <main className="flex-1 flex flex-col p-3 gap-3 overflow-hidden">
-            <div className="grid grid-cols-3 gap-3 flex-none">
+            <div className="grid grid-cols-2 gap-3 flex-none">
                 <KPICard
                     title="Athlètes"
                     value={data?.total_athletes}
@@ -68,12 +68,7 @@ const CoachAnalytics = () => {
                     icon={<CheckCircle className="w-4 h-4 text-green-600" />}
                     borderColor="border-green-500"
                 />
-                <KPICard
-                    title="Volume"
-                    value={`${data?.total_volume} kg`} 
-                    icon={<Flame className="w-4 h-4 text-orange-600" />}
-                    borderColor="border-orange-500"
-/>
+       
             </div>
 
 
