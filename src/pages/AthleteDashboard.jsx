@@ -14,7 +14,7 @@ const AthleteDashboard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isNoSessionModalOpen, setIsNoSessionModalOpen] = useState(false);
   
-  // NOUVEAU: État pour la synchronisation de la montre
+  // État pour la synchronisation de la montre
   const [isSyncing, setIsSyncing] = useState(false);
 
   useEffect(() => {
@@ -52,12 +52,12 @@ const AthleteDashboard = () => {
     fetchDashboardStats();
   }, []);
 
-  // NOUVEAU: Fonction de synchronisation factice
+  // Fonction de synchronisation factice (Mock API)
   const handleSyncWatch = () => {
     setIsSyncing(true);
     setTimeout(() => {
       setIsSyncing(false);
-      // Optionnel : un petit effet rafraîchissant visuel
+      // Petit rafraîchissement pour simuler l'arrivée des nouvelles données
       window.location.reload();
     }, 1500);
   };
@@ -97,7 +97,7 @@ const AthleteDashboard = () => {
         </div>
         
         <div className="hidden md:flex items-center gap-3">
-          {/* NOUVEAU BOUTON SYNCHRO */}
+          {/* BOUTON SYNCHRO MONTRE */}
           <button 
             onClick={handleSyncWatch}
             disabled={isSyncing}
@@ -186,31 +186,25 @@ const AthleteDashboard = () => {
               )}
             </div>
 
-            {/* Boutons d'actions rapides */}
+            {/* Boutons d'actions rapides (NETTOYÉS) */}
             <div className="grid grid-cols-2 gap-4">
-              <button className="bg-[#1E1E1E] p-4 rounded-2xl border border-[#2D2D2D] flex flex-col items-center justify-center gap-3 hover:bg-[#2D2D2D] transition-all group text-center">
-                <div className="w-12 h-12 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+              {/* Bouton Réserver (Désactivé pour l'instant) */}
+              <button className="bg-[#1E1E1E] p-4 rounded-2xl border border-[#2D2D2D] flex flex-col items-center justify-center gap-3 opacity-60 cursor-default group text-center">
+                <div className="w-12 h-12 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center transition-transform">
                   <span className="material-icons-round text-2xl">calendar_month</span>
                 </div>
                 <span className="font-medium text-sm text-gray-200">Réserver séance</span>
               </button>
-              <button className="bg-[#1E1E1E] p-4 rounded-2xl border border-[#2D2D2D] flex flex-col items-center justify-center gap-3 hover:bg-[#2D2D2D] transition-all group text-center">
+
+              {/* Bouton Contacter Coach (Redirige vers Messagerie) */}
+              <button 
+                onClick={() => navigate('/athlete/messages')}
+                className="bg-[#1E1E1E] p-4 rounded-2xl border border-[#2D2D2D] flex flex-col items-center justify-center gap-3 hover:bg-[#2D2D2D] transition-all group text-center"
+              >
                 <div className="w-12 h-12 rounded-full bg-purple-500/10 text-purple-500 flex items-center justify-center group-hover:scale-110 transition-transform">
                   <span className="material-icons-round text-2xl">chat_bubble</span>
                 </div>
                 <span className="font-medium text-sm text-gray-200">Contacter coach</span>
-              </button>
-              <button className="bg-[#1E1E1E] p-4 rounded-2xl border border-[#2D2D2D] flex flex-col items-center justify-center gap-3 hover:bg-[#2D2D2D] transition-all group text-center">
-                <div className="w-12 h-12 rounded-full bg-green-500/10 text-green-500 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <span className="material-icons-round text-2xl">restaurant</span>
-                </div>
-                <span className="font-medium text-sm text-gray-200">Plan Nutrition</span>
-              </button>
-              <button className="bg-[#1E1E1E] p-4 rounded-2xl border border-[#2D2D2D] flex flex-col items-center justify-center gap-3 hover:bg-[#2D2D2D] transition-all group text-center">
-                <div className="w-12 h-12 rounded-full bg-[#FF6B00]/10 text-[#FF6B00] flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <span className="material-icons-round text-2xl">monitor_heart</span>
-                </div>
-                <span className="font-medium text-sm text-gray-200">Moniteurs</span>
               </button>
             </div>
           </div>
@@ -223,14 +217,14 @@ const AthleteDashboard = () => {
             calories={data.stats_sante?.calories || 0} 
             caloriesMax={data.stats_sante?.calories_max || 2400} 
             completionPercentage={data.stats_sante?.completion_jour || 0}
-            pas={data.stats_sante?.pas || 8432}           // <-- NOUVEAU
-            hydratation={data.stats_sante?.hydratation || 1.2} // <-- NOUVEAU
+            pas={data.stats_sante?.pas || 8432}
+            hydratation={data.stats_sante?.hydratation || 1.2}
           />
           
           <HealthStatsWidget 
             recuperation={data.stats_sante?.recuperation || 94} 
-            fcRepos={data.stats_sante?.fc_repos || 72}     // <-- NOUVEAU
-            sommeil={data.stats_sante?.sommeil || "7h 42m"} // <-- NOUVEAU
+            fcRepos={data.stats_sante?.fc_repos || 72}
+            sommeil={data.stats_sante?.sommeil || "7h 42m"}
           />
 
         </div>
@@ -253,7 +247,7 @@ const AthleteDashboard = () => {
             </div>
             <h3 className="text-2xl font-black text-white italic tracking-tighter mb-3 uppercase">Repos Mérité</h3>
             <p className="text-gray-400 text-sm mb-8 leading-relaxed">
-              Toutes vos séances prévues sont terminées ! Revenez demain ou contactez votre coach pour ajouter une nouvelle activité à votre planning. 🛌
+              Toutes vos séances prévues sont terminées ! Revenez demain ou contactez votre coach pour ajouter une nouvelle activité. 🛌
             </p>
             <button
               onClick={() => setIsNoSessionModalOpen(false)}

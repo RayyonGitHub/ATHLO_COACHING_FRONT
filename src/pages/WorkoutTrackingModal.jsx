@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { X, Play, Pause, CheckCircle2, AlertCircle, FastForward, Square, Loader2 } from 'lucide-react';
+import { X, Play, Pause, CheckCircle2, AlertCircle, FastForward, Square, Loader2, Trophy } from 'lucide-react';
 import axios from 'axios';
 
 const WorkoutTrackingModal = ({ isOpen, onClose, seanceId, onComplete }) => {
   // États de la séance
   const [exercices, setExercices] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false); // Pour le bouton de sauvegarde
   const [currentExoIndex, setCurrentExoIndex] = useState(0);
   const [currentSetIndex, setCurrentSetIndex] = useState(0);
+  
+  // NOUVEAU : État pour stocker les poids saisis par exercice
+  const [weights, setWeights] = useState({});
+  // NOUVEAU : État pour afficher l'écran de victoire à la fin
+  const [isSessionFinished, setIsSessionFinished] = useState(false);
   
   // États du chronomètre
   const [timeLeft, setTimeLeft] = useState(0);
@@ -25,7 +31,6 @@ const WorkoutTrackingModal = ({ isOpen, onClose, seanceId, onComplete }) => {
             headers: { Authorization: `Bearer ${token}` }
           });
           
-          // On adapte les données reçues de Django pour notre affichage
           const exosData = response.data.exercices_details || response.data.exercices || [];
           
           const formattedExos = exosData.map((exo) => ({
@@ -47,13 +52,15 @@ const WorkoutTrackingModal = ({ isOpen, onClose, seanceId, onComplete }) => {
 
       fetchSeanceData();
     } else {
-      // Reset des états quand on ferme la modale
+      // Reset total quand on ferme la modale
       setCurrentExoIndex(0);
       setCurrentSetIndex(0);
       setTimeLeft(0);
       setIsTimerRunning(false);
       setTimerMode('WORK');
       setExercices([]);
+      setWeights({});
+      setIsSessionFinished(false);
     }
   }, [isOpen, seanceId]);
 
@@ -65,7 +72,6 @@ const WorkoutTrackingModal = ({ isOpen, onClose, seanceId, onComplete }) => {
     } else if (timeLeft === 0 && isTimerRunning && timerMode === 'REST') {
       setIsTimerRunning(false);
       setTimerMode('WORK');
-      alert("Repos terminé ! C'est reparti 💪"); 
     }
     return () => clearInterval(interval);
   }, [isTimerRunning, timeLeft, timerMode]);
@@ -78,7 +84,6 @@ const WorkoutTrackingModal = ({ isOpen, onClose, seanceId, onComplete }) => {
 
   // --- 3. GESTION DE LA SÉANCE ---
   const currentExo = exercices[currentExoIndex];
-  const progressPercent = exercices.length > 0 ? ((currentExoIndex) / exercices.length) * 100 : 0;
 
   const handleSkipRest = () => {
     setIsTimerRunning(false);
@@ -112,35 +117,42 @@ const WorkoutTrackingModal = ({ isOpen, onClose, seanceId, onComplete }) => {
 
   const handleFinishSession = async () => {
     try {
+      setIsSaving(true);
       const token = localStorage.getItem('authToken') || localStorage.getItem('access_token');
       
-      // 1. On enregistre d'abord toutes les performances de la séance
+      // 1. On enregistre les perfs AVEC LE VRAI POIDS
       await Promise.all(exercices.map(async (exo) => {
         await axios.post('http://127.0.0.1:8000/api/athlete/performance/record/', {
           seance_exercice: exo.id,
           series_realisees: exo.series,
           reps_realisees: parseInt(exo.reps) || 10,
-          poids_utilise: 0 
+          poids_utilise: parseFloat(weights[exo.id]) || 0 // <-- ICI, LE POIDS EST ENVOYÉ !
         }, {
           headers: { Authorization: `Bearer ${token}` }
         });
       }));
 
-      // 2. NOUVEAU: On clôture officiellement la séance auprès de Django !
+      // 2. On clôture la séance
       await axios.patch(`http://127.0.0.1:8000/api/seances/${seanceId}/`, {
         est_completee: true
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      alert("Séance terminée et enregistrée avec succès ! 🎉");
-      onComplete(); // Ferme et rafraîchit le dashboard
-      onClose();
+      // 3. On affiche le bel écran de victoire au lieu du alert() !
+      setIsSaving(false);
+      setIsSessionFinished(true);
+      
     } catch (error) {
+      setIsSaving(false);
       console.error("Erreur lors de l'enregistrement de la séance :", error.response?.data || error);
       alert("Erreur lors de la sauvegarde. Regarde la console pour plus de détails.");
-      onClose();
     }
+  };
+
+  const handleCloseVictory = () => {
+    onComplete(); // Ferme et rafraîchit le dashboard
+    onClose();
   };
 
   if (!isOpen) return null;
@@ -156,9 +168,11 @@ const WorkoutTrackingModal = ({ isOpen, onClose, seanceId, onComplete }) => {
             <div className="text-xs text-gray-400 font-bold tracking-widest uppercase mb-1">Séance Focus</div>
             <div className="flex items-center gap-3">
               <h2 className="text-2xl font-black text-white">Entraînement en cours</h2>
-              <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FF6B00]/10 border border-[#FF6B00]/30 text-[#FF6B00] text-xs font-bold animate-pulse">
-                <div className="w-2 h-2 rounded-full bg-[#FF6B00]"></div> LIVE
-              </span>
+              {!isSessionFinished && (
+                <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FF6B00]/10 border border-[#FF6B00]/30 text-[#FF6B00] text-xs font-bold animate-pulse">
+                  <div className="w-2 h-2 rounded-full bg-[#FF6B00]"></div> LIVE
+                </span>
+              )}
             </div>
           </div>
           <button onClick={onClose} className="p-2 bg-[#2D2D2D] text-gray-400 hover:text-white rounded-full hover:bg-[#3D3D3D] transition-colors">
@@ -166,11 +180,28 @@ const WorkoutTrackingModal = ({ isOpen, onClose, seanceId, onComplete }) => {
           </button>
         </div>
 
-        {/* AFFICHAGE DU CHARGEMENT */}
+        {/* GESTION DES AFFICHAGES (Chargement / Victoire / Exercice) */}
         {loading ? (
           <div className="flex-1 flex flex-col items-center justify-center">
             <Loader2 className="w-12 h-12 text-[#FF6B00] animate-spin mb-4" />
             <p className="text-gray-400 font-medium">Préparation de votre espace de travail...</p>
+          </div>
+        ) : isSessionFinished ? (
+          /* NOUVEAU : ÉCRAN DE VICTOIRE */
+          <div className="flex-1 flex flex-col items-center justify-center p-8 text-center animate-in zoom-in duration-500 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#FF6B00]/10 via-[#121212] to-[#121212]">
+            <div className="w-32 h-32 bg-green-500/10 text-green-500 rounded-full flex items-center justify-center mb-8 border-4 border-green-500/20 shadow-[0_0_50px_rgba(34,197,94,0.3)]">
+              <Trophy size={64} />
+            </div>
+            <h2 className="text-5xl font-black text-white mb-4 tracking-tight uppercase italic">Excellent Travail !</h2>
+            <p className="text-gray-400 text-lg mb-10 max-w-lg">
+              Vos performances et vos poids ont été enregistrés avec succès. Vos statistiques se mettent à jour.
+            </p>
+            <button 
+              onClick={handleCloseVictory} 
+              className="bg-[#FF6B00] hover:bg-[#FF8533] text-white font-black text-lg py-4 px-10 rounded-2xl shadow-lg shadow-[#FF6B00]/20 transition-all active:scale-95 flex items-center gap-3"
+            >
+              <CheckCircle2 size={24} /> Retour au Dashboard
+            </button>
           </div>
         ) : exercices.length === 0 ? (
           <div className="flex-1 flex flex-col items-center justify-center">
@@ -215,9 +246,28 @@ const WorkoutTrackingModal = ({ isOpen, onClose, seanceId, onComplete }) => {
                         );
                       })}
                     </div>
+
+                    {/* NOUVEAU : CHAMP DE SAISIE DU POIDS */}
+                    <div className="mt-8 bg-[#2D2D2D]/50 border border-[#3D3D3D] rounded-xl p-4 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-[#FF6B00]/10 rounded-lg text-[#FF6B00]">
+                          <span className="material-icons-round text-lg">fitness_center</span>
+                        </div>
+                        <span className="text-sm font-bold text-gray-300">Poids soulevé (kg)</span>
+                      </div>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.5"
+                        placeholder="ex: 50"
+                        value={weights[currentExo.id] || ''}
+                        onChange={(e) => setWeights({...weights, [currentExo.id]: e.target.value})}
+                        className="bg-[#1E1E1E] border border-[#3D3D3D] text-white text-center font-bold text-lg rounded-lg w-28 py-2 focus:outline-none focus:border-[#FF6B00] transition-colors"
+                      />
+                    </div>
                   </div>
 
-                  <div className="py-10 flex flex-col items-center justify-center">
+                  <div className="py-6 flex flex-col items-center justify-center">
                     <div className={`font-mono text-7xl md:text-8xl font-black tracking-tighter tabular-nums ${timerMode === 'REST' ? 'text-blue-400' : 'text-white'}`}>
                       {formatTime(timerMode === 'REST' ? timeLeft : 0)}
                     </div>
@@ -226,7 +276,6 @@ const WorkoutTrackingModal = ({ isOpen, onClose, seanceId, onComplete }) => {
                     </div>
                   </div>
 
-                  {/* NOUVEAUX BOUTONS INTELLIGENTS ICI */}
                   <div className="flex flex-col sm:flex-row gap-3 mt-4">
                     {timerMode === 'REST' ? (
                       <>
@@ -267,8 +316,13 @@ const WorkoutTrackingModal = ({ isOpen, onClose, seanceId, onComplete }) => {
                 </div>
                 
                 <div className="mt-4 flex justify-end">
-                  <button onClick={handleFinishSession} className="text-red-500 hover:text-red-400 font-bold flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-red-500/10 transition-colors">
-                    <Square size={16} fill="currentColor" /> Clôturer la séance
+                  <button 
+                    onClick={handleFinishSession} 
+                    disabled={isSaving}
+                    className="text-red-500 hover:text-red-400 font-bold flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-red-500/10 transition-colors disabled:opacity-50"
+                  >
+                    {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Square size={16} fill="currentColor" />}
+                    {isSaving ? "Clôture..." : "Clôturer la séance"}
                   </button>
                 </div>
               </div>
