@@ -26,7 +26,6 @@ const WorkoutTrackingModal = ({ isOpen, onClose, seanceId, onComplete }) => {
           });
           
           // On adapte les données reçues de Django pour notre affichage
-          // Attention: 'exercices_details' dépend du nom dans ton SeanceSerializer
           const exosData = response.data.exercices_details || response.data.exercices || [];
           
           const formattedExos = exosData.map((exo) => ({
@@ -81,6 +80,12 @@ const WorkoutTrackingModal = ({ isOpen, onClose, seanceId, onComplete }) => {
   const currentExo = exercices[currentExoIndex];
   const progressPercent = exercices.length > 0 ? ((currentExoIndex) / exercices.length) * 100 : 0;
 
+  const handleSkipRest = () => {
+    setIsTimerRunning(false);
+    setTimerMode('WORK');
+    setTimeLeft(0);
+  };
+
   const handleCompleteSet = () => {
     if (currentSetIndex < currentExo.series - 1) {
       setCurrentSetIndex(prev => prev + 1);
@@ -105,23 +110,28 @@ const WorkoutTrackingModal = ({ isOpen, onClose, seanceId, onComplete }) => {
     }
   };
 
- const handleFinishSession = async () => {
+  const handleFinishSession = async () => {
     try {
       const token = localStorage.getItem('authToken') || localStorage.getItem('access_token');
       
-      // On boucle sur tous les exercices pour envoyer les performances
-      // On utilise Promise.all pour envoyer toutes les requêtes en parallèle
+      // 1. On enregistre d'abord toutes les performances de la séance
       await Promise.all(exercices.map(async (exo) => {
-        // Tu remarqueras qu'on passe seance_exercice: exo.id
         await axios.post('http://127.0.0.1:8000/api/athlete/performance/record/', {
           seance_exercice: exo.id,
-          series_realisees: exo.series, // Pour l'instant on suppose que l'athlète a tout fait
+          series_realisees: exo.series,
           reps_realisees: parseInt(exo.reps) || 10,
           poids_utilise: 0 
         }, {
           headers: { Authorization: `Bearer ${token}` }
         });
       }));
+
+      // 2. NOUVEAU: On clôture officiellement la séance auprès de Django !
+      await axios.patch(`http://127.0.0.1:8000/api/seances/${seanceId}/`, {
+        est_completee: true
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
 
       alert("Séance terminée et enregistrée avec succès ! 🎉");
       onComplete(); // Ferme et rafraîchit le dashboard
@@ -216,31 +226,43 @@ const WorkoutTrackingModal = ({ isOpen, onClose, seanceId, onComplete }) => {
                     </div>
                   </div>
 
+                  {/* NOUVEAUX BOUTONS INTELLIGENTS ICI */}
                   <div className="flex flex-col sm:flex-row gap-3 mt-4">
                     {timerMode === 'REST' ? (
-                      <button 
-                        onClick={() => setIsTimerRunning(!isTimerRunning)} 
-                        className="flex-1 bg-[#2D2D2D] hover:bg-[#3D3D3D] text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors"
-                      >
-                        {isTimerRunning ? <Pause size={20} /> : <Play size={20} />}
-                        {isTimerRunning ? 'Mettre en pause' : 'Reprendre le timer'}
-                      </button>
+                      <>
+                        <button 
+                          onClick={() => setIsTimerRunning(!isTimerRunning)} 
+                          className="flex-1 bg-[#2D2D2D] hover:bg-[#3D3D3D] text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors"
+                        >
+                          {isTimerRunning ? <Pause size={20} /> : <Play size={20} />}
+                          {isTimerRunning ? 'Mettre en pause' : 'Reprendre le timer'}
+                        </button>
+                        
+                        <button 
+                          onClick={handleSkipRest}
+                          className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors"
+                        >
+                          Passer le repos <FastForward size={20} />
+                        </button>
+                      </>
                     ) : (
-                      <button 
-                        onClick={handleCompleteSet}
-                        className="flex-[2] bg-[#FF6B00] hover:bg-[#FF8533] text-white py-4 rounded-xl font-black text-lg flex items-center justify-center gap-2 shadow-lg shadow-[#FF6B00]/20 transition-all active:scale-95"
-                      >
-                        <CheckCircle2 size={24} />
-                        Valider la Série {currentSetIndex + 1}
-                      </button>
+                      <>
+                        <button 
+                          onClick={handleCompleteSet}
+                          className="flex-[2] bg-[#FF6B00] hover:bg-[#FF8533] text-white py-4 rounded-xl font-black text-lg flex items-center justify-center gap-2 shadow-lg shadow-[#FF6B00]/20 transition-all active:scale-95"
+                        >
+                          <CheckCircle2 size={24} />
+                          Valider la Série {currentSetIndex + 1}
+                        </button>
+                        
+                        <button 
+                          onClick={handleNextExercise}
+                          className="flex-1 bg-[#2D2D2D] hover:bg-[#3D3D3D] text-gray-400 hover:text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors"
+                        >
+                          Passer l'exercice <FastForward size={20} />
+                        </button>
+                      </>
                     )}
-                    
-                    <button 
-                      onClick={handleNextExercise}
-                      className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors"
-                    >
-                      Suivant <FastForward size={20} />
-                    </button>
                   </div>
                 </div>
                 

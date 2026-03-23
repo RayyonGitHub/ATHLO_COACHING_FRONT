@@ -24,8 +24,8 @@ const AthleteLayout = ({ user }) => {
 
             <nav className="mt-8 flex flex-col gap-2 px-3">
               <Link to="/athlete/dashboard" className={`flex items-center gap-4 px-3 py-3 lg:px-5 lg:py-3 rounded-xl transition-colors group ${isActive('dashboard') ? 'bg-[#FF6B00]/10 text-[#FF6B00] font-medium' : 'text-gray-400 hover:bg-[#2D2D2D]'}`}>
-                <span className="material-icons-round text-2xl">dashboard</span>
-                <span className="hidden lg:block">Tableau de bord</span>
+                <span className="material-icons-round text-2xl group-hover:text-[#FF6B00]">dashboard</span>
+                <span className="hidden lg:block font-medium">Tableau de bord</span>
               </Link>
 
               <Link to="/athlete/calendar" className={`flex items-center gap-4 px-3 py-3 lg:px-5 lg:py-3 rounded-xl transition-colors group ${isActive('calendar') ? 'bg-[#FF6B00]/10 text-[#FF6B00] font-medium' : 'text-gray-400 hover:bg-[#2D2D2D]'}`}>
@@ -47,15 +47,21 @@ const AthleteLayout = ({ user }) => {
                 <span className="material-icons-round text-2xl group-hover:text-[#FF6B00]">chat</span>
                 <span className="hidden lg:block font-medium">Messagerie</span>
               </Link>
+
+              {/* --- NOUVEAU BOUTON PARAMÈTRES --- */}
+              <Link to="/athlete/parametres" className={`flex items-center gap-4 px-3 py-3 lg:px-5 lg:py-3 rounded-xl transition-colors group ${isActive('parametres') ? 'bg-[#FF6B00]/10 text-[#FF6B00] font-medium' : 'text-gray-400 hover:bg-[#2D2D2D]'}`}>
+                <span className="material-icons-round text-2xl group-hover:text-[#FF6B00]">settings</span>
+                <span className="hidden lg:block font-medium">Paramètres</span>
+              </Link>
             </nav>
           </div>
 
           <div className="p-4 border-t border-[#2D2D2D]">
             <button
               onClick={() => { localStorage.clear(); window.location.href='/login'; }}
-              className="flex items-center gap-4 px-3 py-3 lg:px-5 lg:py-3 rounded-xl text-red-500 hover:bg-red-500/10 transition-colors w-full"
+              className="flex items-center gap-4 px-3 py-3 lg:px-5 lg:py-3 rounded-xl text-red-500 hover:bg-red-500/10 transition-colors w-full group"
             >
-              <span className="material-icons-round text-2xl">logout</span>
+              <span className="material-icons-round text-2xl group-hover:text-red-500">logout</span>
               <span className="hidden lg:block font-medium">Déconnexion</span>
             </button>
           </div>

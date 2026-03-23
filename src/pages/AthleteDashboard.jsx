@@ -7,11 +7,15 @@ import HealthStatsWidget from '../components/athlete/HealthStatsWidget';
 import { useNavigate } from 'react-router-dom';
 
 const AthleteDashboard = () => {
-  const navigate = useNavigate(); // <-- Ajoute cette ligne ici
+  const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // Modale pour la séance en cours
   const [isModalOpen, setIsModalOpen] = useState(false);
+  // NOUVEAU : Modale pour le repos
+  const [isNoSessionModalOpen, setIsNoSessionModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchDashboardStats = async () => {
@@ -81,7 +85,16 @@ const AthleteDashboard = () => {
             <span className="inline-block w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
           </p>
         </div>
-        <button className="hidden md:flex items-center gap-2 bg-[#1E1E1E] text-white px-5 py-2.5 rounded-xl border border-[#2D2D2D] hover:border-[#FF6B00] transition-all shadow-sm">
+        <button 
+          onClick={() => {
+            if (data?.prochaine_seance?.id) {
+              setIsModalOpen(true);
+            } else {
+              setIsNoSessionModalOpen(true); // <-- Ouvre la belle modale au lieu de l'alert()
+            }
+          }}
+          className="hidden md:flex items-center gap-2 bg-[#1E1E1E] text-white px-5 py-2.5 rounded-xl border border-[#2D2D2D] hover:border-[#FF6B00] transition-all shadow-sm"
+        >
           <span className="material-icons-round text-[#FF6B00] text-xl">add</span>
           <span className="font-medium text-sm">Enregistrer une activité</span>
         </button>
@@ -101,8 +114,6 @@ const AthleteDashboard = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             
-            {/* Mon Programme Actuel DYNAMIQUE */}
-            {/* Mon Programme Actuel DYNAMIQUE */}
               <div 
                 onClick={() => navigate('/athlete/programmes')}
                 className="bg-[#1E1E1E] p-6 rounded-2xl border border-[#2D2D2D] flex flex-col justify-between hover:border-[#3D3D3D] transition-colors cursor-pointer group"
@@ -183,6 +194,7 @@ const AthleteDashboard = () => {
           
           <DailyGoalsWidget 
             calories={data.stats_sante?.calories || 0} 
+            caloriesMax={data.stats_sante?.calories_max || 2400}
             completionPercentage={data.stats_sante?.completion_jour || 0} 
           />
           
@@ -193,12 +205,34 @@ const AthleteDashboard = () => {
         </div>
       </div>
       
+      {/* MODALE DE SÉANCE EN COURS */}
       <WorkoutTrackingModal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
         seanceId={data?.prochaine_seance?.id}
         onComplete={() => window.location.reload()} 
       />
+
+      {/* --- NOUVELLE MODALE "REPOS MÉRITÉ" --- */}
+      {isNoSessionModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-[#1E1E1E] border border-[#2D2D2D] rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl scale-in-center animate-in zoom-in-95 duration-300">
+            <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-green-500/20">
+              <span className="material-icons-round text-5xl text-green-500">hotel_class</span>
+            </div>
+            <h3 className="text-2xl font-black text-white italic tracking-tighter mb-3 uppercase">Repos Mérité</h3>
+            <p className="text-gray-400 text-sm mb-8 leading-relaxed">
+              Toutes vos séances prévues sont terminées ! Revenez demain ou contactez votre coach pour ajouter une nouvelle activité à votre planning. 🛌
+            </p>
+            <button
+              onClick={() => setIsNoSessionModalOpen(false)}
+              className="w-full bg-[#2D2D2D] hover:bg-[#FF6B00] text-white font-bold py-3 px-6 rounded-xl transition-all duration-300"
+            >
+              J'ai compris
+            </button>
+          </div>
+        </div>
+      )}
 
     </div>
   );

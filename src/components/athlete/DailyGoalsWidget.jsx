@@ -1,6 +1,6 @@
 import React from 'react';
 
-const DailyGoalsWidget = ({ calories = 0, completionPercentage = 0 }) => {
+const DailyGoalsWidget = ({ calories = 0, completionPercentage = 0, caloriesMax = 2400 }) => {
   const dashoffsetOrange = 552 - (552 * completionPercentage) / 100;
 
   return (
@@ -29,7 +29,8 @@ const DailyGoalsWidget = ({ calories = 0, completionPercentage = 0 }) => {
             <span className="w-3 h-3 rounded-full bg-[#FF6B00]"></span>
             <span className="text-sm font-medium text-gray-300">Calories</span>
           </div>
-          <span className="text-sm font-bold text-white">{calories} / 2400</span>
+          {/* C'EST ICI LE CHANGEMENT CLÉ : {caloriesMax} au lieu de 2400 */}
+          <span className="text-sm font-bold text-white">{calories} / {caloriesMax}</span>
         </div>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
