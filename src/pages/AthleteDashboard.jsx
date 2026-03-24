@@ -13,15 +13,11 @@ const AthleteDashboard = () => {
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isNoSessionModalOpen, setIsNoSessionModalOpen] = useState(false);
-
-  // État pour la synchronisation de la montre
   const [isSyncing, setIsSyncing] = useState(false);
-
 
   useEffect(() => {
     const loadDashboard = async () => {
       try {
-        // On utilise la clé exacte : authToken
         const token = localStorage.getItem('authToken');
 
         if (!token) {
@@ -35,10 +31,10 @@ const AthleteDashboard = () => {
         });
 
         setData(response.data);
-        setLoading(false);
       } catch (err) {
         console.error("Erreur Dashboard:", err);
         setError("Impossible de charger les statistiques.");
+      } finally {
         setLoading(false);
       }
     };
@@ -46,14 +42,30 @@ const AthleteDashboard = () => {
     loadDashboard();
   }, []);
 
-  // Fonction de synchronisation factice (Mock API)
   const handleSyncWatch = () => {
     setIsSyncing(true);
     setTimeout(() => {
       setIsSyncing(false);
-      // Petit rafraîchissement pour simuler l'arrivée des nouvelles données
       window.location.reload();
     }, 1500);
+  };
+
+  // --- LOGIQUE INTELLIGENTE DE TEMPS ---
+  const checkSessionStatus = (seance) => {
+    if (!seance || !seance.jour_prevu) return { isToday: false, canStart: false };
+
+    const maintenant = new Date();
+    const dateSeance = new Date(seance.jour_prevu);
+    const isToday = dateSeance.toDateString() === maintenant.toDateString();
+
+    const [heures, minutes] = (seance.heure_debut || "00:00").split(':');
+    const dateHeureSeance = new Date(dateSeance);
+    dateHeureSeance.setHours(parseInt(heures), parseInt(minutes), 0);
+
+    // On autorise 15 minutes d'avance pour cliquer sur "Commencer"
+    const canStart = isToday && (maintenant.getTime() >= (dateHeureSeance.getTime() - 15 * 60000));
+
+    return { isToday, canStart };
   };
 
   if (loading) {
@@ -75,6 +87,9 @@ const AthleteDashboard = () => {
     );
   }
 
+  // On extrait les infos de statut pour la carte héros
+  const { isToday, canStart } = checkSessionStatus(data?.prochaine_seance);
+
   return (
     <div className="flex flex-col gap-8 animate-in fade-in duration-500">
 
@@ -82,7 +97,7 @@ const AthleteDashboard = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl lg:text-3xl font-bold text-white">
-            Bonjour, <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF6B00] to-[#FF9E00]">{data.prenom} !</span>
+            Bonjour, <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF6B00] to-[#FF9E00]">{data?.prenom} !</span>
           </h2>
           <p className="text-gray-400 mt-1 flex items-center gap-2">
             Prêt pour votre séance aujourd'hui ?
@@ -91,11 +106,10 @@ const AthleteDashboard = () => {
         </div>
 
         <div className="hidden md:flex items-center gap-3">
-          {/* BOUTON SYNCHRO MONTRE */}
           <button
             onClick={handleSyncWatch}
             disabled={isSyncing}
-            className="flex items-center gap-2 bg-[#1E1E1E] text-gray-300 px-4 py-2.5 rounded-xl border border-[#2D2D2D] hover:border-blue-500 hover:text-blue-400 transition-all shadow-sm disabled:opacity-50"
+            className="flex items-center gap-2 bg-[#1E1E1E] text-gray-300 px-4 py-2.5 rounded-xl border border-[#2D2D2D] hover:border-blue-500 hover:text-blue-400 transition-all shadow-sm disabled:opacity-50 cursor-pointer"
           >
             <span className={`material-icons-round text-blue-500 ${isSyncing ? 'animate-spin' : ''}`}>
               {isSyncing ? 'sync' : 'watch'}
@@ -113,7 +127,7 @@ const AthleteDashboard = () => {
                 setIsNoSessionModalOpen(true);
               }
             }}
-            className="flex items-center gap-2 bg-[#1E1E1E] text-white px-5 py-2.5 rounded-xl border border-[#2D2D2D] hover:border-[#FF6B00] transition-all shadow-sm"
+            className="flex items-center gap-2 bg-[#1E1E1E] text-white px-5 py-2.5 rounded-xl border border-[#2D2D2D] hover:border-[#FF6B00] transition-all shadow-sm cursor-pointer"
           >
             <span className="material-icons-round text-[#FF6B00] text-xl">add</span>
             <span className="font-medium text-sm">Enregistrer une activité</span>
@@ -127,10 +141,12 @@ const AthleteDashboard = () => {
         {/* COLONNE GAUCHE (8) */}
         <div className="lg:col-span-8 flex flex-col gap-8">
 
+          {/* ON PASSE LES PROPS A LA CARTE */}
           <SessionHeroCard
-            seance={data.prochaine_seance}
-            onStart={() => setIsModalOpen(true)}
+            seance={data?.prochaine_seance}
+            onStart={canStart ? () => setIsModalOpen(true) : null} 
             onDetails={() => navigate('/athlete/calendar')}
+            isToday={isToday}
           />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -146,7 +162,7 @@ const AthleteDashboard = () => {
                 </button>
               </div>
 
-              {data.programme_actuel ? (
+              {data?.programme_actuel ? (
                 <>
                   <div className="flex items-center gap-4 mb-6">
                     <div className="w-20 h-20 rounded-lg bg-[#2D2D2D] flex items-center justify-center border border-[#3D3D3D]">
@@ -180,9 +196,7 @@ const AthleteDashboard = () => {
               )}
             </div>
 
-            {/* Boutons d'actions rapides (NETTOYÉS) */}
             <div className="grid grid-cols-2 gap-4">
-              {/* Bouton Réserver */}
               <button
                 onClick={() => navigate('/athlete/calendar')}
                 className="bg-[#1E1E1E] p-4 rounded-2xl border border-[#2D2D2D] flex flex-col items-center justify-center gap-3 transition-all hover:scale-105 hover:border-blue-500 hover:shadow-lg hover:shadow-blue-500/10 cursor-pointer group text-center"
@@ -193,10 +207,9 @@ const AthleteDashboard = () => {
                 <span className="font-medium text-sm text-gray-200 group-hover:text-blue-400 transition-colors">Réserver séance</span>
               </button>
 
-              {/* Bouton Contacter Coach (Redirige vers Messagerie) */}
               <button
                 onClick={() => navigate('/athlete/messages')}
-                className="bg-[#1E1E1E] p-4 rounded-2xl border border-[#2D2D2D] flex flex-col items-center justify-center gap-3 hover:bg-[#2D2D2D] transition-all group text-center"
+                className="bg-[#1E1E1E] p-4 rounded-2xl border border-[#2D2D2D] flex flex-col items-center justify-center gap-3 hover:bg-[#2D2D2D] transition-all cursor-pointer group text-center"
               >
                 <div className="w-12 h-12 rounded-full bg-purple-500/10 text-purple-500 flex items-center justify-center group-hover:scale-110 transition-transform">
                   <span className="material-icons-round text-2xl">chat_bubble</span>
@@ -209,25 +222,21 @@ const AthleteDashboard = () => {
 
         {/* COLONNE DROITE (4) */}
         <div className="lg:col-span-4 flex flex-col gap-6">
-
           <DailyGoalsWidget
-            calories={data.stats_sante?.calories || 0}
-            caloriesMax={data.stats_sante?.calories_max || 2400}
-            completionPercentage={data.stats_sante?.completion_jour || 0}
-            pas={data.stats_sante?.pas || 8432}
-            hydratation={data.stats_sante?.hydratation || 1.2}
+            calories={data?.stats_sante?.calories || 0}
+            caloriesMax={data?.stats_sante?.calories_max || 2400}
+            completionPercentage={data?.stats_sante?.completion_jour || 0}
+            pas={data?.stats_sante?.pas || 8432}
+            hydratation={data?.stats_sante?.hydratation || 1.2}
           />
-
           <HealthStatsWidget
-            recuperation={data.stats_sante?.recuperation || 94}
-            fcRepos={data.stats_sante?.fc_repos || 72}
-            sommeil={data.stats_sante?.sommeil || "7h 42m"}
+            recuperation={data?.stats_sante?.recuperation || 94}
+            fcRepos={data?.stats_sante?.fc_repos || 72}
+            sommeil={data?.stats_sante?.sommeil || "7h 42m"}
           />
-
         </div>
       </div>
 
-      {/* MODALE DE SÉANCE EN COURS */}
       <WorkoutTrackingModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -235,7 +244,6 @@ const AthleteDashboard = () => {
         onComplete={() => window.location.reload()}
       />
 
-      {/* MODALE "REPOS MÉRITÉ" */}
       {isNoSessionModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
           <div className="bg-[#1E1E1E] border border-[#2D2D2D] rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl scale-in-center animate-in zoom-in-95 duration-300">
@@ -248,7 +256,7 @@ const AthleteDashboard = () => {
             </p>
             <button
               onClick={() => setIsNoSessionModalOpen(false)}
-              className="w-full bg-[#2D2D2D] hover:bg-[#FF6B00] text-white font-bold py-3 px-6 rounded-xl transition-all duration-300"
+              className="w-full bg-[#2D2D2D] hover:bg-[#FF6B00] text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 cursor-pointer"
             >
               J'ai compris
             </button>
