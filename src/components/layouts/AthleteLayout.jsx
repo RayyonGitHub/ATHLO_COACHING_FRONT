@@ -1,5 +1,7 @@
 import React from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
+// 1. IMPORTATION DE TA VRAIE CLOCHE
+import AthleteNotificationBell from "../AthleteNotificationBell";
 
 const AthleteLayout = ({ user }) => {
   const location = useLocation();
@@ -11,6 +13,7 @@ const AthleteLayout = ({ user }) => {
     <div className="bg-[#121212] text-gray-100 min-h-screen font-sans">
       <div className="flex h-screen overflow-hidden">
 
+        {/* --- SIDEBAR (ASIDE) --- */}
         <aside className="w-20 lg:w-64 flex flex-col justify-between bg-[#1E1E1E] border-r border-[#2D2D2D] transition-all duration-300 z-20">
           <div>
             <div className="h-20 flex items-center justify-center lg:justify-start lg:px-8 border-b border-[#2D2D2D]">
@@ -48,7 +51,6 @@ const AthleteLayout = ({ user }) => {
                 <span className="hidden lg:block font-medium">Messagerie</span>
               </Link>
 
-              {/* --- NOUVEAU BOUTON PARAMÈTRES --- */}
               <Link to="/athlete/parametres" className={`flex items-center gap-4 px-3 py-3 lg:px-5 lg:py-3 rounded-xl transition-colors group ${isActive('parametres') ? 'bg-[#FF6B00]/10 text-[#FF6B00] font-medium' : 'text-gray-400 hover:bg-[#2D2D2D]'}`}>
                 <span className="material-icons-round text-2xl group-hover:text-[#FF6B00]">settings</span>
                 <span className="hidden lg:block font-medium">Paramètres</span>
@@ -67,18 +69,18 @@ const AthleteLayout = ({ user }) => {
           </div>
         </aside>
 
+        {/* --- MAIN CONTENT --- */}
         <main className="flex-1 overflow-y-auto relative bg-[#121212] flex flex-col">
-          <header className="sticky top-0 z-10 bg-[#121212]/80 backdrop-blur-md px-8 py-6 flex justify-between items-center border-b border-[#2D2D2D]">
+          <header className="sticky top-0 z-50 bg-[#121212]/80 backdrop-blur-md px-8 py-6 flex justify-between items-center border-b border-[#2D2D2D]">
             <div>
-              <h1 className="text-2xl lg:text-3xl font-bold text-white">
+              <h1 className="text-2xl lg:text-3xl font-bold text-white italic tracking-tighter uppercase">
                 Espace <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF6B00] to-[#FF9E00]">Athlète</span>
               </h1>
             </div>
+
+            {/* 2. REMPLACEMENT DU BOUTON STATIQUE PAR TON COMPOSANT DYNAMIQUE */}
             <div className="flex items-center gap-4">
-              <button className="relative p-2 rounded-full text-gray-400 hover:bg-[#2D2D2D] transition-colors">
-                <span className="material-icons-round">notifications_none</span>
-                <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-[#FF6B00] rounded-full border-2 border-[#121212]"></span>
-              </button>
+              <AthleteNotificationBell />
             </div>
           </header>
 

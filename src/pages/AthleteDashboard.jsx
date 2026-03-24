@@ -18,39 +18,32 @@ const AthleteDashboard = () => {
   const [isSyncing, setIsSyncing] = useState(false);
 
   useEffect(() => {
-    const fetchDashboardStats = async () => {
-      try {
-        const token = localStorage.getItem('authToken') || localStorage.getItem('access_token');
-        if (!token) {
-          setError("Session expirée ou inexistante. Veuillez vous reconnecter.");
-          setLoading(false);
-          return;
-        }
-
-        const user = JSON.parse(localStorage.getItem('user'));
-        if (!user || user.role !== 'athlete') {
-            window.location.href = '/login';
-            return;
-        }
-
-        const response = await axios.get('http://127.0.0.1:8000/api/athlete/dashboard-stats/', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        
-        setData(response.data);
-        setLoading(false);
-      } catch (err) {
-        if (err.response?.status === 401) {
-          setError("Votre session a expiré. Merci de vous reconnecter.");
-        } else {
-          setError("Erreur lors du chargement des données athlète.");
-        }
-        setLoading(false);
+  const loadDashboard = async () => {
+    try {
+      // On utilise la clé exacte : authToken
+      const token = localStorage.getItem('authToken');
+      
+      if (!token) {
+        setError("Session expirée. Redirection...");
+        setTimeout(() => window.location.href = '/login', 2000);
+        return;
       }
-    };
 
-    fetchDashboardStats();
-  }, []);
+      const response = await axios.get('http://127.0.0.1:8000/api/athlete/dashboard-stats/', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      setData(response.data);
+      setLoading(false);
+    } catch (err) {
+      console.error("Erreur Dashboard:", err);
+      setError("Impossible de charger les statistiques.");
+      setLoading(false);
+    }
+  };
+
+  loadDashboard();
+}, []);
 
   // Fonction de synchronisation factice (Mock API)
   const handleSyncWatch = () => {
