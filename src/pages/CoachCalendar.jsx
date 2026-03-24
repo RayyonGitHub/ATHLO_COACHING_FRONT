@@ -6,9 +6,9 @@ import interactionPlugin from '@fullcalendar/interaction';
 import frLocale from '@fullcalendar/core/locales/fr';
 import calendarService from '../services/calendarService';
 import { authService } from '../services/authService';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { CalendarDays, AlertTriangle, PlusCircle, X, Edit3, Trash2, Link, Users, Info, UserX, CheckCircle, XCircle, Check } from 'lucide-react';
-
+import { CalendarDays, AlertTriangle, PlusCircle, X, Edit3, Trash2, Link, Users, Info, UserX, CheckCircle, XCircle, Check, Dumbbell } from 'lucide-react';
 // --- UTILITAIRES ---
 const toDateInput = (d) => {
     if (!d) return '';
@@ -49,6 +49,7 @@ const buildPayload = (type, data) => {
 
 const CoachCalendar = () => {
     const calendarRef = useRef(null);
+    const navigate = useNavigate();
     const [seances, setSeances] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('details');
@@ -225,56 +226,56 @@ const CoachCalendar = () => {
     };
 
     const confirmRemoveParticipant = async () => {
-    if (!participantToRemove) return;
+        if (!participantToRemove) return;
 
-    try {
-        const token = authService.getToken();
-        if (!token) return;
+        try {
+            const token = authService.getToken();
+            if (!token) return;
 
-        // 1. Suppression du participant
-        await axios.delete(`http://localhost:8000/api/inscriptions/${participantToRemove.id}/`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
+            // 1. Suppression du participant
+            await axios.delete(`http://localhost:8000/api/inscriptions/${participantToRemove.id}/`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
 
-        // 2. Promotion du premier en liste d'attente → CONFIRME en BDD
-        let promotedId = null;
-        if (participantToRemove.statut === 'CONFIRME') {
-            const firstWaiting = selectedEvent?.participants?.find(
-                p => p.statut === 'ATTENTE' && p.id !== participantToRemove.id
-            );
-            if (firstWaiting) {
-                await axios.patch(
-                    `http://localhost:8000/api/inscriptions/${firstWaiting.id}/status/`,
-                    { statut: 'CONFIRME' },
-                    { headers: { 'Authorization': `Bearer ${token}` } }
+            // 2. Promotion du premier en liste d'attente → CONFIRME en BDD
+            let promotedId = null;
+            if (participantToRemove.statut === 'CONFIRME') {
+                const firstWaiting = selectedEvent?.participants?.find(
+                    p => p.statut === 'ATTENTE' && p.id !== participantToRemove.id
                 );
-                promotedId = firstWaiting.id;
+                if (firstWaiting) {
+                    await axios.patch(
+                        `http://localhost:8000/api/inscriptions/${firstWaiting.id}/status/`,
+                        { statut: 'CONFIRME' },
+                        { headers: { 'Authorization': `Bearer ${token}` } }
+                    );
+                    promotedId = firstWaiting.id;
+                }
             }
+
+            // 3. Mise à jour immédiate de selectedEvent pour la modale
+            setSelectedEvent(prev => {
+                let newParticipants = prev.participants.filter(p => p.id !== participantToRemove.id);
+                // Si quelqu'un a été promu, on met à jour son statut aussi
+                if (promotedId) {
+                    newParticipants = newParticipants.map(p =>
+                        p.id === promotedId ? { ...p, statut: 'CONFIRME' } : p
+                    );
+                }
+                return { ...prev, participants: newParticipants };
+            });
+
+            // 4. Fermeture de la modale
+            setIsRemoveParticipantModalOpen(false);
+            setParticipantToRemove(null);
+
+            // 5. Rechargement en arrière-plan pour sync
+            fetchSeances();
+
+        } catch (error) {
+            alert("Erreur lors du retrait du participant.");
         }
-
-        // 3. Mise à jour immédiate de selectedEvent pour la modale
-        setSelectedEvent(prev => {
-            let newParticipants = prev.participants.filter(p => p.id !== participantToRemove.id);
-            // Si quelqu'un a été promu, on met à jour son statut aussi
-            if (promotedId) {
-                newParticipants = newParticipants.map(p =>
-                    p.id === promotedId ? { ...p, statut: 'CONFIRME' } : p
-                );
-            }
-            return { ...prev, participants: newParticipants };
-        });
-
-        // 4. Fermeture de la modale
-        setIsRemoveParticipantModalOpen(false);
-        setParticipantToRemove(null);
-
-        // 5. Rechargement en arrière-plan pour sync
-        fetchSeances();
-
-    } catch (error) {
-        alert("Erreur lors du retrait du participant.");
-    }
-};
+    };
 
     const handleAttendance = async (inscriptionId, newStatus) => {
         try {
@@ -300,36 +301,36 @@ const CoachCalendar = () => {
 
     // --- RENDU DES ÉVÉNEMENTS (Version Ultra-Robuste) ---
     const events = seances.map(s => {
-    let bgColor = '#4f46e5'; // Bleu/indigo par défaut (séance individuelle)
-    if (s.completed || s.est_completee) {
-        bgColor = '#64748b'; // Gris (Terminé)
-    } else if (s.type === 'conge' || s.est_conge) {
-        bgColor = '#10b981'; // Vert (Congé)
-    } else if (s.type === 'indisponibilite') {
-        bgColor = '#9ca3af'; // Gris clair (Indispo)
-    } else if (s.is_collective || s.est_collective) {
-        bgColor = '#f97316'; // Orange (Collectif)
-    }
+        let bgColor = '#4f46e5'; // Bleu/indigo par défaut (séance individuelle)
+        if (s.completed || s.est_completee) {
+            bgColor = '#64748b'; // Gris (Terminé)
+        } else if (s.type === 'conge' || s.est_conge) {
+            bgColor = '#10b981'; // Vert (Congé)
+        } else if (s.type === 'indisponibilite') {
+            bgColor = '#9ca3af'; // Gris clair (Indispo)
+        } else if (s.is_collective || s.est_collective) {
+            bgColor = '#f97316'; // Orange (Collectif)
+        }
 
-    // 2. Gestion du titre
-    let displayTitle = s.title || s.titre || "Sans titre";
-    if (s.completed || s.est_completee) displayTitle = "[Terminé] " + displayTitle;
-    if (s.is_collective || s.est_collective) {
-        const trueCount = s.participants
-            ? s.participants.filter(p => ['CONFIRME', 'PRESENT', 'ABSENT'].includes(p.statut)).length
-            : (s.nombre_inscrits || 0);
-        displayTitle += ` (${trueCount}/${s.capacite_max || 1})`;
-    }
+        // 2. Gestion du titre
+        let displayTitle = s.title || s.titre || "Sans titre";
+        if (s.completed || s.est_completee) displayTitle = "[Terminé] " + displayTitle;
+        if (s.is_collective || s.est_collective) {
+            const trueCount = s.participants
+                ? s.participants.filter(p => ['CONFIRME', 'PRESENT', 'ABSENT'].includes(p.statut)).length
+                : (s.nombre_inscrits || 0);
+            displayTitle += ` (${trueCount}/${s.capacite_max || 1})`;
+        }
 
-    // 3. RECONSTRUCTION DES DATES (Le point critique)
-    let startStr = s.start;
-    if (!startStr && s.jour_prevu) {
-        startStr = s.heure_debut ? `${s.jour_prevu}T${s.heure_debut}` : s.jour_prevu;
-    }
-    let endStr = s.end;
-    if (!endStr && s.jour_prevu) {
-        endStr = s.heure_fin ? `${s.jour_prevu}T${s.heure_fin}` : startStr;
-    }
+        // 3. RECONSTRUCTION DES DATES (Le point critique)
+        let startStr = s.start;
+        if (!startStr && s.jour_prevu) {
+            startStr = s.heure_debut ? `${s.jour_prevu}T${s.heure_debut}` : s.jour_prevu;
+        }
+        let endStr = s.end;
+        if (!endStr && s.jour_prevu) {
+            endStr = s.heure_fin ? `${s.jour_prevu}T${s.heure_fin}` : startStr;
+        }
         return {
             id: s.id,
             title: displayTitle,
@@ -381,8 +382,8 @@ const CoachCalendar = () => {
                     plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
                     initialView="timeGridWeek"
                     locales={[frLocale]} locale="fr"
-                    timeZone="local" 
-                    firstDay={1} 
+                    timeZone="local"
+                    firstDay={1}
                     headerToolbar={{ left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay' }}
                     events={events}
                     selectable={true} selectMirror={true} select={handleDateSelect}
@@ -400,7 +401,7 @@ const CoachCalendar = () => {
                         <select value={addFormData.type} onChange={(e) => setAddFormData({ ...addFormData, type: e.target.value })} className="w-full border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none transition-all cursor-pointer">
                             <option value="individuelle">Séance Individuelle</option><option value="collective">Séance Collective</option><option value="indisponibilite">Indisponibilité</option><option value="conge">Congé</option>
                         </select>
-                        <input type="text" placeholder="Titre de la séance..." value={addFormData.titre} onChange={(e) => setAddFormData({ ...addFormData, titre: e.target.value })} className="w-full border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none transition-all" />
+                        <input type="text" placeholder="Titre de la séance..." value={addFormData.titre} onChange={(e) => setAddFormData({ ...addFormData, titre: e.target.value })} className="w-full border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none transition-all" required />
                         <div className="grid grid-cols-2 gap-4">
                             <div className="col-span-2"><input type="date" value={addFormData.jour} onChange={(e) => setAddFormData({ ...addFormData, jour: e.target.value })} className="w-full border-slate-200 rounded-xl p-3 cursor-pointer" required /></div>
                             <input type="time" value={addFormData.heure_debut} onChange={(e) => setAddFormData({ ...addFormData, heure_debut: e.target.value })} className="w-full border-slate-200 rounded-xl p-3 cursor-pointer" required />
@@ -473,6 +474,23 @@ const CoachCalendar = () => {
 
                                 <div className="pt-6 flex justify-between items-center border-t border-slate-100">
                                     <button type="button" onClick={triggerDelete} className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-red-500 hover:bg-red-50 rounded-xl transition-all cursor-pointer"><Trash2 size={18} /> Supprimer</button>
+
+                                    {/* LE NOUVEAU BOUTON BUILDER EST ICI */}
+                                    {!(editFormData.type === 'indisponibilite' || editFormData.type === 'conge') && (
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setIsEditModalOpen(false);
+                                                // On redirige vers le Builder en passant l'ID de la séance dans l'URL
+                                                navigate(`/builder?seance_id=${selectedEvent.db_id}`);
+                                            }}
+                                            className="flex items-center gap-2 px-4 py-2.5 text-sm font-bold text-orange-600 bg-orange-50 hover:bg-orange-100 rounded-xl transition-all cursor-pointer"
+                                        >
+                                            <Dumbbell size={18} />
+                                            Ajouter des exercices
+                                        </button>
+                                    )}
+
                                     <div className="flex gap-2">
                                         <button type="button" onClick={() => setIsEditModalOpen(false)} className="px-5 py-2.5 font-bold text-slate-500 hover:bg-slate-100 rounded-xl transition-all cursor-pointer">Annuler</button>
                                         <button type="submit" className="px-5 py-2.5 font-black text-white bg-indigo-600 rounded-xl shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all cursor-pointer">Mettre à jour</button>
@@ -537,7 +555,7 @@ const CoachCalendar = () => {
                                                 </div>
                                             );
                                         })
-                                    ) : <p className="text-sm text-slate-400 italic px-1 py-4">Aucun client n'est encore inscrit à cette séance.</p>}
+                                    ) : <p className="text-sm text-slate-400 px-1 py-4">Aucun client n'est encore inscrit à cette séance.</p>}
                                 </div>
 
                                 {!editFormData.est_completee && selectedEvent?.participants?.filter(p => p.statut === 'ATTENTE').length > 0 && (
