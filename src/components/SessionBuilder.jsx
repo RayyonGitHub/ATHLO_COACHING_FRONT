@@ -99,10 +99,11 @@ const SessionBuilder = () => {
       return;
     }
     
-    setIsSaving(true);
+   setIsSaving(true);
     try {
       const payload = {
-        programme_id: parseInt(selectedProgrammeId),
+        // CHANGEMENT ICI : 'programme' au lieu de 'programme_id'
+        programme: parseInt(selectedProgrammeId), 
         titre: sessionTitle,
         exercices: sessionExos.map((item, index) => ({
           exercice_id: item.exercice.id,
@@ -116,14 +117,6 @@ const SessionBuilder = () => {
 
       await api.post('/seances/', payload);
       alert("Séance enregistrée avec succès !");
-      
-      // Reset du formulaire
-      setSessionTitle('');
-      setSessionExos([]);
-      // On garde selectedProgrammeId au cas où on veut ajouter une 2ème séance au même programme
-    } catch (error) {
-      console.error("Erreur de sauvegarde:", error);
-      alert("Erreur lors de la sauvegarde de la séance.");
     } finally {
       setIsSaving(false);
     }
