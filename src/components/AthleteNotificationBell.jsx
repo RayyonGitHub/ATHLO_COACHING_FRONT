@@ -145,7 +145,7 @@ const marquerCommeLu = async (id) => {
                 </p>
               </div>
             ) : (
-              notifications.map((notif) => (
+              [...notifications].sort((a, b) => new Date(b.date_creation) - new Date(a.date_creation)).map((notif) => (
                 <div 
                   key={notif.id} 
                   onClick={() => !notif.est_lu && marquerCommeLu(notif.id)}

@@ -39,11 +39,13 @@ const NotificationBell = () => {
   };
 
   const marquerToutCommeLu = async () => {
+    setNotifications(prevNotifs => prevNotifs.map(notif => ({ ...notif, est_lu: true })));
+
     try {
       await coachService.markNotificationsAsRead();
-      setNotifications(notifications.map(notif => ({ ...notif, est_lu: true })));
     } catch (error) {
       console.error("Erreur de mise à jour:", error);
+      fetchNotifications();
     }
   };
 
@@ -105,7 +107,7 @@ const NotificationBell = () => {
             {unreadCount > 0 && (
               <button 
                 onClick={marquerToutCommeLu}
-                className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors"
+                className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors cursor-pointer"
               >
                 Tout marquer lu
               </button>
@@ -117,7 +119,7 @@ const NotificationBell = () => {
                 Aucune nouvelle notification
               </div>
             ) : (
-              notifications.map((notif) => (
+              [...notifications].sort((a, b) => new Date(b.date_creation) - new Date(a.date_creation)).map((notif) => (
                 <div 
                   key={notif.id} 
                   // On déclenche la fonction uniquement si elle n'est pas déjà lue

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Dumbbell, Plus, User, ArrowRight, X, Calendar } from 'lucide-react';
+import { Dumbbell, Plus, User, ArrowRight, X, Calendar, Clock, CheckCircle, ListTodo, AlertTriangle } from 'lucide-react';
 import api from '../services/api';
 
 const ProgrammeList = () => {
@@ -9,6 +9,14 @@ const ProgrammeList = () => {
   const [clients, setClients] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  // --- NOUVEAUX ÉTATS POUR LA PLANIFICATION ---
+  const [selectedProg, setSelectedProg] = useState(null); // Gère la modale "Détails du programme"
+  const [scheduleModalOpen, setScheduleModalOpen] = useState(false); // Gère la modale "Choisir une date"
+  const [selectedSeance, setSelectedSeance] = useState(null); // La séance qu'on est en train de planifier
+  const [scheduleData, setScheduleData] = useState({ jour: '', heure_debut: '', heure_fin: '' });
+  const [successModalOpen, setSuccessModalOpen] = useState(false); // Modale de succès
+  const [errorModal, setErrorModal] = useState({ show: false, message: '' });
 
   const [formData, setFormData] = useState({
     titre: '',
@@ -23,7 +31,6 @@ const ProgrammeList = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      // On récupère les programmes et les clients en parallèle
       const [progRes, clientsRes] = await Promise.all([
         api.get('/programmes/'),
         api.get('/clients/')
@@ -47,7 +54,6 @@ const ProgrammeList = () => {
       };
       await api.post('/programmes/', payload);
       
-      // On rafraîchit la liste et on ferme la modale
       fetchData();
       setIsModalOpen(false);
       setFormData({ titre: '', description: '', athlete: '' });
@@ -57,13 +63,45 @@ const ProgrammeList = () => {
     }
   };
 
-  // Redirection vers le builder avec l'ID du programme en paramètre
+  // --- SOUMISSION DE LA PLANIFICATION ---
+  const handleScheduleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      // On met à jour la séance avec la date et l'heure
+      await api.patch(`/seances/${selectedSeance.id}/`, {
+        jour_prevu: scheduleData.jour,
+        heure_debut: scheduleData.heure_debut,
+        heure_fin: scheduleData.heure_fin
+      });
+      
+      // On ferme les modales et on affiche le succès
+      setScheduleModalOpen(false);
+      setSelectedProg(null); // Optionnel: ferme aussi les détails du programme
+      setSuccessModalOpen(true);
+      
+      // On rafraîchit en arrière-plan
+      fetchData();
+      
+      // Reset du formulaire
+      setScheduleData({ jour: '', heure_debut: '', heure_fin: '' });
+    } catch (error) {
+      console.error("Erreur de planification:", error);
+      
+      
+      const errorMsg = error.response?.data?.horaire_conflit 
+        ? error.response.data.horaire_conflit 
+        : "Erreur lors de la planification de la séance.";
+        
+      setErrorModal({ show: true, message: errorMsg });
+    }
+  };
+
   const goToBuilder = (programmeId) => {
     navigate(`/builder?progId=${programmeId}`);
   };
 
   return (
-    <div className="p-8 max-w-7xl mx-auto flex flex-col gap-6 animate-in fade-in duration-500 h-full">
+    <div className="p-8 max-w-7xl mx-auto flex flex-col gap-6 animate-in fade-in duration-500 h-full relative">
       
       {/* Header */}
       <div className="flex justify-between items-end shrink-0">
@@ -73,7 +111,7 @@ const ProgrammeList = () => {
         </div>
         <button 
           onClick={() => setIsModalOpen(true)}
-          className="bg-[#FF6A00] hover:bg-orange-600 text-white px-5 py-3 rounded-xl font-bold shadow-lg shadow-orange-500/20 transition-all flex items-center gap-2 active:scale-95"
+          className="bg-[#FF6A00] hover:bg-orange-600 text-white px-5 py-3 rounded-xl font-bold shadow-lg shadow-orange-500/20 transition-all flex items-center gap-2 active:scale-95 cursor-pointer"
         >
           <Plus size={18} />
           Nouveau Programme
@@ -95,7 +133,6 @@ const ProgrammeList = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {programmes.map((prog) => {
-              // Retrouver l'athlète assigné pour afficher son nom
               const assignedClient = clients.find(c => c.id === prog.athlete);
               
               return (
@@ -119,12 +156,21 @@ const ProgrammeList = () => {
                     </span>
                   </div>
 
-                  <button 
-                    onClick={() => goToBuilder(prog.id)}
-                    className="w-full flex items-center justify-center gap-2 bg-slate-100 dark:bg-white/5 hover:bg-[#FF6A00] hover:text-white text-slate-700 dark:text-slate-300 py-3 rounded-xl font-bold transition-colors group-hover:border-[#FF6A00]"
-                  >
-                    Ouvrir dans le Builder <ArrowRight size={16} />
-                  </button>
+                  {/* NOUVEAUX BOUTONS D'ACTION */}
+                  <div className="flex flex-col gap-2">
+                    <button 
+                      onClick={() => setSelectedProg(prog)}
+                      className="w-full flex items-center justify-center gap-2 bg-indigo-50 dark:bg-indigo-500/10 hover:bg-indigo-100 text-indigo-600 dark:text-indigo-400 py-3 rounded-xl font-bold transition-colors cursor-pointer"
+                    >
+                      <ListTodo size={16} /> Consulter & Planifier
+                    </button>
+                    <button 
+                      onClick={() => goToBuilder(prog.id)}
+                      className="w-full flex items-center justify-center gap-2 bg-slate-100 dark:bg-white/5 hover:bg-[#FF6A00] hover:text-white text-slate-700 dark:text-slate-300 py-3 rounded-xl font-bold transition-colors cursor-pointer"
+                    >
+                      <Plus size={16} /> Ajouter une séance
+                    </button>
+                  </div>
                 </div>
               );
             })}
@@ -132,10 +178,10 @@ const ProgrammeList = () => {
         )}
       </div>
 
-      {/* Modale de Création */}
+      {/* --- MODALE 1 : Création de Programme --- */}
       <div className={`fixed inset-0 z-[100] flex items-center justify-center p-4 transition-all duration-300 ${isModalOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}`}>
         <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
-        <div className="relative bg-white dark:bg-[#16161A] border border-slate-200 dark:border-[#26262B] rounded-3xl shadow-2xl w-full max-w-lg p-8">
+        <div className="relative bg-white dark:bg-[#16161A] border border-slate-200 dark:border-[#26262B] rounded-3xl shadow-2xl w-full max-w-lg p-8 transform transition-all">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-black text-slate-900 dark:text-white">Nouveau Programme</h2>
             <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-red-500 transition-colors p-2 bg-slate-50 dark:bg-white/5 rounded-full"><X size={20}/></button>
@@ -158,7 +204,7 @@ const ProgrammeList = () => {
 
             <div>
               <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Assigner à un athlète</label>
-              <select className="w-full bg-slate-50 dark:bg-[#0B0B0F] border border-slate-200 dark:border-[#26262B] rounded-xl px-4 py-3 outline-none focus:border-[#FF6A00] transition-colors dark:text-white"
+              <select className="w-full bg-slate-50 dark:bg-[#0B0B0F] border border-slate-200 dark:border-[#26262B] rounded-xl px-4 py-3 outline-none focus:border-[#FF6A00] transition-colors dark:text-white cursor-pointer"
                 value={formData.athlete} onChange={e => setFormData({...formData, athlete: e.target.value})}
               >
                 <option value="">-- Ne pas assigner pour le moment --</option>
@@ -168,13 +214,151 @@ const ProgrammeList = () => {
               </select>
             </div>
 
-            <button type="submit" className="w-full bg-[#FF6A00] hover:bg-orange-600 text-white font-black py-4 rounded-xl shadow-lg mt-4 transition-transform active:scale-95">
+            <button type="submit" className="w-full bg-[#FF6A00] hover:bg-orange-600 text-white font-black py-4 rounded-xl shadow-lg mt-4 transition-transform active:scale-95 cursor-pointer">
               Créer le programme
             </button>
           </form>
         </div>
       </div>
 
+      {/* --- MODALE 2 : DÉTAILS DU PROGRAMME (Liste des séances) --- */}
+      <div className={`fixed inset-0 z-[110] flex items-center justify-center p-4 transition-all duration-300 ${selectedProg ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}`}>
+        <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setSelectedProg(null)}></div>
+        <div className={`relative bg-white dark:bg-[#16161A] border border-slate-200 dark:border-[#26262B] rounded-3xl shadow-2xl w-full max-w-2xl p-8 transform transition-all duration-300 flex flex-col max-h-[90vh] ${selectedProg ? 'scale-100 translate-y-0' : 'scale-95 translate-y-8'}`}>
+          
+          <div className="flex justify-between items-start mb-6 shrink-0 border-b border-slate-100 dark:border-[#26262B] pb-4">
+            <div>
+              <h2 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-3">
+                <ListTodo className="text-[#FF6A00]" /> {selectedProg?.titre}
+              </h2>
+              <p className="text-slate-500 text-sm mt-1">Gérez et planifiez les séances de ce programme.</p>
+            </div>
+            <button onClick={() => setSelectedProg(null)} className="text-slate-400 hover:text-slate-600 transition-colors bg-slate-50 p-2 rounded-full cursor-pointer"><X size={20}/></button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto custom-scroll space-y-3 pr-2">
+            {!selectedProg?.seances || selectedProg.seances.length === 0 ? (
+              <p className="text-center text-slate-500 py-10">Aucune séance dans ce programme.</p>
+            ) : (
+              selectedProg.seances.map((seance, index) => (
+                <div key={seance.id || index} className="p-4 bg-slate-50 dark:bg-[#0B0B0F] border border-slate-200 dark:border-[#26262B] rounded-2xl flex items-center justify-between group hover:border-indigo-200 transition-colors">
+                  <div>
+                    <h4 className="font-bold text-slate-900 dark:text-white">{seance.titre || "Séance sans nom"}</h4>
+                    {seance.jour_prevu ? (
+                      <p className="text-xs font-bold text-emerald-600 flex items-center gap-1 mt-1">
+                        <CheckCircle size={12} /> Planifiée le {new Date(seance.jour_prevu).toLocaleDateString()}
+                      </p>
+                    ) : (
+                      <p className="text-xs text-slate-400 flex items-center gap-1 mt-1">
+                        <Clock size={12} /> Non planifiée
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => navigate(`/builder?seance_id=${seance.id}`)}
+                      className="px-3 py-2 text-xs font-bold text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+                    >
+                      Modifier Exos
+                    </button>
+                    <button 
+                      onClick={() => { setSelectedSeance(seance); setScheduleModalOpen(true); }}
+                      className="px-3 py-2 text-xs font-bold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-1 cursor-pointer"
+                    >
+                      <Calendar size={14} /> Planifier
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* --- MODALE 3 : CHOISIR LA DATE (Planification) --- */}
+      <div className={`fixed inset-0 z-[120] flex items-center justify-center p-4 transition-all duration-300 ${scheduleModalOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}`}>
+        <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setScheduleModalOpen(false)}></div>
+        <div className={`relative bg-white dark:bg-[#16161A] border border-slate-200 dark:border-[#26262B] rounded-3xl shadow-2xl w-full max-w-sm p-6 transform transition-all duration-300 ${scheduleModalOpen ? 'scale-100 translate-y-0' : 'scale-95 translate-y-8'}`}>
+          <div className="text-center mb-6">
+            <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-3"><Calendar size={24} /></div>
+            <h3 className="text-lg font-black text-slate-900 dark:text-white">Planifier la séance</h3>
+            <p className="text-sm font-bold text-indigo-600 mt-1">{selectedSeance?.titre}</p>
+          </div>
+
+          <form onSubmit={handleScheduleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Date</label>
+              <input type="date" required className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none focus:border-indigo-500 cursor-pointer"
+                value={scheduleData.jour} onChange={e => setScheduleData({...scheduleData, jour: e.target.value})}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Heure de début</label>
+                <input type="time" required className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none focus:border-indigo-500 cursor-pointer"
+                  value={scheduleData.heure_debut} onChange={e => setScheduleData({...scheduleData, heure_debut: e.target.value})}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Heure de fin</label>
+                <input type="time" required className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none focus:border-indigo-500 cursor-pointer"
+                  value={scheduleData.heure_fin} onChange={e => setScheduleData({...scheduleData, heure_fin: e.target.value})}
+                />
+              </div>
+            </div>
+            <div className="pt-4 flex gap-2">
+              <button type="button" onClick={() => setScheduleModalOpen(false)} className="flex-1 py-3 text-sm font-bold text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors cursor-pointer">Annuler</button>
+              <button type="submit" className="flex-1 py-3 text-sm font-black text-white bg-indigo-600 rounded-xl shadow-lg shadow-indigo-500/30 hover:bg-indigo-700 transition-colors cursor-pointer">Confirmer</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      {/* --- MODALE 4 : SUCCÈS --- */}
+      <div className={`fixed inset-0 z-[200] grid place-items-center bg-slate-900/60 backdrop-blur-sm transition-all duration-300 ${successModalOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}`}>
+        <div className={`relative bg-white dark:bg-[#16161A] p-8 w-full max-w-sm rounded-3xl shadow-2xl border border-slate-100 dark:border-[#26262B] text-center transform transition-all duration-300 ${successModalOpen ? 'scale-100 translate-y-0' : 'scale-95 translate-y-8'}`}>
+          <div className="w-20 h-20 mx-auto bg-green-100 text-green-500 rounded-full flex items-center justify-center mb-6 shadow-inner">
+            <CheckCircle size={40} />
+          </div>
+          <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-2">Séance Planifiée !</h3>
+          <p className="text-slate-500 dark:text-slate-400 mb-8 font-medium">
+            La séance a été ajoutée à votre calendrier et à celui de votre athlète.
+          </p>
+          <button 
+            onClick={() => {
+              setSuccessModalOpen(false);
+              navigate('/calendar'); // Redirection vers l'agenda pour voir le résultat
+            }}
+            className="w-full bg-[#FF6A00] hover:bg-orange-600 text-white py-3.5 rounded-xl font-bold transition-all shadow-lg shadow-orange-500/20 cursor-pointer mb-2"
+          >
+            Voir mon calendrier
+          </button>
+          <button 
+            onClick={() => setSuccessModalOpen(false)}
+            className="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 py-3.5 rounded-xl font-bold transition-all cursor-pointer"
+          >
+            Fermer
+          </button>
+        </div>
+      </div>
+{/* LA MODALE D'ERREUR (Anti-chevauchement) */}
+      <div className={`fixed inset-0 z-[1000] grid place-items-center bg-slate-900/60 backdrop-blur-sm transition-all duration-300 ${errorModal.show ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}`}>
+        <div className={`relative bg-white dark:bg-[#16161A] p-8 w-full max-w-sm rounded-3xl shadow-2xl border border-red-100 dark:border-[#26262B] text-center transform transition-all duration-300 ${errorModal.show ? 'scale-100 translate-y-0' : 'scale-95 translate-y-8'}`}>
+          <div className="w-20 h-20 mx-auto bg-red-100 dark:bg-red-500/20 text-red-500 rounded-full flex items-center justify-center mb-6 shadow-inner">
+            <AlertTriangle size={40} strokeWidth={2.5} />
+          </div>
+          <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-2">Impossible</h3>
+          <p className="text-slate-500 dark:text-slate-400 mb-8 font-medium">
+            {errorModal.message}
+          </p>
+          <button 
+            onClick={() => setErrorModal({ show: false, message: '' })}
+            className="w-full bg-red-500 hover:bg-red-600 text-white py-3.5 rounded-xl font-bold transition-all shadow-lg shadow-red-500/20 cursor-pointer"
+          >
+            J'ai compris
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

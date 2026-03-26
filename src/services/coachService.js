@@ -18,21 +18,17 @@ const coachService = {
     getNotifications: async () => {
         const token = authService.getToken();
         const timestamp = new Date().getTime();
-        // On garde UNIQUEMENT le timestamp dans l'URL
         const response = await axios.get(`${API_URL}/notifications/?t=${timestamp}`, {
-            headers: { 
-                Authorization: `Bearer ${token}`
-                // On a supprimé 'Cache-Control' ici pour éviter l'erreur CORS
-            }
+            headers: { Authorization: `Bearer ${token}` }
         });
         return response.data;
     },
 
-    markNotificationsAsRead: async () => {
+   markNotificationsAsRead: async () => {
         const token = authService.getToken();
         const response = await axios.post(`${API_URL}/notifications/marquer_tout_lu/`, {}, {
             headers: { Authorization: `Bearer ${token}` }
-        });
+        }); 
         return response.data;
     },
 
