@@ -22,9 +22,9 @@ const Register = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -34,18 +34,16 @@ const Register = () => {
     setError('');
 
     try {
-      // 1. Inscription uniquement
       await authService.register({ ...formData, role: selectedRole });
-      
       await authService.login({ email: formData.email, password: formData.password });
-      
-      // 2. Redirection vers login
-      if (selectedRole === 'coach') { 
-        navigate('/onboarding/coach/step2'); 
-      } else { 
-         navigate('/onboarding/athlete/step2');
-      }
 
+      if (selectedRole === 'coach') {
+        navigate('/onboarding/coach/step2');
+      } else if (selectedRole === 'prospect') {
+        navigate('/prospect/dashboard');
+      } else {
+        navigate('/login');
+      }
     } catch (err) {
       setError(err.response?.data?.message || "Erreur lors de l'inscription");
     } finally {
@@ -55,10 +53,9 @@ const Register = () => {
 
   return (
     <div className="flex min-h-screen w-full flex-col lg:flex-row bg-[#0B0B0F]">
-      {/* Left Side: Visual Branding */}
       <div className="relative hidden lg:flex lg:w-1/2 flex-col justify-between p-12 overflow-hidden bg-[#181410]">
         <div className="absolute inset-0 z-0 opacity-60">
-          <img 
+          <img
             src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1200&q=80"
             alt="Athlete training"
             className="h-full w-full object-cover"
@@ -89,10 +86,8 @@ const Register = () => {
         </div>
       </div>
 
-      {/* Right Side: Register Form */}
       <div className="flex flex-1 flex-col justify-center items-center px-6 py-12 lg:px-24 bg-[#0B0B0F]">
         <div className="w-full max-w-md">
-          {/* Mobile Logo */}
           <div className="flex lg:hidden items-center gap-3 mb-8 justify-center">
             <div className="bg-gradient-to-br from-orange-400 to-orange-600 p-2 rounded-lg">
               <Zap className="w-5 h-5 text-white" />
@@ -105,19 +100,18 @@ const Register = () => {
             <p className="text-gray-400">Prêt à transformer vos entraînements ?</p>
           </div>
 
-          {/* Progress Bar STATIQUE (Step 1/3 - 33%) */}
           <div className="flex flex-col gap-3 mb-8">
             <div className="flex gap-6 justify-between items-end">
-                <p className="text-white text-sm font-medium">Étape 1 sur 3</p>
-                <p className="text-[#ff6a00] text-xs font-bold uppercase tracking-wider">
-                    Informations Personnelles
-                </p>
+              <p className="text-white text-sm font-medium">Étape 1 sur 3</p>
+              <p className="text-[#ff6a00] text-xs font-bold uppercase tracking-wider">
+                Informations Personnelles
+              </p>
             </div>
             <div className="rounded-full bg-[#2a1d15] h-1.5 overflow-hidden">
-                <div 
-                    className="h-full rounded-full bg-[#ff6a00] transition-all duration-500" 
-                    style={{ width: '33.3333%' }}
-                ></div>
+              <div
+                className="h-full rounded-full bg-[#ff6a00] transition-all duration-500"
+                style={{ width: '33.3333%' }}
+              ></div>
             </div>
           </div>
 
@@ -127,14 +121,13 @@ const Register = () => {
             </div>
           )}
 
-          <div className="space-y-6">
-            {/* Role Selector */}
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-3">
                 Quel est votre rôle ?
               </label>
-              <div className="grid grid-cols-3 gap-3">
-                {roles.map(role => {
+              <div className="grid grid-cols-2 gap-3">
+                {roles.map((role) => {
                   const Icon = role.icon;
                   return (
                     <button
@@ -155,7 +148,6 @@ const Register = () => {
               </div>
             </div>
 
-            {/* Name Input */}
             <div className="space-y-1">
               <label className="block text-sm font-medium text-gray-400" htmlFor="fullName">
                 Nom Complet
@@ -172,7 +164,6 @@ const Register = () => {
               />
             </div>
 
-            {/* Email Input */}
             <div className="space-y-1">
               <label className="block text-sm font-medium text-gray-400" htmlFor="email">
                 Adresse Email
@@ -189,7 +180,6 @@ const Register = () => {
               />
             </div>
 
-            {/* Password Input */}
             <div className="space-y-1">
               <label className="block text-sm font-medium text-gray-400" htmlFor="password">
                 Mot de Passe
@@ -215,18 +205,16 @@ const Register = () => {
               </div>
             </div>
 
-            {/* Submit Button */}
             <button
-              onClick={handleSubmit}
+              type="submit"
               disabled={loading}
               className="w-full bg-[#ff6a00] hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-lg transition-all shadow-lg shadow-[#ff6a00]/20 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span>{loading ? 'Création...' : 'Créer mon compte'}</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </button>
-          </div>
+          </form>
 
-          {/* Footer */}
           <div className="mt-8 text-center">
             <p className="text-gray-500 text-sm">
               Déjà un compte ?{' '}

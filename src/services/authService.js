@@ -1,7 +1,6 @@
 import api from './api';
 
 export const authService = {
-  // Inscription
   register: async (userData) => {
     try {
       const response = await api.post('/auth/register/', userData);
@@ -11,42 +10,59 @@ export const authService = {
     }
   },
 
-  // Connexion
   login: async (credentials) => {
     try {
       const response = await api.post('/auth/login/', credentials);
-      
-      // Stocker le token et les infos utilisateur
+
       if (response.data.token) {
         localStorage.setItem('authToken', response.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.user));
       }
-      
+
       return response.data;
     } catch (error) {
       throw error;
     }
   },
 
-  // Déconnexion
+  forgotPassword: async (email) => {
+    try {
+      const response = await api.post('/auth/forgot-password/', { email });
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  resetPassword: async ({ uid, token, new_password, confirm_password }) => {
+    try {
+      const response = await api.post('/auth/reset-password/', {
+        uid,
+        token,
+        new_password,
+        confirm_password,
+      });
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
   logout: () => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
   },
 
-  // Vérifier si l'utilisateur est connecté
   isAuthenticated: () => {
     return !!localStorage.getItem('authToken');
   },
 
-  // Récupérer l'utilisateur actuel
   getCurrentUser: () => {
     const userStr = localStorage.getItem('user');
     return userStr ? JSON.parse(userStr) : null;
   },
 
-  // Récupérer le token
   getToken: () => {
     return localStorage.getItem('authToken');
-  }
+  },
 };

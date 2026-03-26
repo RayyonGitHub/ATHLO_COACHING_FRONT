@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ResetPassword from './pages/ResetPassword';
 import CoachAnalytics from './pages/CoachAnalytics';
 import ProgrammeList from './pages/ProgrammeList';
 import CoachCalendar from './pages/CoachCalendar';
@@ -19,7 +20,7 @@ import AthleteCalendar from './pages/AthleteCalendar';
 import ProspectDashboard from './pages/ProspectDashboard';
 import AthleteStats from './pages/AthleteStats';
 import AthleteProgrammes from './pages/AthleteProgrammes';
-import AthleteSettings from './pages/AthleteSettings'; // <-- NOUVEL IMPORT ICI
+import AthleteSettings from './pages/AthleteSettings';
 
 import CoachStep2 from './pages/onboarding/CoachStep2';
 import CoachStep3 from './pages/onboarding/CoachStep3';
@@ -46,6 +47,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
         <Route path="/onboarding/coach/step2" element={<ProtectedRoute><CoachStep2 /></ProtectedRoute>} />
         <Route path="/onboarding/coach/step3" element={<ProtectedRoute><CoachStep3 /></ProtectedRoute>} />
@@ -142,7 +144,7 @@ function App() {
           <Route path="programmes" element={<AthleteProgrammes />} />
           <Route path="statistiques" element={<AthleteStats />} />
           <Route path="messages" element={<Messages />} />
-          <Route path="parametres" element={<AthleteSettings />} /> {/* <-- NOUVELLE ROUTE ICI */}
+          <Route path="parametres" element={<AthleteSettings />} />
         </Route>
 
         <Route
