@@ -256,7 +256,7 @@ const ProgrammeList = () => {
                   </div>
                   <div className="flex gap-2">
                     <button 
-                      onClick={() => navigate(`/builder?seance_id=${seance.id}`)}
+                             onClick={() => navigate(`/builder?seance_id=${seance.id}&source=programme`)}
                       className="px-3 py-2 text-xs font-bold text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
                     >
                       Modifier Exos
