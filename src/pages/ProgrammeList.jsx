@@ -99,6 +99,10 @@ const ProgrammeList = () => {
   const goToBuilder = (programmeId) => {
     navigate(`/builder?progId=${programmeId}`);
   };
+// --- VARIABLES POUR BLOQUER LES DATES PASSÉES ---
+  const todayDate = new Date();
+  const todayStr = todayDate.getFullYear() + '-' + String(todayDate.getMonth() + 1).padStart(2, '0') + '-' + String(todayDate.getDate()).padStart(2, '0');
+  const currentTimeStr = String(todayDate.getHours()).padStart(2, '0') + ':' + String(todayDate.getMinutes()).padStart(2, '0');
 
   return (
     <div className="p-8 max-w-7xl mx-auto flex flex-col gap-6 animate-in fade-in duration-500 h-full relative">
@@ -289,6 +293,7 @@ const ProgrammeList = () => {
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Date</label>
               <input type="date" required className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none focus:border-indigo-500 cursor-pointer"
+                min={todayStr}
                 value={scheduleData.jour} onChange={e => setScheduleData({...scheduleData, jour: e.target.value})}
               />
             </div>
@@ -296,6 +301,7 @@ const ProgrammeList = () => {
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Heure de début</label>
                 <input type="time" required className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none focus:border-indigo-500 cursor-pointer"
+                  min={scheduleData.jour === todayStr ? currentTimeStr : "00:00"}
                   value={scheduleData.heure_debut} onChange={e => setScheduleData({...scheduleData, heure_debut: e.target.value})}
                 />
               </div>

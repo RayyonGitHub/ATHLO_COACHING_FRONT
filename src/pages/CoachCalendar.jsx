@@ -85,9 +85,19 @@ const CoachCalendar = () => {
         }
     };
 
+
     useEffect(() => {
         fetchSeances();
     }, []);
+    // --- VÉRIFICATION DES DATES PASSÉES (Pour le calendrier) ---
+    const isDateAllowed = (info) => {
+        // Bloque le clic ou le drag & drop si la case visée est avant "maintenant"
+        return info.start >= new Date();
+    };
+
+    const todayDate = new Date();
+    const todayStr = todayDate.getFullYear() + '-' + String(todayDate.getMonth() + 1).padStart(2, '0') + '-' + String(todayDate.getDate()).padStart(2, '0');
+    const currentTimeStr = String(todayDate.getHours()).padStart(2, '0') + ':' + String(todayDate.getMinutes()).padStart(2, '0');
 
     const handleExportCalendar = async () => {
         try {
@@ -389,6 +399,8 @@ const CoachCalendar = () => {
                     firstDay={1}
                     headerToolbar={{ left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay' }}
                     events={events}
+                    selectAllow={isDateAllowed}
+                    eventAllow={isDateAllowed}
                     selectable={true} selectMirror={true} select={handleDateSelect}
                     editable={true} eventDrop={handleEventDropOrResize} eventResize={handleEventDropOrResize} eventClick={handleEventClick}
                     height="100%" slotMinTime="06:00:00" slotMaxTime="22:00:00" allDaySlot={false} nowIndicator={true}
@@ -406,8 +418,8 @@ const CoachCalendar = () => {
                         </select>
                         <input type="text" placeholder="Titre de la séance..." value={addFormData.titre} onChange={(e) => setAddFormData({ ...addFormData, titre: e.target.value })} className="w-full border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none transition-all" required />
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="col-span-2"><input type="date" value={addFormData.jour} onChange={(e) => setAddFormData({ ...addFormData, jour: e.target.value })} className="w-full border-slate-200 rounded-xl p-3 cursor-pointer" required /></div>
-                            <input type="time" value={addFormData.heure_debut} onChange={(e) => setAddFormData({ ...addFormData, heure_debut: e.target.value })} className="w-full border-slate-200 rounded-xl p-3 cursor-pointer" required />
+                            <div className="col-span-2"><input type="date" value={addFormData.jour} min={todayStr} onChange={(e) => setAddFormData({ ...addFormData, jour: e.target.value })} className="w-full border-slate-200 rounded-xl p-3 cursor-pointer" required /></div>
+                            <input type="time" value={addFormData.heure_debut} min={addFormData.jour === todayStr ? currentTimeStr : "00:00"} onChange={(e) => setAddFormData({ ...addFormData, heure_debut: e.target.value })} className="w-full border-slate-200 rounded-xl p-3 cursor-pointer" required />
                             <input type="time" value={addFormData.heure_fin} onChange={(e) => setAddFormData({ ...addFormData, heure_fin: e.target.value })} className="w-full border-slate-200 rounded-xl p-3 cursor-pointer" required />
                         </div>
                         {addFormData.type === 'collective' && <input type="number" min="2" placeholder="Capacité max" value={addFormData.capacite_max} onChange={(e) => setAddFormData({ ...addFormData, capacite_max: parseInt(e.target.value) })} className="w-full border-slate-200 rounded-xl p-3" />}
@@ -458,8 +470,8 @@ const CoachCalendar = () => {
                                     <input type="text" value={editFormData.titre} onChange={(e) => setEditFormData({ ...editFormData, titre: e.target.value })} className="w-full border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none" />
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div className="col-span-2"><label className="block text-xs font-black text-slate-400 uppercase tracking-wider mb-1">Date</label><input type="date" value={editFormData.jour} onChange={(e) => setEditFormData({ ...editFormData, jour: e.target.value })} className="w-full border-slate-200 rounded-xl p-3 cursor-pointer" required /></div>
-                                    <div><label className="block text-xs font-black text-slate-400 uppercase tracking-wider mb-1">Début</label><input type="time" value={editFormData.heure_debut} onChange={(e) => setEditFormData({ ...editFormData, heure_debut: e.target.value })} className="w-full border-slate-200 rounded-xl p-3 cursor-pointer" required /></div>
+                                    <div className="col-span-2"><label className="block text-xs font-black text-slate-400 uppercase tracking-wider mb-1">Date</label><input type="date" value={editFormData.jour} min={todayStr} onChange={(e) => setEditFormData({ ...editFormData, jour: e.target.value })} className="w-full border-slate-200 rounded-xl p-3 cursor-pointer" required /></div>
+                                    <div><label className="block text-xs font-black text-slate-400 uppercase tracking-wider mb-1">Début</label><input type="time" value={editFormData.heure_debut} min={editFormData.jour === todayStr ? currentTimeStr : "00:00"} onChange={(e) => setEditFormData({ ...editFormData, heure_debut: e.target.value })} className="w-full border-slate-200 rounded-xl p-3 cursor-pointer" required /></div>
                                     <div><label className="block text-xs font-black text-slate-400 uppercase tracking-wider mb-1">Fin</label><input type="time" value={editFormData.heure_fin} onChange={(e) => setEditFormData({ ...editFormData, heure_fin: e.target.value })} className="w-full border-slate-200 rounded-xl p-3 cursor-pointer" required /></div>
                                 </div>
                                 {editFormData.type === 'collective' && (
