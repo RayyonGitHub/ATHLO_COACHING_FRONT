@@ -208,7 +208,24 @@ const CoachCalendar = () => {
             fetchSeances();
         } catch (error) {
             changeInfo.revert();
-            alert("Erreur lors du déplacement.");
+            let errorMsg = "Impossible de déplacer cette séance sur ce créneau.";
+            
+            if (error.response && error.response.data) {
+                const data = error.response.data;
+                // On vérifie les clés d'erreurs possibles définies dans ton serializers.py
+                if (data.horaire_conflit) {
+                    errorMsg = data.horaire_conflit[0] || data.horaire_conflit; // Gère les tableaux et les strings
+                } else if (data.jour_prevu) {
+                    errorMsg = data.jour_prevu[0] || data.jour_prevu;
+                } else if (data.heure_debut) {
+                    errorMsg = data.heure_debut[0] || data.heure_debut;
+                } else if (data.detail) {
+                    errorMsg = data.detail;
+                }
+            }
+            
+            // 3. On déclenche TA belle modale au lieu de l'alert() Chrome !
+            setErrorModal({ show: true, message: errorMsg });
         }
     };
 
