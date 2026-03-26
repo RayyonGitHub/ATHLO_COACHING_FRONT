@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom'; 
-import { Search, GripVertical, Trash2, Save, Dumbbell, Clock, CalendarDays, ListTodo, AlertTriangle } from 'lucide-react';
+import {Plus, Search, GripVertical, Trash2, Save, Dumbbell, Clock, CalendarDays, ListTodo, AlertTriangle } from 'lucide-react';
 import api from '../services/api';
 
 const SessionBuilder = () => {
   const location = useLocation();
   const navigate = useNavigate(); // Pour rediriger après sauvegarde
+  const queryParams = new URLSearchParams(location.search);
+  const sourceUrl = queryParams.get('source');
 
   // --- ÉTATS ---
   const [exercicesLib, setExercicesLib] = useState([]);
@@ -36,19 +38,21 @@ const SessionBuilder = () => {
         setExercicesLib(exosRes.data);
         setProgrammes(progsRes.data);
 
-        // Lecture de l'URL
+        // Lecture de l'URL Bouthayna
         const searchParams = new URLSearchParams(location.search);
         const progIdFromUrl = searchParams.get('progId');
-        const seanceIdFromUrl = searchParams.get('seance_id'); // <-- LECTURE DU PONT
+        const seanceIdFromUrl = searchParams.get('seance_id'); 
+        const sourceFromUrl = searchParams.get('source'); // NOUVEAU : On lit la source
 
         if (progIdFromUrl) {
           setSelectedProgrammeId(progIdFromUrl);
         }
 
-        // --- SI ON VIENT DU CALENDRIER ---
         if (seanceIdFromUrl) {
             setEditMode(true);
             setSeanceId(seanceIdFromUrl);
+            // On sauvegarde la source dans l'état de la modale pour l'utiliser plus tard
+            setSuccessModal(prev => ({ ...prev, source: sourceFromUrl }));
 
             // On va chercher les infos de la séance existante
             const seanceRes = await api.get(`/seances/${seanceIdFromUrl}/`);
@@ -146,14 +150,15 @@ const SessionBuilder = () => {
       };
 
       if (editMode) {
-        // MODE CALENDRIER (PATCH)
+        // MODE ÉDITION (PATCH)
         await api.patch(`/seances/${seanceId}/`, payload);
-        setSuccessModal({ show: true, isEditRedirect: true });
+        // On utilise "prev =>" pour ne pas écraser la 'source' !
+        setSuccessModal(prev => ({ ...prev, show: true, isEditRedirect: true }));
       } else {
-        // MODE PROGRAMME (POST)
+        // MODE CRÉATION DEPUIS ZÉRO (POST)
         payload.programme = parseInt(selectedProgrammeId);
         await api.post('/seances/', payload);
-        setSuccessModal({ show: true, isEditRedirect: false });
+        setSuccessModal(prev => ({ ...prev, show: true, isEditRedirect: false }));
         setSessionTitle('');
         setSessionExos([]);
       }
@@ -180,18 +185,24 @@ const SessionBuilder = () => {
             Créateur de Séance
             {/* Petit badge dynamique */}
             {editMode ? (
-              <span className="text-sm bg-orange-100 text-orange-600 px-3 py-1 rounded-full flex items-center gap-1 font-bold">
-                <CalendarDays size={16}/> Mode Calendrier
-              </span>
+              sourceUrl === 'programme' ? (
+                <span className="text-sm bg-indigo-100 text-indigo-600 px-3 py-1 rounded-full flex items-center gap-1 font-bold">
+                  <ListTodo size={16}/> Mode Programme (Édition)
+                </span>
+              ) : (
+                <span className="text-sm bg-orange-100 text-orange-600 px-3 py-1 rounded-full flex items-center gap-1 font-bold">
+                  <CalendarDays size={16}/> Mode Calendrier
+                </span>
+              )
             ) : (
               <span className="text-sm bg-indigo-100 text-indigo-600 px-3 py-1 rounded-full flex items-center gap-1 font-bold">
-                <ListTodo size={16}/> Mode Programme
+                <Plus size={16}/> Création de Séance
               </span>
             )}
           </h1>
           <p className="text-slate-500 text-sm">
             {editMode
-              ? 'Ajoutez des exercices à votre séance du calendrier.'
+              ? (sourceUrl === 'programme' ? 'Modifiez les exercices de cette séance du programme.' : 'Ajoutez des exercices à votre séance du calendrier.')
               : 'Construisez une nouvelle séance pour votre programme.'}
           </p>
         </div>
@@ -200,10 +211,15 @@ const SessionBuilder = () => {
           {/* BOUTON RETOUR UNIVERSEL */}
           <button
             onClick={() => {
+              // Si on est en édition, on regarde d'où on vient Bouthayna
               if (editMode) {
-                navigate(-1); // Retour au calendrier (historique)
+                if (successModal.source === 'programme') {
+                  navigate('/programmes'); // Retour aux programmes
+                } else {
+                  navigate(-1); // Retour au calendrier via l'historique
+                }
               } else {
-                navigate('/programmes'); // Retour direct à la liste des programmes
+                navigate('/programmes'); // Mode création normale
               }
             }}
             className="px-6 py-3 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 dark:bg-[#26262B] dark:text-slate-300 dark:hover:bg-[#323238] transition-all cursor-pointer"
@@ -352,18 +368,27 @@ const SessionBuilder = () => {
           </div>
           <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-2">Succès !</h3>
           <p className="text-slate-500 dark:text-slate-400 mb-8 font-medium">
-            {successModal.isEditRedirect ? "Les exercices ont été ajoutés à votre calendrier." : "La séance a été ajoutée au programme."}
+            {successModal.isEditRedirect 
+              ? (successModal.source === 'programme' ? "Les exercices ont été mis à jour dans votre programme." : "Les exercices ont été ajoutés à votre calendrier.") 
+              : "La séance a été ajoutée au programme."}
           </p>
           <button
             onClick={() => {
-              setSuccessModal({ show: false, isEditRedirect: false });
+              setSuccessModal(prev => ({ ...prev, show: false }));
+              // Navigation dynamique basée sur la source
               if (successModal.isEditRedirect) {
-                navigate('/calendar');
+                if (successModal.source === 'programme') {
+                  navigate('/programmes');
+                } else {
+                  navigate('/calendar');
+                }
               }
             }}
             className="w-full bg-[#FF6A00] hover:bg-orange-600 text-white py-3.5 rounded-xl font-bold transition-all shadow-lg shadow-orange-500/20 cursor-pointer"
           >
-            {successModal.isEditRedirect ? "Retour au calendrier" : "Continuer"}
+            {successModal.isEditRedirect 
+              ? (successModal.source === 'programme' ? "Retour aux programmes" : "Retour au calendrier") 
+              : "Continuer"}
           </button>
         </div>
       </div>
