@@ -332,8 +332,10 @@ const CoachCalendar = () => {
     // --- RENDU DES ÉVÉNEMENTS (Version Ultra-Robuste) ---
     const events = seances.map(s => {
         let bgColor = '#4f46e5'; // Bleu/indigo par défaut (séance individuelle)
+        const aUnAbsent = s.participants && s.participants.some(p => p.statut === 'ABSENT');
+
         if (s.completed || s.est_completee) {
-            bgColor = '#64748b'; // Gris (Terminé)
+            bgColor = '#64748b'; // Gris (Terminé/Raté)
         } else if (s.type === 'conge' || s.est_conge) {
             bgColor = '#10b981'; // Vert (Congé)
         } else if (s.type === 'indisponibilite') {
@@ -344,8 +346,14 @@ const CoachCalendar = () => {
 
         // 2. Gestion du titre
         let displayTitle = s.title || s.titre || "Sans titre";
-        if (s.completed || s.est_completee) displayTitle = "[Terminé] " + displayTitle;
-        if (s.is_collective || s.est_collective) {
+
+        if (s.completed || s.est_completee) {
+            if (!s.is_collective && !s.est_collective && aUnAbsent) {
+                displayTitle = "[Absent] " + displayTitle;
+            } else {
+                displayTitle = "[Terminé] " + displayTitle;
+            }
+        } else if (s.is_collective || s.est_collective) {
             const trueCount = s.participants
                 ? s.participants.filter(p => ['CONFIRME', 'PRESENT', 'ABSENT'].includes(p.statut)).length
                 : (s.nombre_inscrits || 0);
