@@ -21,31 +21,29 @@ const AthleteDashboard = () => {
   }, []);
 
   useEffect(() => {
-    const loadDashboard = async () => {
-      try {
-        const token = localStorage.getItem('authToken');
-
-        if (!token) {
-          setError("Session expirée. Redirection...");
-          setTimeout(() => window.location.href = '/login', 2000);
-          return;
-        }
-
-        const response = await axios.get('http://localhost:8000/api/athlete/dashboard-stats/', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-
-        setData(response.data);
-        console.log("prochaine_seance:", response.data.prochaine_seance);
-      } catch (err) {
-        console.error("Erreur Dashboard:", err);
-        setError("Impossible de charger les statistiques.");
-      } finally {
-        setLoading(false);
+  const loadDashboard = async () => {
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        setError("Session expirée. Redirection...");
+        setTimeout(() => window.location.href = '/login', 2000);
+        return;
       }
-    };
+      const response = await axios.get('http://localhost:8000/api/athlete/dashboard-stats/', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setData(response.data);
+    } catch (err) {
+      console.error("Erreur Dashboard:", err);
+      setError("Impossible de charger les statistiques.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
     loadDashboard();
+    const interval = setInterval(loadDashboard, 60000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleSyncWatch = () => {
@@ -58,24 +56,52 @@ const AthleteDashboard = () => {
 
   // --- LOGIQUE INTELLIGENTE DE TEMPS ---
 const checkSessionStatus = (seance) => {
-  if (!seance || !seance.jour_prevu) return { isToday: false, canStart: false, canRegister: false };
+  if (!seance || !seance.jour_prevu) return { isToday: false, canStart: false, canRegister: false, isMissed: false };
 
   const maintenant = currentTime;
-  const dateStr = seance.jour_prevu.split('T')[0]; // "2026-03-25"
+  const dateStr = seance.jour_prevu.split('T')[0];
   const [heures, minutes] = seance.heure_debut.split(':');
+  const [heuresFin, minutesFin] = (seance.heure_fin || '23:59').split(':');
 
-  // Date locale pour isToday
-  const dateSeance = new Date(dateStr); // juste pour comparer le jour
+  const dateSeance = new Date(dateStr);
   const isToday = dateSeance.toDateString() === maintenant.toDateString();
 
-  // Date+heure locale pour les comparaisons de timing
-  const dateHeureSeance = new Date(`${dateStr}T${heures.padStart(2,'0')}:${minutes.padStart(2,'0')}:00`);
-  const isTimeReached = maintenant.getTime() >= dateHeureSeance.getTime();
-  const canStart = isToday && isTimeReached;
-  const canRegister = isToday && isTimeReached;
+  const dateHeureDebut = new Date(`${dateStr}T${heures.padStart(2,'0')}:${minutes.padStart(2,'0')}:00`);
+  const dateHeureFin = new Date(`${dateStr}T${heuresFin.padStart(2,'0')}:${minutesFin.padStart(2,'0')}:00`);
 
-  return { isToday, canStart, canRegister };
+  const isTimeReached = maintenant >= dateHeureDebut;
+  const isMissed = maintenant > dateHeureFin; // heure de fin dépassée
+
+  const canStart = isToday && isTimeReached && !isMissed;
+  const canRegister = isToday && isTimeReached && !isMissed;
+
+  return { isToday, canStart, canRegister, isMissed };
+  
+
 };
+const { isToday, canStart, canRegister, isMissed } = checkSessionStatus(data?.prochaine_seance);
+useEffect(() => {
+    if (isMissed && data?.prochaine_seance) {
+      const seanceId = data.prochaine_seance.id;
+      const token = localStorage.getItem('authToken');
+      console.log("🚨 ALERTE: SÉANCE RATÉE DÉTECTÉE ! ID:", seanceId); // AJOUTE CETTE LIGNE
+      // 1. ACTION INSTANTANÉE (UI) : On cache la séance pour l'athlète
+      setData(prev => ({ ...prev, prochaine_seance: null }));
+
+      // 2. ACTION BACK-END : On prévient Django que c'est raté !
+      axios.post(`http://localhost:8000/api/seances/${seanceId}/ratee/`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then(() => {
+        // 3. Optionnel : on recharge les stats globales (calories, etc.)
+        axios.get('http://localhost:8000/api/athlete/dashboard-stats/', {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        .then(res => setData(res.data));
+      })
+      .catch(err => console.error("Erreur mise à jour séance ratée:", err));
+    }
+  }, [isMissed, data?.prochaine_seance]); // <-- Ajout des dépendances
 
   if (loading) {
     return (
@@ -97,7 +123,6 @@ const checkSessionStatus = (seance) => {
   }
 
   // On extrait les infos de statut pour la carte héros
-const { isToday, canStart, canRegister } = checkSessionStatus(data?.prochaine_seance);
   return (
     <div className="flex flex-col gap-8 animate-in fade-in duration-500">
 
@@ -171,6 +196,7 @@ const { isToday, canStart, canRegister } = checkSessionStatus(data?.prochaine_se
         <div className="lg:col-span-8 flex flex-col gap-8">
 
           {/* ON PASSE LES PROPS A LA CARTE */}
+          
           <SessionHeroCard
             seance={data?.prochaine_seance}
             onStart={canStart ? () => setIsModalOpen(true) : null} 
