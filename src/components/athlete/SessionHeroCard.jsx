@@ -6,32 +6,32 @@ const SessionHeroCard = ({ seance, onStart, onDetails, isToday }) => {
   const [canStart, setCanStart] = useState(false);
  
   // Calcule le temps restant avant que la séance commence
+  // Calcule le temps restant avant que la séance commence (Heure exacte)
   const computeStatus = () => {
-    if (!seance || !isToday || !seance.jour_prevu) {
+    if (!seance || !isToday || !seance.jour_prevu || !seance.heure_debut) {
       setCanStart(false);
       setCountdown(null);
       return;
     }
- 
+
     const maintenant = new Date();
-const dateStr = seance.jour_prevu.split('T')[0]; // "2026-03-25"
-const [heures, minutes] = (seance.heure_debut || "00:00").split(':');
-// On construit la date avec l'heure locale directement dans la string ISO
-const dateSeance = new Date(`${dateStr}T${heures.padStart(2,'0')}:${minutes.padStart(2,'0')}:00`);
- 
+    const dateStr = seance.jour_prevu.split('T')[0];
+    const [heures, minutes] = seance.heure_debut.split(':');
+    const dateSeance = new Date(`${dateStr}T${heures.padStart(2,'0')}:${minutes.padStart(2,'0')}:00`);
+
     const diffMs = dateSeance.getTime() - maintenant.getTime();
-    // On autorise 15 min d'avance
-    const diffAvec15min = diffMs - 15 * 60 * 1000;
- 
-    if (diffAvec15min <= 0) {
+
+    // S'il est l'heure (ou si on a dépassé l'heure de début, mais qu'on n'a pas encore atteint l'heure de fin)
+    if (diffMs <= 0) {
       setCanStart(true);
       setCountdown(null);
     } else {
       setCanStart(false);
-      const totalSec = Math.floor(diffAvec15min / 1000);
+      const totalSec = Math.floor(diffMs / 1000);
       const h = Math.floor(totalSec / 3600);
       const m = Math.floor((totalSec % 3600) / 60);
       const s = totalSec % 60;
+      
       if (h > 0) {
         setCountdown(`Dans ${h}h ${m.toString().padStart(2, '0')}min`);
       } else if (m > 0) {

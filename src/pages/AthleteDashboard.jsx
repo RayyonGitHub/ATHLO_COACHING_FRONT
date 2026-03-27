@@ -14,6 +14,11 @@ const AthleteDashboard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isNoSessionModalOpen, setIsNoSessionModalOpen] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 10000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     const loadDashboard = async () => {
@@ -55,9 +60,9 @@ const AthleteDashboard = () => {
 const checkSessionStatus = (seance) => {
   if (!seance || !seance.jour_prevu) return { isToday: false, canStart: false, canRegister: false };
 
-  const maintenant = new Date();
+  const maintenant = currentTime;
   const dateStr = seance.jour_prevu.split('T')[0]; // "2026-03-25"
-  const [heures, minutes] = (seance.heure_debut || "00:00").split(':');
+  const [heures, minutes] = seance.heure_debut.split(':');
 
   // Date locale pour isToday
   const dateSeance = new Date(dateStr); // juste pour comparer le jour
@@ -65,9 +70,9 @@ const checkSessionStatus = (seance) => {
 
   // Date+heure locale pour les comparaisons de timing
   const dateHeureSeance = new Date(`${dateStr}T${heures.padStart(2,'0')}:${minutes.padStart(2,'0')}:00`);
-
-  const canStart = isToday && (maintenant.getTime() >= dateHeureSeance.getTime() - 15 * 60000);
-  const canRegister = isToday && (maintenant.getTime() >= dateHeureSeance.getTime());
+  const isTimeReached = maintenant.getTime() >= dateHeureSeance.getTime();
+  const canStart = isToday && isTimeReached;
+  const canRegister = isToday && isTimeReached;
 
   return { isToday, canStart, canRegister };
 };
