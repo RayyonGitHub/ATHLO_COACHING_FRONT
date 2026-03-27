@@ -1,11 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Target, Calendar, CheckCircle2, Clock, Dumbbell, Flame, Activity, Loader2 } from 'lucide-react';
+import { Target, Calendar, CheckCircle2, Clock, Dumbbell, Flame, Activity, Loader2, X } from 'lucide-react';
 
 const AthleteProgrammes = () => {
   const [programmeActuel, setProgrammeActuel] = useState(null);
   const [seances, setSeances] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // --- ÉTATS POUR LES MODALES ---
+  const [showResumeModal, setShowResumeModal] = useState(false);
+  const [selectedResume, setSelectedResume] = useState(null);
+
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedSeanceDetails, setSelectedSeanceDetails] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -13,21 +20,14 @@ const AthleteProgrammes = () => {
         const token = localStorage.getItem('authToken') || localStorage.getItem('access_token');
         const config = { headers: { Authorization: `Bearer ${token}` } };
 
-        // On récupère les programmes de l'athlète
         const progRes = await axios.get('http://127.0.0.1:8000/api/programmes/', config);
-        
-        // On récupère toutes les séances
         const seancesRes = await axios.get('http://127.0.0.1:8000/api/seances/', config);
 
         if (progRes.data.length > 0) {
-          // On prend le dernier programme créé (considéré comme l'actuel)
           const currentProg = progRes.data[progRes.data.length - 1];
           setProgrammeActuel(currentProg);
 
-          // On filtre les séances pour ne garder que celles de ce programme
           const progSeances = seancesRes.data.filter(s => s.programme === currentProg.id);
-          
-          // On les trie par ordre (ou par date)
           progSeances.sort((a, b) => a.ordre - b.ordre);
           setSeances(progSeances);
         }
@@ -40,6 +40,29 @@ const AthleteProgrammes = () => {
 
     fetchData();
   }, []);
+
+  // --- OUVERTURE DE LA MODALE DÉTAILS (Séance non terminée) ---
+  const handleOpenDetails = (seance) => {
+    setSelectedSeanceDetails(seance);
+    setShowDetailsModal(true);
+  };
+
+  // --- OUVERTURE DE LA MODALE RÉSUMÉ (Séance terminée) ---
+  const handleOpenResume = async (seance) => {
+    try {
+      const token = localStorage.getItem('authToken') || localStorage.getItem('access_token');
+      
+      // Appel à la super route de Younes !
+      const res = await axios.get(`http://127.0.0.1:8000/api/seances/${seance.id}/resume/`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setSelectedResume(res.data);
+      setShowResumeModal(true);
+    } catch (error) {
+      console.error("Erreur lors de la récupération du résumé:", error);
+      alert("Impossible de charger le résumé de cette séance.");
+    }
+  };
 
   if (loading) {
     return (
@@ -144,7 +167,7 @@ const AthleteProgrammes = () => {
                   <div className="flex flex-col gap-2 mt-4">
                     <div className="flex items-center gap-2 text-sm text-gray-400">
                       <Clock size={16} className="text-[#FF6B00]"/> 
-                      <span>{seance.heure_debut ? `Prévue à ${seance.heure_debut}` : 'Horaire libre'}</span>
+                      <span>{seance.heure_debut ? `Prévue à ${seance.heure_debut.substring(0, 5)}` : 'Horaire libre'}</span>
                     </div>
                     {seance.jour_prevu && (
                       <div className="flex items-center gap-2 text-sm text-gray-400">
@@ -155,7 +178,9 @@ const AthleteProgrammes = () => {
                   </div>
                 </div>
 
-                <button className={`w-full mt-6 py-3 rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-2 ${
+                <button 
+                  onClick={() => seance.est_completee ? handleOpenResume(seance) : handleOpenDetails(seance)}
+                  className={`w-full mt-6 py-3 rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-2 cursor-pointer ${
                   seance.est_completee 
                   ? 'bg-green-500/10 text-green-500 hover:bg-green-500/20' 
                   : 'bg-[#2D2D2D] text-white hover:bg-[#FF6B00]'
@@ -172,6 +197,146 @@ const AthleteProgrammes = () => {
           </div>
         )}
       </div>
+
+      {/* ========================================================= */}
+      {/* MODALE 1 : RÉSUMÉ (Séance terminée)                       */}
+      {/* ========================================================= */}
+      {showResumeModal && selectedResume && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="bg-[#1E1E1E] border border-[#2D2D2D] rounded-[2.5rem] p-8 max-w-lg w-full shadow-2xl overflow-hidden">
+            
+            <div className="flex justify-between items-start mb-8">
+              <div>
+                <h3 className="text-3xl font-black text-white italic uppercase tracking-tighter leading-none">
+                  {selectedResume.titre_seance}
+                </h3>
+                <p className="text-gray-500 text-sm font-bold mt-2 uppercase tracking-widest flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                  Complétée le {selectedResume.date}
+                </p>
+              </div>
+              <button onClick={() => setShowResumeModal(false)} className="text-gray-500 hover:text-white cursor-pointer"><X /></button>
+            </div>
+
+            <div className="space-y-3 mb-8 max-h-[40vh] overflow-y-auto pr-2 custom-scrollbar">
+              {selectedResume.exercices?.map((exo, idx) => (
+                <div key={idx} className="flex justify-between items-center p-5 bg-[#252525] rounded-2xl border border-[#2D2D2D] group hover:border-[#FF6B00]/50 transition-colors">
+                  <div className="flex flex-col">
+                    <span className="font-black text-white text-lg uppercase italic group-hover:text-[#FF6B00] transition-colors">{exo.exercice}</span>
+                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{exo.series} séries • {exo.reps} reps</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xl font-black text-white italic">{exo.poids || "-"}</span>
+                    <span className="text-[10px] font-black text-[#FF6B00] ml-1 uppercase">kg</span>
+                  </div>
+                </div>
+              ))}
+              {(!selectedResume.exercices || selectedResume.exercices.length === 0) && (
+                <p className="text-center text-gray-500 italic py-4">Aucune donnée de performance enregistrée.</p>
+              )}
+            </div>
+
+            <div className="bg-[#FF6B00] p-6 rounded-[1.5rem] flex justify-between items-center shadow-lg">
+              <span className="font-black text-black uppercase italic tracking-tighter text-xl">Volume Total</span>
+              <div className="flex items-baseline gap-1 text-black">
+                <span className="text-3xl font-black italic">{selectedResume.volume_total || 0}</span>
+                <span className="text-xs font-black uppercase">kg</span>
+              </div>
+            </div>
+
+            <button onClick={() => setShowResumeModal(false)} className="w-full mt-6 py-4 rounded-2xl font-black uppercase tracking-widest text-gray-400 hover:text-white transition-all text-sm cursor-pointer border border-[#2D2D2D] hover:bg-[#2D2D2D]">
+              Fermer
+            </button>
+
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* MODALE 2 : DÉTAILS (Séance à venir)                       */}
+      {/* ========================================================= */}
+      {showDetailsModal && selectedSeanceDetails && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="bg-[#1E1E1E] border border-[#2D2D2D] rounded-[2.5rem] flex flex-col max-w-2xl w-full max-h-[85vh] shadow-2xl overflow-hidden">
+            
+            {/* Header de la modale */}
+            <div className="p-8 pb-6 border-b border-[#2D2D2D] flex justify-between items-start shrink-0">
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 rounded-xl bg-[#FF6B00]/10 text-[#FF6B00] flex items-center justify-center">
+                    <Dumbbell size={20} />
+                  </div>
+                  <h3 className="text-3xl font-black text-white italic uppercase tracking-tighter leading-none">{selectedSeanceDetails.titre}</h3>
+                </div>
+                <p className="text-gray-500 text-sm font-bold mt-2 uppercase tracking-widest flex items-center gap-2">
+                  <Clock size={14} /> 
+                  {selectedSeanceDetails.jour_prevu ? new Date(selectedSeanceDetails.jour_prevu).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }) : "Date non définie"}
+                  {selectedSeanceDetails.heure_debut && ` • ${selectedSeanceDetails.heure_debut.substring(0, 5)}`}
+                </p>
+              </div>
+              <button onClick={() => setShowDetailsModal(false)} className="text-gray-500 hover:text-white cursor-pointer"><X /></button>
+            </div>
+
+            {/* Corps de la modale avec les exercices */}
+            <div className="p-8 overflow-y-auto custom-scrollbar flex-1 bg-[#121212]">
+              <h4 className="text-[11px] font-black text-gray-500 uppercase tracking-widest mb-6">Programme de la séance</h4>
+              
+              {(!selectedSeanceDetails.exercices_details || selectedSeanceDetails.exercices_details.length === 0) ? (
+                <div className="text-center py-12 border-2 border-dashed border-[#2D2D2D] rounded-3xl">
+                  <Dumbbell size={32} className="mx-auto text-gray-600 mb-3" />
+                  <p className="text-gray-400 font-medium">Aucun exercice n'a été assigné à cette séance.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {selectedSeanceDetails.exercices_details.map((item, index) => (
+                    <div key={item.id || index} className="bg-[#1E1E1E] border border-[#2D2D2D] rounded-3xl p-6 hover:border-[#FF6B00]/50 transition-colors group">
+                      
+                      <div className="flex items-center gap-4 mb-6">
+                        <div className="w-10 h-10 rounded-xl bg-[#2D2D2D] text-[#FF6B00] font-black flex items-center justify-center text-lg group-hover:bg-[#FF6B00] group-hover:text-white transition-colors">
+                          {index + 1}
+                        </div>
+                        <div>
+                          <h5 className="text-xl font-bold text-white leading-tight">{item.exercice_details?.nom || "Exercice inconnu"}</h5>
+                          <p className="text-[10px] font-black text-[#FF6B00] uppercase tracking-widest mt-1">
+                            {item.exercice_details?.muscle_principal || item.exercice_details?.categorie || "Général"}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div className="bg-[#121212] p-4 rounded-2xl border border-[#2D2D2D]">
+                          <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1 flex items-center gap-1"><Activity size={12}/> Séries</p>
+                          <p className="font-black text-white text-xl">{item.series}</p>
+                        </div>
+                        <div className="bg-[#121212] p-4 rounded-2xl border border-[#2D2D2D]">
+                          <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1 flex items-center gap-1"><Target size={12}/> Reps/Temps</p>
+                          <p className="font-black text-white text-xl">{item.repetitions}</p>
+                        </div>
+                        <div className="bg-[#121212] p-4 rounded-2xl border border-[#2D2D2D]">
+                          <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1 flex items-center gap-1"><Dumbbell size={12}/> Charge</p>
+                          <p className="font-black text-white text-xl">{item.poids || "-"}</p>
+                        </div>
+                        <div className="bg-[#121212] p-4 rounded-2xl border border-[#2D2D2D]">
+                          <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1 flex items-center gap-1"><Clock size={12}/> Repos</p>
+                          <p className="font-black text-[#FF6B00] text-xl">{item.repos || "60s"}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Pied de la modale */}
+            <div className="p-6 border-t border-[#2D2D2D] bg-[#1E1E1E] shrink-0">
+               <button onClick={() => setShowDetailsModal(false)} className="w-full py-4 rounded-2xl font-black uppercase tracking-widest text-gray-400 hover:text-white hover:bg-[#2D2D2D] transition-all text-sm cursor-pointer border border-[#2D2D2D]">
+                 Fermer
+               </button>
+            </div>
+            
+          </div>
+        </div>
+      )}
 
     </div>
   );
