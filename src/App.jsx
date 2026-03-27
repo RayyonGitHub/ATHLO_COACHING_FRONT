@@ -24,8 +24,8 @@ import AthleteSettings from './pages/AthleteSettings';
 
 import CoachStep2 from './pages/onboarding/CoachStep2';
 import CoachStep3 from './pages/onboarding/CoachStep3';
-import AthleteStep2 from './pages/onboarding/AthleteStep2';
-import AthleteStep3 from './pages/onboarding/AthleteStep3';
+
+
 
 import AdminRoute from './components/AdminRoute';
 import AdminLogin from './pages/admin/AdminLogin';
@@ -51,8 +51,6 @@ function App() {
 
         <Route path="/onboarding/coach/step2" element={<ProtectedRoute><CoachStep2 /></ProtectedRoute>} />
         <Route path="/onboarding/coach/step3" element={<ProtectedRoute><CoachStep3 /></ProtectedRoute>} />
-        <Route path="/onboarding/athlete/step2" element={<ProtectedRoute><AthleteStep2 /></ProtectedRoute>} />
-        <Route path="/onboarding/athlete/step3" element={<ProtectedRoute><AthleteStep3 /></ProtectedRoute>} />
 
         <Route
           path="/dashboard"
