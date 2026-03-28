@@ -14,53 +14,19 @@ const ProspectSalles = () => {
     setLoading(true);
 
     try {
-      // À brancher au back ensuite
-      // const response = await fetch(
-      //   `http://127.0.0.1:8000/api/prospect/salles/?lat=${location.lat}&lng=${location.lng}&rayon=10`
-      // );
-      // if (!response.ok) {
-      //   throw new Error('Erreur lors du chargement des salles');
-      // }
-      // const data = await response.json();
-      // setSalles(data);
+      const response = await fetch(
+        `http://127.0.0.1:8000/api/prospects/salles/?lat=${location.lat}&lng=${location.lng}&rayon=10`
+      );
 
-      // Mock temporaire
-      const sallesMock = [
-        {
-          id: 1,
-          nom: 'Fitness Park Châtelet',
-          adresse: '15 Rue Saint-Denis, 75001 Paris',
-          ville: 'Paris',
-          distance_km: 0.8,
-        },
-        {
-          id: 2,
-          nom: 'Basic-Fit République',
-          adresse: '23 Boulevard du Temple, 75003 Paris',
-          ville: 'Paris',
-          distance_km: 1.2,
-        },
-        {
-          id: 3,
-          nom: "L'Appart Fitness",
-          adresse: '8 Rue de la Paix, 75002 Paris',
-          ville: 'Paris',
-          distance_km: 1.5,
-        },
-        {
-          id: 4,
-          nom: 'Neoness Montparnasse',
-          adresse: "10 Rue de l'Arrivée, 75014 Paris",
-          ville: 'Paris',
-          distance_km: 2.3,
-        },
-      ];
+      if (!response.ok) {
+        throw new Error('Erreur lors du chargement des salles');
+      }
 
-      setTimeout(() => {
-        setSalles(sallesMock.sort((a, b) => a.distance_km - b.distance_km));
-        setLoading(false);
-        setLocationLoading(false);
-      }, 400);
+      const data = await response.json();
+
+      setSalles(data);
+      setLoading(false);
+      setLocationLoading(false);
     } catch (error) {
       console.error('Erreur chargement salles :', error);
       setLocationError("Impossible de charger les salles.");
@@ -68,7 +34,6 @@ const ProspectSalles = () => {
       setLocationLoading(false);
     }
   };
-
   useEffect(() => {
     if (!navigator.geolocation) {
       setLocationError("La géolocalisation n'est pas supportée par votre navigateur.");
