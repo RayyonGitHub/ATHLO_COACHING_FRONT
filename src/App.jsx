@@ -25,7 +25,9 @@ import AthleteSettings from './pages/AthleteSettings';
 import CoachStep2 from './pages/onboarding/CoachStep2';
 import CoachStep3 from './pages/onboarding/CoachStep3';
 
-
+import ProspectLayout from './components/layouts/ProspectLayout';
+import ProspectSalles from './pages/ProspectSalles';
+import ProspectDevis from './pages/ProspectDevis';
 
 import AdminRoute from './components/AdminRoute';
 import AdminLogin from './pages/admin/AdminLogin';
@@ -157,13 +159,17 @@ function App() {
         </Route>
 
         <Route
-          path="/prospect/dashboard"
+          path="/prospect"
           element={
             <ProtectedRoute>
-              <ProspectDashboard />
+              <ProspectLayout />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route path="dashboard" element={<ProspectDashboard />} />
+          <Route path="salles" element={<ProspectSalles />} />
+          <Route path="devis" element={<ProspectDevis />} />
+        </Route>
 
         <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/admin/dashboard" element={<AdminRoute><AdminLayout><AdminDashboard /></AdminLayout></AdminRoute>} />

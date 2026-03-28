@@ -1,589 +1,518 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 
-// Liste des villes pour la recherche (réutilisée)
+const coachsMock = [
+  {
+    id: 1,
+    nom: 'Thomas Dubois',
+    ville: 'Paris',
+    specialites: ['Crossfit', 'HIIT', 'Nutrition'],
+    note: 4.8,
+    avis: 124,
+    tarifs: { seance: 60, pack: 500, abonnement: 180 },
+    description:
+      'Coach spécialisé en performance, remise en forme et nutrition sportive.',
+    programmes_gratuits: [
+      { id: 1, titre: 'Découverte Crossfit', duree: '15 min' },
+      { id: 2, titre: 'Étirements matinaux', duree: '10 min' },
+    ],
+  },
+  {
+    id: 2,
+    nom: 'Sarah Martin',
+    ville: 'Lyon',
+    specialites: ['Yoga', 'Pilates', 'Méditation'],
+    note: 4.9,
+    avis: 89,
+    tarifs: { seance: 55, pack: 450, abonnement: 160 },
+    description:
+      'Coach bien-être pour retrouver mobilité, sérénité et équilibre.',
+    programmes_gratuits: [
+      { id: 3, titre: 'Yoga débutant', duree: '20 min' },
+      { id: 4, titre: 'Méditation guidée', duree: '10 min' },
+    ],
+  },
+  {
+    id: 3,
+    nom: 'Marc Lefebvre',
+    ville: 'Marseille',
+    specialites: ['Force Athlétique', 'Nutrition', 'Boxe'],
+    note: 4.7,
+    avis: 56,
+    tarifs: { seance: 65, pack: 550, abonnement: 200 },
+    description:
+      'Coach orienté force, boxe et transformation physique progressive.',
+    programmes_gratuits: [
+      { id: 5, titre: 'Renforcement musculaire', duree: '25 min' },
+    ],
+  },
+];
+
 const villes = [
-  "Aix-en-Provence", "Amiens", "Angers", "Annecy", "Avignon", "Bayonne", "Belfort",
-  "Besançon", "Bordeaux", "Boulogne-Billancourt", "Brest", "Caen", "Clermont-Ferrand",
-  "Dijon", "Grenoble", "Le Havre", "Le Mans", "Lille", "Limoges", "Lyon", "Marseille",
-  "Metz", "Montpellier", "Mulhouse", "Nancy", "Nantes", "Nice", "Nîmes", "Orléans",
-  "Paris", "Perpignan", "Poitiers", "Reims", "Rennes", "Rouen", "Saint-Étienne",
-  "Strasbourg", "Toulon", "Toulouse", "Tours", "Villeurbanne"
+  'Aix-en-Provence', 'Amiens', 'Angers', 'Annecy', 'Avignon', 'Bayonne',
+  'Belfort', 'Besançon', 'Bordeaux', 'Boulogne-Billancourt', 'Brest', 'Caen',
+  'Clermont-Ferrand', 'Dijon', 'Grenoble', 'Le Havre', 'Le Mans', 'Lille',
+  'Limoges', 'Lyon', 'Marseille', 'Metz', 'Montpellier', 'Mulhouse', 'Nancy',
+  'Nantes', 'Nice', 'Nîmes', 'Orléans', 'Paris', 'Perpignan', 'Poitiers',
+  'Reims', 'Rennes', 'Rouen', 'Saint-Étienne', 'Strasbourg', 'Toulon',
+  'Toulouse', 'Tours', 'Villeurbanne',
+];
+
+const specialites = [
+  'Crossfit',
+  'Nutrition',
+  'HIIT',
+  'Pilates',
+  'Boxe',
+  'Méditation',
+  'Yoga',
+  'Force Athlétique',
 ];
 
 const ProspectDashboard = () => {
   const navigate = useNavigate();
-  
-  // États pour la géolocalisation
-  const [userLocation, setUserLocation] = useState(null);
-  const [locationError, setLocationError] = useState(null);
-  const [sallesProches, setSallesProches] = useState([]);
-  
-  // États pour la recherche
-  const [searchVille, setSearchVille] = useState("");
+
+  const [searchVille, setSearchVille] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
-  const [villeSelectionnee, setVilleSelectionnee] = useState("");
-  
-  // États pour les filtres
+
   const [filters, setFilters] = useState({
-    specialite: "",
-    distance: 10,
+    specialite: '',
     note_min: 0,
     prix_max: 200,
-    type_offre: "tous" // 'seance', 'pack', 'abonnement', 'tous'
+    type_offre: 'tous',
   });
-  
-  // États pour les résultats
-  const [coachs, setCoachs] = useState([]);
-  const [loading, setLoading] = useState(false);
+
+  const [coachs, setCoachs] = useState(coachsMock);
   const [selectedCoach, setSelectedCoach] = useState(null);
   const [showAchatModal, setShowAchatModal] = useState(false);
-  const [selectedOffre, setSelectedOffre] = useState(null);
+  const [selectedOffre, setSelectedOffre] = useState('seance');
 
-  // Tags de spécialités disponibles
-  const specialites = ["Crossfit", "Nutrition", "HIIT", "Pilates", "Boxe", "Méditation", "Yoga", "Force Athlétique"];
+  const filteredVilles = useMemo(() => {
+    if (!searchVille.trim()) return villes;
+    return villes.filter((ville) =>
+      ville.toLowerCase().includes(searchVille.toLowerCase())
+    );
+  }, [searchVille]);
 
-  // Filtrer les villes pour l'autocomplétion
-  const filteredVilles = villes.filter(ville => 
-    ville.toLowerCase().includes(searchVille.toLowerCase())
-  );
+  const rechercherCoachs = () => {
+    let resultats = [...coachsMock];
 
-  // Obtenir la position de l'utilisateur
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setUserLocation({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          });
-          setLocationError(null);
-          // Simuler des salles proches (à remplacer par appel API)
-          setSallesProches([
-            { id: 1, nom: "Fitness Park", distance: "1.2 km", adresse: "Centre Commercial" },
-            { id: 2, nom: "Basic-Fit", distance: "2.5 km", adresse: "Rue de la République" },
-            { id: 3, nom: "L'Appart Fitness", distance: "3.0 km", adresse: "Avenue Jean Jaurès" }
-          ]);
-        },
-        (error) => {
-          setLocationError("Impossible d'obtenir votre position");
-          console.error(error);
-        }
+    if (searchVille.trim()) {
+      resultats = resultats.filter((coach) =>
+        coach.ville.toLowerCase().includes(searchVille.toLowerCase())
+      );
+    }
+
+    if (filters.specialite) {
+      resultats = resultats.filter((coach) =>
+        coach.specialites.includes(filters.specialite)
+      );
+    }
+
+    if (filters.note_min > 0) {
+      resultats = resultats.filter((coach) => coach.note >= filters.note_min);
+    }
+
+    if (filters.type_offre !== 'tous') {
+      resultats = resultats.filter(
+        (coach) => coach.tarifs[filters.type_offre] <= Number(filters.prix_max)
       );
     } else {
-      setLocationError("La géolocalisation n'est pas supportée");
+      resultats = resultats.filter(
+        (coach) =>
+          coach.tarifs.seance <= Number(filters.prix_max) ||
+          coach.tarifs.pack <= Number(filters.prix_max) ||
+          coach.tarifs.abonnement <= Number(filters.prix_max)
+      );
     }
-  }, []);
 
-  // Rechercher des coachs
-  const rechercherCoachs = async () => {
-    setLoading(true);
-    try {
-      // Simulation de données (à remplacer par appel API réel)
-      setTimeout(() => {
-        setCoachs([
-          {
-            id: 1,
-            nom: "Thomas Dubois",
-            specialites: ["Crossfit", "HIIT", "Nutrition"],
-            note: 4.8,
-            avis: 124,
-            distance: "2.3 km",
-            tarifs: { seance: 60, pack: 500, abonnement: 180 },
-            image: null,
-            programmes_gratuits: [
-              { id: 1, titre: "Découverte Crossfit", duree: "15 min" },
-              { id: 2, titre: "Étirements matinaux", duree: "10 min" }
-            ]
-          },
-          {
-            id: 2,
-            nom: "Sarah Martin",
-            specialites: ["Yoga", "Pilates", "Méditation"],
-            note: 4.9,
-            avis: 89,
-            distance: "1.8 km",
-            tarifs: { seance: 55, pack: 450, abonnement: 160 },
-            image: null,
-            programmes_gratuits: [
-              { id: 3, titre: "Yoga débutant", duree: "20 min" },
-              { id: 4, titre: "Méditation guidée", duree: "10 min" }
-            ]
-          },
-          {
-            id: 3,
-            nom: "Marc Lefebvre",
-            specialites: ["Force Athlétique", "Nutrition", "Boxe"],
-            note: 4.7,
-            avis: 56,
-            distance: "3.5 km",
-            tarifs: { seance: 65, pack: 550, abonnement: 200 },
-            image: null,
-            programmes_gratuits: [
-              { id: 5, titre: "Renforcement musculaire", duree: "25 min" }
-            ]
-          }
-        ]);
-        setLoading(false);
-      }, 1500);
-    } catch (error) {
-      console.error("Erreur recherche coachs:", error);
-      setLoading(false);
-    }
+    setCoachs(resultats);
   };
 
-  // Acheter une offre
-  const acheterOffre = (coach, typeOffre) => {
+  const ouvrirAchat = (coach, offre = 'seance') => {
     setSelectedCoach(coach);
-    setSelectedOffre({
-      type: typeOffre,
-      prix: coach.tarifs[typeOffre],
-      description: typeOffre === 'seance' ? 'Séance unique' : 
-                   typeOffre === 'pack' ? 'Pack 10 séances' : 'Abonnement mensuel'
-    });
+    setSelectedOffre(offre);
     setShowAchatModal(true);
   };
 
-  // Demander un devis personnalisé
   const demanderDevis = (coach) => {
-    navigate('/devis', { state: { coach } });
-  };
-
-  // Voir le profil complet
-  const voirProfil = (coach) => {
-    setSelectedCoach(coach);
-    // Ouvrir modal ou naviguer vers page profil
+    navigate('/prospect/devis', { state: { coach } });
   };
 
   return (
-    <div className="bg-[#121212] text-gray-100 min-h-screen font-sans">
-      <div className="flex h-screen overflow-hidden">
-        
-        {/* SIDEBAR */}
-        <aside className="w-20 lg:w-64 flex flex-col justify-between bg-[#1E1E1E] border-r border-[#2D2D2D] transition-all duration-300 z-20">
+    <>
+      <header className="sticky top-0 z-10 bg-[#121212]/80 backdrop-blur-md px-8 py-6 border-b border-[#2D2D2D]">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
-            <div className="h-20 flex items-center justify-center lg:justify-start lg:px-8 border-b border-[#2D2D2D]">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#FF6B00] to-[#FF9E00] flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-[#FF6B00]/20">
-                  P
-                </div>
-                <span className="hidden lg:block text-2xl font-bold tracking-widest text-white">ATHLO</span>
-              </div>
-            </div>
-            <nav className="mt-8 flex flex-col gap-2 px-3">
-              <a className="flex items-center gap-4 px-3 py-3 lg:px-5 lg:py-3 rounded-xl bg-[#FF6B00]/10 text-[#FF6B00] font-medium" href="#explorer">
-                <span className="material-icons-round text-2xl">explore</span>
-                <span className="hidden lg:block">Explorer</span>
-              </a>
-              <a className="flex items-center gap-4 px-3 py-3 lg:px-5 lg:py-3 rounded-xl text-gray-400 hover:bg-[#2D2D2D] transition-colors group" href="#salles">
-                <span className="material-icons-round text-2xl group-hover:text-[#FF6B00] transition-colors">fitness_center</span>
-                <span className="hidden lg:block font-medium">Salles</span>
-              </a>
-              <a className="flex items-center gap-4 px-3 py-3 lg:px-5 lg:py-3 rounded-xl text-gray-400 hover:bg-[#2D2D2D] transition-colors group" href="#programmes-gratuits">
-                <span className="material-icons-round text-2xl group-hover:text-[#FF6B00] transition-colors">school</span>
-                <span className="hidden lg:block font-medium">Programmes Gratuits</span>
-              </a>
-              <a className="flex items-center gap-4 px-3 py-3 lg:px-5 lg:py-3 rounded-xl text-gray-400 hover:bg-[#2D2D2D] transition-colors group" href="#favoris">
-                <span className="material-icons-round text-2xl group-hover:text-[#FF6B00] transition-colors">favorite</span>
-                <span className="hidden lg:block font-medium">Favoris</span>
-              </a>
-              <a className="flex items-center gap-4 px-3 py-3 lg:px-5 lg:py-3 rounded-xl text-gray-400 hover:bg-[#2D2D2D] transition-colors group" href="#devis">
-                <span className="material-icons-round text-2xl group-hover:text-[#FF6B00] transition-colors">request_quote</span>
-                <span className="hidden lg:block font-medium">Mes Devis</span>
-              </a>
-            </nav>
+            <h1 className="text-2xl lg:text-3xl font-bold text-white">
+              Trouvez votre{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF6B00] to-[#FF9E00]">
+                coach idéal
+              </span>
+            </h1>
+            <p className="text-gray-400 mt-1">
+              Explorez les coachs selon votre ville, vos objectifs et votre budget.
+            </p>
           </div>
-          <div className="p-4 border-t border-[#2D2D2D]">
-            <button 
-              onClick={() => navigate('/login')}
-              className="w-full flex items-center gap-3 px-3 py-3 lg:px-5 lg:py-3 rounded-xl text-gray-400 hover:bg-[#2D2D2D] transition-colors mb-2"
-            >
-              <span className="material-icons-round text-2xl">login</span>
-              <span className="hidden lg:block font-medium">Se connecter</span>
-            </button>
-            <button
-              onClick={() => navigate('/register')}
-              className="w-full flex items-center gap-3 px-3 py-3 lg:px-5 lg:py-3 rounded-xl bg-gradient-to-r from-[#FF6B00] to-[#FF9E00] text-white font-medium hover:shadow-lg hover:shadow-[#FF6B00]/20 transition-all"
-            >
-              <span className="material-icons-round text-2xl">person_add</span>
-              <span className="hidden lg:block">S'inscrire</span>
-            </button>
+
+          <div className="bg-[#1E1E1E] border border-[#2D2D2D] rounded-2xl px-4 py-3 text-sm text-gray-300 inline-flex items-center gap-2">
+            <span className="material-icons-round text-[#FF6B00] text-base">insights</span>
+            {coachs.length} résultat{coachs.length > 1 ? 's' : ''}
           </div>
-        </aside>
+        </div>
+      </header>
 
-        {/* MAIN CONTENT */}
-        <main className="flex-1 overflow-y-auto relative bg-[#121212]">
-          
-          {/* HEADER */}
-          <header className="sticky top-0 z-10 bg-[#121212]/80 backdrop-blur-md px-8 py-6 flex justify-between items-center border-b border-[#2D2D2D]">
-            <div>
-              <h1 className="text-2xl lg:text-3xl font-bold text-white">
-                Trouvez votre <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF6B00] to-[#FF9E00]">coach idéal</span>
-              </h1>
-              <p className="text-gray-400 mt-1">
-                {userLocation ? "📍 Basé sur votre position" : "Recherchez par ville"}
-              </p>
+      <div className="p-6 lg:p-8 space-y-8">
+        <section className="bg-[#1E1E1E] border border-[#2D2D2D] rounded-3xl p-6 lg:p-8 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-40 h-40 bg-[#FF6B00]/10 rounded-full blur-3xl"></div>
+
+          <div className="relative z-10 max-w-3xl">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-r from-[#FF6B00]/20 to-[#FF9E00]/20 text-[#FF6B00] flex items-center justify-center mb-5">
+              <span className="material-icons-round text-3xl">explore</span>
             </div>
-            <div className="flex items-center gap-4">
-              <button className="relative p-2 rounded-full text-gray-400 hover:bg-[#2D2D2D] transition-colors">
-                <span className="material-icons-round">notifications_none</span>
-              </button>
-            </div>
-          </header>
 
-          <div className="p-6 lg:p-8">
-            
-            {/* SECTION GÉOLOCALISATION / SALLES PROCHES */}
-            {userLocation && (
-              <div className="mb-8">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                    <span className="material-icons-round text-[#FF6B00]">location_on</span>
-                    Salles de sport à proximité
-                  </h2>
-                  <button className="text-sm text-[#FF6B00] hover:text-[#FF9E00] transition-colors">
-                    Voir toutes les salles →
-                  </button>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {sallesProches.map(salle => (
-                    <div key={salle.id} className="bg-[#1E1E1E] p-4 rounded-xl border border-[#2D2D2D] hover:border-[#FF6B00]/50 transition-all group cursor-pointer">
-                      <div className="flex items-start justify-between mb-2">
-                        <h3 className="font-semibold text-white group-hover:text-[#FF6B00] transition-colors">{salle.nom}</h3>
-                        <span className="text-xs text-gray-400">{salle.distance}</span>
-                      </div>
-                      <p className="text-sm text-gray-400">{salle.adresse}</p>
-                      <button className="mt-3 text-xs text-[#FF6B00] font-medium">Voir les coachs →</button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            <h2 className="text-2xl lg:text-3xl font-bold text-white mb-3">
+              Rechercher un accompagnement sportif adapté
+            </h2>
 
-            {/* BARRE DE RECHERCHE PRINCIPALE */}
-            <div className="mb-8">
-              <div className="bg-[#1E1E1E] p-6 rounded-2xl border border-[#2D2D2D]">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  
-                  {/* Recherche par ville */}
-                  <div className="relative">
-                    <label className="block text-sm font-medium text-gray-400 mb-2">Ville</label>
-                    <input
-                      type="text"
-                      value={searchVille}
-                      onChange={(e) => {
-                        setSearchVille(e.target.value);
-                        setShowDropdown(true);
+            <p className="text-gray-400 leading-relaxed">
+              Comparez les coachs, consultez leurs spécialités, découvrez leurs
+              programmes gratuits et choisissez la formule qui vous convient.
+            </p>
+          </div>
+        </section>
+
+        <section className="bg-[#1E1E1E] border border-[#2D2D2D] rounded-3xl p-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-400 mb-2">
+                Ville
+              </label>
+              <input
+                type="text"
+                value={searchVille}
+                onChange={(e) => {
+                  setSearchVille(e.target.value);
+                  setShowDropdown(true);
+                }}
+                onFocus={() => setShowDropdown(true)}
+                placeholder="Paris, Lyon, Marseille..."
+                className="w-full bg-[#2D2D2D] border border-[#3D3D3D] rounded-xl py-3 px-4 text-white placeholder-gray-500 outline-none focus:border-[#FF6B00] transition-all"
+              />
+
+              {showDropdown && filteredVilles.length > 0 && (
+                <div className="absolute z-20 mt-2 w-full bg-[#2D2D2D] border border-[#3D3D3D] rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                  {filteredVilles.slice(0, 8).map((ville, index) => (
+                    <div
+                      key={index}
+                      onClick={() => {
+                        setSearchVille(ville);
+                        setShowDropdown(false);
                       }}
-                      onFocus={() => setShowDropdown(true)}
-                      placeholder="Paris, Lyon, Marseille..."
-                      className="w-full bg-[#2D2D2D] border border-[#3D3D3D] rounded-xl py-3 px-4 text-white placeholder-gray-500 outline-none focus:border-[#FF6B00] transition-all"
-                    />
-                    {showDropdown && filteredVilles.length > 0 && (
-                      <div className="absolute z-20 mt-2 w-full bg-[#2D2D2D] border border-[#3D3D3D] rounded-xl shadow-lg max-h-60 overflow-y-auto">
-                        {filteredVilles.map((ville, index) => (
-                          <div
-                            key={index}
-                            onClick={() => {
-                              setVilleSelectionnee(ville);
-                              setSearchVille(ville);
-                              setShowDropdown(false);
-                            }}
-                            className="px-4 py-3 cursor-pointer hover:bg-[#FF6B00] hover:text-white transition-all"
-                          >
-                            {ville}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Filtre spécialité */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-2">Spécialité</label>
-                    <select 
-                      value={filters.specialite}
-                      onChange={(e) => setFilters({...filters, specialite: e.target.value})}
-                      className="w-full bg-[#2D2D2D] border border-[#3D3D3D] rounded-xl py-3 px-4 text-white outline-none focus:border-[#FF6B00] transition-all"
+                      className="px-4 py-3 cursor-pointer hover:bg-[#FF6B00] hover:text-white transition-all"
                     >
-                      <option value="">Toutes les spécialités</option>
-                      {specialites.map(s => (
-                        <option key={s} value={s}>{s}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Filtre distance */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-2">
-                      Distance max: {filters.distance} km
-                    </label>
-                    <input
-                      type="range"
-                      min="1"
-                      max="50"
-                      value={filters.distance}
-                      onChange={(e) => setFilters({...filters, distance: e.target.value})}
-                      className="w-full accent-[#FF6B00]"
-                    />
-                  </div>
-
-                  {/* Filtre prix max */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-2">
-                      Prix max: {filters.prix_max} €
-                    </label>
-                    <input
-                      type="range"
-                      min="20"
-                      max="300"
-                      value={filters.prix_max}
-                      onChange={(e) => setFilters({...filters, prix_max: e.target.value})}
-                      className="w-full accent-[#FF6B00]"
-                    />
-                  </div>
-
-                </div>
-
-                {/* Filtres supplémentaires */}
-                <div className="flex flex-wrap items-center justify-between mt-4 pt-4 border-t border-[#2D2D2D]">
-                  <div className="flex items-center gap-4">
-                    <label className="flex items-center gap-2 text-sm text-gray-300">
-                      <input 
-                        type="checkbox" 
-                        className="accent-[#FF6B00]"
-                        onChange={(e) => setFilters({...filters, note_min: e.target.checked ? 4 : 0})}
-                      />
-                      Note minimum 4★
-                    </label>
-                    <select 
-                      value={filters.type_offre}
-                      onChange={(e) => setFilters({...filters, type_offre: e.target.value})}
-                      className="bg-[#2D2D2D] border border-[#3D3D3D] rounded-lg py-2 px-3 text-sm text-white outline-none"
-                    >
-                      <option value="tous">Tous types</option>
-                      <option value="seance">Séance unique</option>
-                      <option value="pack">Pack</option>
-                      <option value="abonnement">Abonnement</option>
-                    </select>
-                  </div>
-                  <button 
-                    onClick={rechercherCoachs}
-                    className="flex items-center gap-2 bg-gradient-to-r from-[#FF6B00] to-[#FF9E00] text-white px-8 py-3 rounded-xl font-semibold shadow-lg shadow-[#FF6B00]/20 hover:shadow-[#FF6B00]/40 transition-all"
-                  >
-                    <span className="material-icons-round">search</span>
-                    Rechercher
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* RÉSULTATS DE RECHERCHE */}
-            <div className="mb-8">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-white">
-                  {coachs.length > 0 ? `${coachs.length} coachs trouvés` : "Coachs recommandés"}
-                </h2>
-                <span className="text-sm text-gray-400">Trié par: Pertinence</span>
-              </div>
-
-              {loading ? (
-                <div className="flex justify-center py-12">
-                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#FF6B00]"></div>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {coachs.map(coach => (
-                    <div key={coach.id} className="bg-[#1E1E1E] rounded-2xl border border-[#2D2D2D] overflow-hidden hover:border-[#FF6B00]/50 transition-all group">
-                      
-                      {/* En-tête coach */}
-                      <div className="p-6 pb-4">
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="flex items-center gap-4">
-                            <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[#FF6B00] to-[#FF9E00] flex items-center justify-center text-white font-bold text-2xl">
-                              {coach.nom.charAt(0)}
-                            </div>
-                            <div>
-                              <h3 className="font-bold text-white text-lg group-hover:text-[#FF6B00] transition-colors">
-                                {coach.nom}
-                              </h3>
-                              <div className="flex items-center gap-2 mt-1">
-                                <div className="flex items-center text-[#FFD700]">
-                                  {"★".repeat(Math.floor(coach.note))}
-                                  {coach.note % 1 !== 0 && "½"}
-                                </div>
-                                <span className="text-sm text-gray-400">({coach.avis} avis)</span>
-                              </div>
-                            </div>
-                          </div>
-                          <button className="text-gray-400 hover:text-red-500 transition-colors">
-                            <span className="material-icons-round">favorite_border</span>
-                          </button>
-                        </div>
-
-                        {/* Spécialités */}
-                        <div className="flex flex-wrap gap-2 mb-4">
-                          {coach.specialites.map(spec => (
-                            <span key={spec} className="px-3 py-1 rounded-full text-xs font-medium bg-[#2D2D2D] text-gray-300 border border-[#3D3D3D]">
-                              {spec}
-                            </span>
-                          ))}
-                        </div>
-
-                        {/* Distance */}
-                        <div className="flex items-center gap-1 text-sm text-gray-400 mb-4">
-                          <span className="material-icons-round text-base">location_on</span>
-                          {coach.distance} de vous
-                        </div>
-
-                        {/* Programmes gratuits */}
-                        <div className="mb-4">
-                          <p className="text-sm font-medium text-gray-300 mb-2">Programmes gratuits :</p>
-                          <div className="space-y-2">
-                            {coach.programmes_gratuits.map(prog => (
-                              <div key={prog.id} className="flex items-center justify-between text-sm">
-                                <span className="text-gray-400">{prog.titre}</span>
-                                <button className="text-[#FF6B00] hover:text-[#FF9E00] transition-colors text-xs font-medium">
-                                  Essayer
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Tarifs */}
-                        <div className="grid grid-cols-3 gap-2 mb-6">
-                          <button 
-                            onClick={() => acheterOffre(coach, 'seance')}
-                            className="text-center p-2 rounded-lg bg-[#2D2D2D] hover:bg-[#3D3D3D] transition-colors"
-                          >
-                            <span className="block text-xs text-gray-400">Séance</span>
-                            <span className="block font-bold text-white">{coach.tarifs.seance}€</span>
-                          </button>
-                          <button 
-                            onClick={() => acheterOffre(coach, 'pack')}
-                            className="text-center p-2 rounded-lg bg-[#2D2D2D] hover:bg-[#3D3D3D] transition-colors"
-                          >
-                            <span className="block text-xs text-gray-400">Pack</span>
-                            <span className="block font-bold text-white">{coach.tarifs.pack}€</span>
-                          </button>
-                          <button 
-                            onClick={() => acheterOffre(coach, 'abonnement')}
-                            className="text-center p-2 rounded-lg bg-[#FF6B00]/20 border border-[#FF6B00]/40 hover:bg-[#FF6B00]/30 transition-colors"
-                          >
-                            <span className="block text-xs text-gray-300">Mensuel</span>
-                            <span className="block font-bold text-[#FF6B00]">{coach.tarifs.abonnement}€</span>
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Actions footer */}
-                      <div className="flex border-t border-[#2D2D2D]">
-                        <button 
-                          onClick={() => voirProfil(coach)}
-                          className="flex-1 py-3 text-center text-gray-400 hover:text-[#FF6B00] transition-colors border-r border-[#2D2D2D]"
-                        >
-                          Voir profil
-                        </button>
-                        <button 
-                          onClick={() => demanderDevis(coach)}
-                          className="flex-1 py-3 text-center text-gray-400 hover:text-[#FF6B00] transition-colors"
-                        >
-                          Demander devis
-                        </button>
-                      </div>
+                      {ville}
                     </div>
                   ))}
                 </div>
               )}
             </div>
 
-            {/* SECTION PROGRAMMES GRATUITS */}
-            <div className="mt-12">
-              <h2 className="text-xl font-bold text-white mb-6">Programmes gratuits populaires</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {[1, 2, 3, 4].map(i => (
-                  <div key={i} className="bg-[#1E1E1E] p-5 rounded-xl border border-[#2D2D2D] hover:border-[#FF6B00]/50 transition-all cursor-pointer">
-                    <div className="w-12 h-12 rounded-lg bg-[#FF6B00]/20 text-[#FF6B00] flex items-center justify-center mb-3">
-                      <span className="material-icons-round">fitness_center</span>
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">
+                Spécialité
+              </label>
+              <select
+                value={filters.specialite}
+                onChange={(e) =>
+                  setFilters({ ...filters, specialite: e.target.value })
+                }
+                className="w-full bg-[#2D2D2D] border border-[#3D3D3D] rounded-xl py-3 px-4 text-white outline-none focus:border-[#FF6B00] transition-all"
+              >
+                <option value="">Toutes les spécialités</option>
+                {specialites.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">
+                Prix max : {filters.prix_max} €
+              </label>
+              <input
+                type="range"
+                min="20"
+                max="600"
+                value={filters.prix_max}
+                onChange={(e) =>
+                  setFilters({ ...filters, prix_max: e.target.value })
+                }
+                className="w-full accent-[#FF6B00]"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">
+                Type d’offre
+              </label>
+              <select
+                value={filters.type_offre}
+                onChange={(e) =>
+                  setFilters({ ...filters, type_offre: e.target.value })
+                }
+                className="w-full bg-[#2D2D2D] border border-[#3D3D3D] rounded-xl py-3 px-4 text-white outline-none focus:border-[#FF6B00] transition-all"
+              >
+                <option value="tous">Tous types</option>
+                <option value="seance">Séance</option>
+                <option value="pack">Pack</option>
+                <option value="abonnement">Abonnement</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mt-5 pt-5 border-t border-[#2D2D2D]">
+            <label className="flex items-center gap-2 text-sm text-gray-300">
+              <input
+                type="checkbox"
+                className="accent-[#FF6B00]"
+                onChange={(e) =>
+                  setFilters({
+                    ...filters,
+                    note_min: e.target.checked ? 4 : 0,
+                  })
+                }
+              />
+              Note minimum 4★
+            </label>
+
+            <button
+              onClick={rechercherCoachs}
+              className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-[#FF6B00] to-[#FF9E00] text-white px-8 py-3 rounded-xl font-semibold hover:shadow-lg hover:shadow-[#FF6B00]/20 transition-all"
+            >
+              <span className="material-icons-round">search</span>
+              Rechercher
+            </button>
+          </div>
+        </section>
+
+        <section>
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-xl font-bold text-white">Coachs disponibles</h2>
+              <p className="text-sm text-gray-400 mt-1">
+                Une sélection simple et lisible pour comparer rapidement.
+              </p>
+            </div>
+          </div>
+
+          {coachs.length === 0 ? (
+            <div className="bg-[#1E1E1E] border border-[#2D2D2D] rounded-3xl p-10 text-center">
+              <div className="w-14 h-14 mx-auto rounded-2xl bg-[#2D2D2D] text-gray-400 flex items-center justify-center mb-4">
+                <span className="material-icons-round text-3xl">search_off</span>
+              </div>
+              <p className="text-white font-medium">Aucun coach trouvé.</p>
+              <p className="text-gray-500 text-sm mt-2">
+                Essaie de modifier la ville ou les filtres.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+              {coachs.map((coach) => (
+                <div
+                  key={coach.id}
+                  className="bg-[#1E1E1E] rounded-3xl border border-[#2D2D2D] overflow-hidden hover:border-[#FF6B00]/40 transition-all"
+                >
+                  <div className="p-6">
+                    <div className="flex items-start gap-4 mb-5">
+                      <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[#FF6B00] to-[#FF9E00] flex items-center justify-center text-white font-bold text-2xl shrink-0">
+                        {coach.nom.charAt(0)}
+                      </div>
+
+                      <div className="min-w-0">
+                        <h3 className="font-bold text-white text-lg">{coach.nom}</h3>
+                        <p className="text-sm text-gray-400">{coach.ville}</p>
+                        <p className="text-sm text-gray-400 mt-1">
+                          {coach.note} ★ • {coach.avis} avis
+                        </p>
+                      </div>
                     </div>
-                    <h3 className="font-semibold text-white mb-1">Découverte {i}</h3>
-                    <p className="text-sm text-gray-400 mb-3">15 min • Débutant</p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-[#FF6B00] font-medium">Par Thomas D.</span>
-                      <button className="text-[#FF6B00] hover:text-[#FF9E00] transition-colors">
-                        <span className="material-icons-round text-sm">play_circle</span>
+
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {coach.specialites.map((spec) => (
+                        <span
+                          key={spec}
+                          className="px-3 py-1 rounded-full text-xs font-medium bg-[#2D2D2D] text-gray-300 border border-[#3D3D3D]"
+                        >
+                          {spec}
+                        </span>
+                      ))}
+                    </div>
+
+                    <p className="text-sm text-gray-400 mb-5 line-clamp-2">
+                      {coach.description}
+                    </p>
+
+                    <div className="bg-[#181818] border border-[#2D2D2D] rounded-2xl p-4 mb-5">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm text-gray-400">Tarif séance</span>
+                        <span className="font-bold text-white">{coach.tarifs.seance}€</span>
+                      </div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm text-gray-400">Pack</span>
+                        <span className="font-medium text-gray-200">{coach.tarifs.pack}€</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-400">Abonnement</span>
+                        <span className="font-medium text-[#FF6B00]">
+                          {coach.tarifs.abonnement}€
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="mb-5">
+                      <p className="text-sm font-medium text-gray-300 mb-2">
+                        Programmes gratuits
+                      </p>
+                      <div className="space-y-2">
+                        {coach.programmes_gratuits.slice(0, 2).map((prog) => (
+                          <div
+                            key={prog.id}
+                            className="flex items-center justify-between text-sm bg-[#181818] border border-[#2D2D2D] rounded-xl px-3 py-2"
+                          >
+                            <span className="text-gray-300">{prog.titre}</span>
+                            <span className="text-[#FF6B00] text-xs">{prog.duree}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <button
+                        onClick={() => ouvrirAchat(coach, 'seance')}
+                        className="py-3 rounded-xl bg-gradient-to-r from-[#FF6B00] to-[#FF9E00] text-white font-semibold hover:shadow-lg hover:shadow-[#FF6B00]/20 transition-all"
+                      >
+                        Acheter
+                      </button>
+
+                      <button
+                        onClick={() => demanderDevis(coach)}
+                        className="py-3 rounded-xl border border-[#2D2D2D] text-gray-300 hover:bg-[#2D2D2D] transition-colors"
+                      >
+                        Devis
                       </button>
                     </div>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
+          )}
+        </section>
 
+        <section className="bg-[#1E1E1E] border border-[#2D2D2D] rounded-3xl p-6 lg:p-8">
+          <div className="mb-6">
+            <h2 className="text-xl font-bold text-white">Programmes gratuits populaires</h2>
+            <p className="text-sm text-gray-400 mt-1">
+              Un aperçu rapide pour découvrir le style d’accompagnement proposé.
+            </p>
           </div>
-        </main>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div
+                key={i}
+                className="bg-[#181818] p-5 rounded-2xl border border-[#2D2D2D] hover:border-[#FF6B00]/40 transition-all"
+              >
+                <div className="w-12 h-12 rounded-xl bg-[#FF6B00]/20 text-[#FF6B00] flex items-center justify-center mb-3">
+                  <span className="material-icons-round">fitness_center</span>
+                </div>
+                <h3 className="font-semibold text-white mb-1">Programme découverte {i}</h3>
+                <p className="text-sm text-gray-400 mb-3">15 min • Débutant</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-[#FF6B00] font-medium">Accès gratuit</span>
+                  <span className="material-icons-round text-[#FF6B00] text-sm">play_circle</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
       </div>
 
-      {/* MODAL D'ACHAT */}
-      {showAchatModal && selectedCoach && selectedOffre && (
+      {showAchatModal && selectedCoach && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1E1E1E] rounded-2xl border border-[#2D2D2D] max-w-md w-full">
-            <div className="p-6 border-b border-[#2D2D2D]">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-white">Finaliser l'achat</h2>
-                <button onClick={() => setShowAchatModal(false)} className="text-gray-400 hover:text-white">
-                  <span className="material-icons-round">close</span>
+          <div className="bg-[#1E1E1E] rounded-3xl border border-[#2D2D2D] max-w-md w-full">
+            <div className="p-6 border-b border-[#2D2D2D] flex items-center justify-between">
+              <h2 className="text-xl font-bold text-white">Acheter une offre</h2>
+              <button
+                onClick={() => setShowAchatModal(false)}
+                className="text-gray-400 hover:text-white"
+              >
+                <span className="material-icons-round">close</span>
+              </button>
+            </div>
+
+            <div className="p-6">
+              <div className="mb-5">
+                <h3 className="font-bold text-white">{selectedCoach.nom}</h3>
+                <p className="text-sm text-gray-400">{selectedCoach.ville}</p>
+              </div>
+
+              <div className="space-y-3 mb-6">
+                <button
+                  onClick={() => setSelectedOffre('seance')}
+                  className={`w-full rounded-xl border p-4 text-left ${
+                    selectedOffre === 'seance'
+                      ? 'border-[#FF6B00] bg-[#FF6B00]/10'
+                      : 'border-[#2D2D2D] bg-[#2D2D2D]'
+                  }`}
+                >
+                  <p className="text-white font-medium">Séance unique</p>
+                  <p className="text-sm text-gray-400">{selectedCoach.tarifs.seance}€</p>
+                </button>
+
+                <button
+                  onClick={() => setSelectedOffre('pack')}
+                  className={`w-full rounded-xl border p-4 text-left ${
+                    selectedOffre === 'pack'
+                      ? 'border-[#FF6B00] bg-[#FF6B00]/10'
+                      : 'border-[#2D2D2D] bg-[#2D2D2D]'
+                  }`}
+                >
+                  <p className="text-white font-medium">Pack</p>
+                  <p className="text-sm text-gray-400">{selectedCoach.tarifs.pack}€</p>
+                </button>
+
+                <button
+                  onClick={() => setSelectedOffre('abonnement')}
+                  className={`w-full rounded-xl border p-4 text-left ${
+                    selectedOffre === 'abonnement'
+                      ? 'border-[#FF6B00] bg-[#FF6B00]/10'
+                      : 'border-[#2D2D2D] bg-[#2D2D2D]'
+                  }`}
+                >
+                  <p className="text-white font-medium">Abonnement mensuel</p>
+                  <p className="text-sm text-gray-400">
+                    {selectedCoach.tarifs.abonnement}€
+                  </p>
                 </button>
               </div>
-            </div>
-            
-            <div className="p-6">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[#FF6B00] to-[#FF9E00] flex items-center justify-center text-white font-bold text-2xl">
-                  {selectedCoach.nom.charAt(0)}
-                </div>
-                <div>
-                  <h3 className="font-bold text-white">{selectedCoach.nom}</h3>
-                  <p className="text-sm text-gray-400">{selectedOffre.description}</p>
-                </div>
-              </div>
 
-              <div className="bg-[#2D2D2D] p-4 rounded-xl mb-6">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-300">Prix total</span>
-                  <span className="text-2xl font-bold text-white">{selectedOffre.prix}€</span>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <p className="text-sm text-gray-400 text-center">
-                  Vous allez être redirigé vers la page de paiement sécurisé.
-                </p>
-                <div className="flex gap-3">
-                  <button 
-                    onClick={() => setShowAchatModal(false)}
-                    className="flex-1 py-3 rounded-xl border border-[#2D2D2D] text-gray-300 hover:bg-[#2D2D2D] transition-colors"
-                  >
-                    Annuler
-                  </button>
-                  <button 
-                    onClick={() => {
-                      // Logique de paiement
-                      alert("Redirection vers le paiement...");
-                      setShowAchatModal(false);
-                    }}
-                    className="flex-1 py-3 rounded-xl bg-gradient-to-r from-[#FF6B00] to-[#FF9E00] text-white font-semibold hover:shadow-lg hover:shadow-[#FF6B00]/20 transition-all"
-                  >
-                    Payer
-                  </button>
-                </div>
-              </div>
+              <button
+                onClick={() => {
+                  alert(`Offre "${selectedOffre}" sélectionnée pour ${selectedCoach.nom}`);
+                  setShowAchatModal(false);
+                }}
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-[#FF6B00] to-[#FF9E00] text-white font-semibold"
+              >
+                Continuer
+              </button>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 
