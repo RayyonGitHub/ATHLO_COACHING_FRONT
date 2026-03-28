@@ -18,14 +18,15 @@ import DemoDashboard from './pages/DemoDashboard';
 import AthleteDashboard from './pages/AthleteDashboard';
 import AthleteCalendar from './pages/AthleteCalendar';
 import ProspectDashboard from './pages/ProspectDashboard';
+import ProspectCheckout from './pages/ProspectCheckout';
+import ProspectPaymentSuccess from './pages/ProspectPaymentSuccess';
+import ProspectPaymentFailed from './pages/ProspectPaymentFailed';
 import AthleteStats from './pages/AthleteStats';
 import AthleteProgrammes from './pages/AthleteProgrammes';
 import AthleteSettings from './pages/AthleteSettings';
 
 import CoachStep2 from './pages/onboarding/CoachStep2';
 import CoachStep3 from './pages/onboarding/CoachStep3';
-
-
 
 import AdminRoute from './components/AdminRoute';
 import AdminLogin from './pages/admin/AdminLogin';
@@ -150,6 +151,33 @@ function App() {
           element={
             <ProtectedRoute>
               <ProspectDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/prospect/checkout"
+          element={
+            <ProtectedRoute>
+              <ProspectCheckout />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/prospect/payment/success"
+          element={
+            <ProtectedRoute>
+              <ProspectPaymentSuccess />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/prospect/payment/failed"
+          element={
+            <ProtectedRoute>
+              <ProspectPaymentFailed />
             </ProtectedRoute>
           }
         />
