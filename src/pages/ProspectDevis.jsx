@@ -46,7 +46,7 @@ const ProspectDevis = () => {
           </span>
         </h1>
         <p className="text-gray-400 mt-1">
-          Décrivez votre profil et votre besoin pour recevoir une proposition adaptée.
+          Décrivez votre profil et votre besoin pour recevoir une proposition adaptée
         </p>
       </header>
 

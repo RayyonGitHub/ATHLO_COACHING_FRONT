@@ -60,7 +60,7 @@ const ProspectSalles = () => {
           </span>
         </h1>
         <p className="text-gray-400 mt-1">
-          Découvrez rapidement les salles autour de vous.
+          Découvrez rapidement les salles autour de vous
         </p>
       </header>
 
