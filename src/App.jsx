@@ -18,6 +18,9 @@ import DemoDashboard from './pages/DemoDashboard';
 import AthleteDashboard from './pages/AthleteDashboard';
 import AthleteCalendar from './pages/AthleteCalendar';
 import ProspectDashboard from './pages/ProspectDashboard';
+import ProspectCheckout from './pages/ProspectCheckout';
+import ProspectPaymentSuccess from './pages/ProspectPaymentSuccess';
+import ProspectPaymentFailed from './pages/ProspectPaymentFailed';
 import AthleteStats from './pages/AthleteStats';
 import AthleteProgrammes from './pages/AthleteProgrammes';
 import AthleteSettings from './pages/AthleteSettings';
@@ -170,6 +173,33 @@ function App() {
           <Route path="salles" element={<ProspectSalles />} />
           <Route path="devis" element={<ProspectDevis />} />
         </Route>
+
+        <Route
+          path="/prospect/checkout"
+          element={
+            <ProtectedRoute>
+              <ProspectCheckout />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/prospect/payment/success"
+          element={
+            <ProtectedRoute>
+              <ProspectPaymentSuccess />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/prospect/payment/failed"
+          element={
+            <ProtectedRoute>
+              <ProspectPaymentFailed />
+            </ProtectedRoute>
+          }
+        />
 
         <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/admin/dashboard" element={<AdminRoute><AdminLayout><AdminDashboard /></AdminLayout></AdminRoute>} />
