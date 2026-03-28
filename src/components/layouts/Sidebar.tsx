@@ -20,7 +20,7 @@ const Sidebar = ({ activePage = "Dashboard" }: SidebarProps) => {
     { icon: <Activity size={20} />, label: 'Exercices', path: '/exercices' },
     { icon: <Calendar size={20} />, label: 'Calendrier', path: '/calendar' },
     { icon: <MessageCircle size={20} />, label: 'Messagerie', path: '/messages' },
-    { icon: <Settings size={20} />, label: 'Paramètres', path: '/settings' },
+    { icon: <Settings size={20} />, label: 'Paramètres', path: '/parametres' }, 
   ];
 
   const handleLogout = () => {

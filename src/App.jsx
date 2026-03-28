@@ -37,6 +37,7 @@ import AdminGymList from './pages/admin/AdminGymList';
 import SessionBuilder from './components/SessionBuilder';
 import ExerciceManager from './pages/ExerciceManager';
 import Messages from './pages/Messages';
+import CoachSettings from "./pages/CoachSettings";
 
 function App() {
   const currentUser = JSON.parse(localStorage.getItem('user')) || {};
@@ -124,6 +125,16 @@ function App() {
             <ProtectedRoute>
               <MainLayout activePageLabel="Créateur de Séance" headerSection="Programmes" headerSubSection="Builder">
                 <SessionBuilder />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/parametres"
+          element={
+            <ProtectedRoute>
+              <MainLayout activePageLabel="Paramètres" headerSection="Coach" headerSubSection="Mon Compte">
+                <CoachSettings />
               </MainLayout>
             </ProtectedRoute>
           }
