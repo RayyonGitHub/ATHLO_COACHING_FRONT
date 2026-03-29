@@ -12,6 +12,7 @@ const ProspectSalles = () => {
 
   const chargerSallesProches = async (location) => {
     setLoading(true);
+    setLocationError(null);
 
     try {
       const response = await fetch(
@@ -23,17 +24,17 @@ const ProspectSalles = () => {
       }
 
       const data = await response.json();
-
-      setSalles(data);
-      setLoading(false);
-      setLocationLoading(false);
+      setSalles(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Erreur chargement salles :', error);
+      setSalles([]);
       setLocationError("Impossible de charger les salles.");
+    } finally {
       setLoading(false);
       setLocationLoading(false);
     }
   };
+
   useEffect(() => {
     if (!navigator.geolocation) {
       setLocationError("La géolocalisation n'est pas supportée par votre navigateur.");
@@ -47,6 +48,8 @@ const ProspectSalles = () => {
           lat: position.coords.latitude,
           lng: position.coords.longitude,
         };
+
+        console.log('Position utilisateur :', location);
 
         setUserLocation(location);
         setLocationError(null);
@@ -64,6 +67,15 @@ const ProspectSalles = () => {
     if (km == null) return 'Distance inconnue';
     if (km < 1) return `${Math.round(km * 1000)} m`;
     return `${km.toFixed(1)} km`;
+  };
+
+  const explorerCoachs = (salle) => {
+    navigate('/prospect/dashboard', {
+      state: {
+        salleFiltree: salle.nom,
+        villeFiltree: salle.ville,
+      },
+    });
   };
 
   return (
@@ -147,28 +159,24 @@ const ProspectSalles = () => {
                     className="bg-[#1E1E1E] rounded-3xl border border-[#2D2D2D] overflow-hidden hover:border-[#FF6B00]/40 transition-all"
                   >
                     <div className="p-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <div>
+                      <div className="flex items-start justify-between mb-4 gap-4">
+                        <div className="min-w-0">
                           <h3 className="font-bold text-white text-xl">{salle.nom}</h3>
                           <p className="text-gray-500 text-sm mt-1">{salle.ville}</p>
                         </div>
 
-                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-[#FF6B00]/10 text-[#FF6B00] border border-[#FF6B00]/20">
+                        <span className="shrink-0 px-3 py-1 rounded-full text-xs font-medium bg-[#FF6B00]/10 text-[#FF6B00] border border-[#FF6B00]/20">
                           {formatDistance(salle.distance_km)}
                         </span>
                       </div>
 
                       <div className="bg-[#181818] rounded-2xl p-4 mb-5 border border-[#2D2D2D]">
                         <p className="text-sm text-gray-400">Adresse</p>
-                        <p className="text-gray-200 mt-1">{salle.adresse}</p>
+                        <p className="text-gray-200 mt-1">{salle.adresse || 'Adresse non renseignée'}</p>
                       </div>
 
                       <button
-                        onClick={() =>
-                          navigate('/prospect/dashboard', {
-                            state: { salleFiltree: salle.nom, villeFiltree: salle.ville },
-                          })
-                        }
+                        onClick={() => explorerCoachs(salle)}
                         className="w-full py-3 rounded-xl bg-gradient-to-r from-[#FF6B00] to-[#FF9E00] text-white font-semibold hover:shadow-lg transition-all"
                       >
                         Explorer les coachs
