@@ -47,9 +47,6 @@ const ProspectDashboard = () => {
   const [error, setError] = useState('');
   const [lastSearchParams, setLastSearchParams] = useState(null);
 
-  const [selectedCoach, setSelectedCoach] = useState(null);
-  const [showAchatModal, setShowAchatModal] = useState(false);
-  const [selectedOffre, setSelectedOffre] = useState('seance');
 
   const filteredVilles = useMemo(() => {
     if (!searchVille.trim()) return villes;
@@ -70,17 +67,17 @@ const ProspectDashboard = () => {
     
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        setUserLocation({
+        const nextLocation = {
           lat: position.coords.latitude,
           lng: position.coords.longitude,
-        });
+        };
+
+        console.log('Position utilisateur :', nextLocation);
+
+        setUserLocation(nextLocation);
         setLocationEnabled(true);
         setLocationLoading(false);
-        
-        // Recherche automatique si le mode distance est actif
-        if (searchMode === 'distance') {
-          rechercherCoachs();
-        }
+        setLocationError('');
       },
       (error) => {
         console.error('Erreur géolocalisation:', error);
@@ -89,7 +86,8 @@ const ProspectDashboard = () => {
         setLocationLoading(false);
       }
     );
-  }, [searchMode]);
+  }, []);
+
 
   // Désactiver la géolocalisation
   const disableGeolocation = useCallback(() => {
@@ -103,6 +101,7 @@ const ProspectDashboard = () => {
     }
   }, [searchMode, searchVille]);
 
+  
   const rechercherCoachs = useCallback(async () => {
     try {
       setLoading(true);
@@ -117,12 +116,16 @@ const ProspectDashboard = () => {
         params.append('distance_max', distanceMax);
         setLastSearchParams(`Recherche à ${distanceMax}km autour de votre position`);
       } 
-      else if (searchMode === 'ville' && searchVille.trim()) {
-        params.append('ville', searchVille.trim());
-        setLastSearchParams(`Recherche dans ${searchVille.trim()}`);
+      else if (searchMode === 'ville') {
+        if (searchVille.trim()) {
+          params.append('ville', searchVille.trim());
+          setLastSearchParams(`Recherche dans ${searchVille.trim()}`);
+        } else {
+          setLastSearchParams('Recherche dans toutes les villes');
+        }
       }
       else {
-        setError('Veuillez activer la localisation ou saisir une ville');
+        setError('Veuillez activer la localisation');
         setLoading(false);
         return;
       }
@@ -141,6 +144,8 @@ const ProspectDashboard = () => {
         params.append('type_offre', filters.type_offre);
       }
 
+      console.log('URL appelée :', `http://127.0.0.1:8000/api/prospect/coachs/?${params.toString()}`);
+
       const response = await fetch(
         `http://127.0.0.1:8000/api/prospect/coachs/?${params.toString()}`
       );
@@ -155,7 +160,7 @@ const ProspectDashboard = () => {
         id: coach.id,
         nom: coach.nom,
         ville: coach.ville || '',
-        distance: coach.distance_km,
+        distance: coach.distance,
         specialites: coach.specialites_tags || [],
         note: coach.note_moyenne || 0,
         avis: coach.nombre_avis || 0,
@@ -178,23 +183,41 @@ const ProspectDashboard = () => {
     }
   }, [searchMode, userLocation, searchVille, distanceMax, filters]);
 
+    useEffect(() => {
+    if (searchMode === 'distance' && locationEnabled && userLocation) {
+      rechercherCoachs();
+    }
+  }, [searchMode, locationEnabled, userLocation, distanceMax, rechercherCoachs]);
+
+
   // Recherche manuelle déclenchée par l'utilisateur
   const handleSearch = useCallback(() => {
     if (searchMode === 'distance' && !userLocation) {
       setLocationError('Veuillez activer la localisation pour rechercher autour de vous');
       return;
     }
-    if (searchMode === 'ville' && !searchVille.trim()) {
-      setError('Veuillez saisir une ville');
-      return;
-    }
-    rechercherCoachs();
-  }, [searchMode, userLocation, searchVille, rechercherCoachs]);
 
-  const ouvrirAchat = (coach, offre = 'seance') => {
-    setSelectedCoach(coach);
-    setSelectedOffre(offre);
-    setShowAchatModal(true);
+    rechercherCoachs();
+  }, [searchMode, userLocation, rechercherCoachs]);
+
+  const acheterOffre = (coach, typeOffre = 'seance') => {
+  const prix = coach?.tarifs?.[typeOffre] || 0;
+
+  navigate('/prospect/checkout', {
+      state: {
+        coach,
+        selectedOffre: {
+          type: typeOffre,
+          prix,
+          description:
+            typeOffre === 'seance'
+              ? 'Séance unique'
+              : typeOffre === 'pack'
+              ? 'Pack 10 séances'
+              : 'Abonnement mensuel',
+        },
+      },
+    });
   };
 
   const demanderDevis = (coach) => {
@@ -265,7 +288,7 @@ const ProspectDashboard = () => {
                 onClick={() => {
                   setSearchMode('ville');
                   setError('');
-                  if (!locationEnabled) {
+                  if (locationEnabled) {
                     disableGeolocation();
                   }
                 }}
@@ -511,7 +534,7 @@ const ProspectDashboard = () => {
                       <div className="min-w-0">
                         <h3 className="font-bold text-white text-lg">{coach.nom}</h3>
                         <p className="text-sm text-gray-400">{coach.ville}</p>
-                        {coach.distance && (
+                        {coach.distance != null && (
                           <p className="text-sm text-[#FF6B00]">
                             {coach.distance.toFixed(1)} km de vous
                           </p>
@@ -583,21 +606,38 @@ const ProspectDashboard = () => {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div className="grid grid-cols-3 gap-2 mt-4">
                       <button
-                        onClick={() => ouvrirAchat(coach, 'seance')}
-                        className="py-3 rounded-xl bg-gradient-to-r from-[#FF6B00] to-[#FF9E00] text-white font-semibold hover:shadow-lg hover:shadow-[#FF6B00]/20 transition-all"
+                        onClick={() => acheterOffre(coach, 'seance')}
+                        className="bg-[#2D2D2D] p-2 rounded-lg text-center hover:bg-[#3D3D3D]"
                       >
-                        Acheter
+                        <span className="block text-[10px] text-gray-400">Séance</span>
+                        <span className="font-bold text-white">{coach.tarifs?.seance || 0}€</span>
                       </button>
 
                       <button
-                        onClick={() => demanderDevis(coach)}
-                        className="py-3 rounded-xl border border-[#2D2D2D] text-gray-300 hover:bg-[#2D2D2D] transition-colors"
+                        onClick={() => acheterOffre(coach, 'pack')}
+                        className="bg-[#2D2D2D] p-2 rounded-lg text-center hover:bg-[#3D3D3D]"
                       >
-                        Devis
+                        <span className="block text-[10px] text-gray-400">Pack</span>
+                        <span className="font-bold text-white">{coach.tarifs?.pack || 0}€</span>
+                      </button>
+
+                      <button
+                        onClick={() => acheterOffre(coach, 'abonnement')}
+                        className="bg-[#FF6B00]/20 border border-[#FF6B00]/40 p-2 rounded-lg text-center"
+                      >
+                        <span className="block text-[10px] text-orange-300">Mensuel</span>
+                        <span className="font-bold text-orange-500">{coach.tarifs?.abonnement || 0}€</span>
                       </button>
                     </div>
+
+                    <button
+                      onClick={() => demanderDevis(coach)}
+                      className="w-full mt-4 py-2 text-sm text-gray-400 hover:text-white transition-colors"
+                    >
+                      Demander un devis personnalisé
+                    </button>
                   </div>
                 </div>
               ))}
@@ -641,80 +681,6 @@ const ProspectDashboard = () => {
           </section>
         )}
       </div>
-
-      {/* Modal d'achat - identique */}
-      {showAchatModal && selectedCoach && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1E1E1E] rounded-3xl border border-[#2D2D2D] max-w-md w-full">
-            <div className="p-6 border-b border-[#2D2D2D] flex items-center justify-between">
-              <h2 className="text-xl font-bold text-white">Acheter une offre</h2>
-              <button
-                onClick={() => setShowAchatModal(false)}
-                className="text-gray-400 hover:text-white"
-              >
-                <span className="material-icons-round">close</span>
-              </button>
-            </div>
-
-            <div className="p-6">
-              <div className="mb-5">
-                <h3 className="font-bold text-white">{selectedCoach.nom}</h3>
-                <p className="text-sm text-gray-400">{selectedCoach.ville}</p>
-              </div>
-
-              <div className="space-y-3 mb-6">
-                <button
-                  onClick={() => setSelectedOffre('seance')}
-                  className={`w-full rounded-xl border p-4 text-left ${
-                    selectedOffre === 'seance'
-                      ? 'border-[#FF6B00] bg-[#FF6B00]/10'
-                      : 'border-[#2D2D2D] bg-[#2D2D2D]'
-                  }`}
-                >
-                  <p className="text-white font-medium">Séance unique</p>
-                  <p className="text-sm text-gray-400">{selectedCoach.tarifs.seance || 0}€</p>
-                </button>
-
-                <button
-                  onClick={() => setSelectedOffre('pack')}
-                  className={`w-full rounded-xl border p-4 text-left ${
-                    selectedOffre === 'pack'
-                      ? 'border-[#FF6B00] bg-[#FF6B00]/10'
-                      : 'border-[#2D2D2D] bg-[#2D2D2D]'
-                  }`}
-                >
-                  <p className="text-white font-medium">Pack</p>
-                  <p className="text-sm text-gray-400">{selectedCoach.tarifs.pack || 0}€</p>
-                </button>
-
-                <button
-                  onClick={() => setSelectedOffre('abonnement')}
-                  className={`w-full rounded-xl border p-4 text-left ${
-                    selectedOffre === 'abonnement'
-                      ? 'border-[#FF6B00] bg-[#FF6B00]/10'
-                      : 'border-[#2D2D2D] bg-[#2D2D2D]'
-                  }`}
-                >
-                  <p className="text-white font-medium">Abonnement mensuel</p>
-                  <p className="text-sm text-gray-400">
-                    {selectedCoach.tarifs.abonnement || 0}€
-                  </p>
-                </button>
-              </div>
-
-              <button
-                onClick={() => {
-                  alert(`Offre "${selectedOffre}" sélectionnée pour ${selectedCoach.nom}`);
-                  setShowAchatModal(false);
-                }}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-[#FF6B00] to-[#FF9E00] text-white font-semibold"
-              >
-                Continuer
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 };

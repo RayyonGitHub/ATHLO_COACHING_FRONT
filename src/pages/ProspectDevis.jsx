@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
 const ProspectDevis = () => {
   const location = useLocation();
   const coachSelectionne = location.state?.coach || null;
 
-  const devis = [];
+  const [devis, setDevis] = useState([]);
+  const [loadingHistorique, setLoadingHistorique] = useState(false);
 
   const [formData, setFormData] = useState({
     nom: '',
@@ -23,6 +24,14 @@ const ProspectDevis = () => {
     message: '',
   });
 
+  const [submitting, setSubmitting] = useState(false);
+
+  const [notification, setNotification] = useState({
+    show: false,
+    type: "",
+    message: "",
+  });
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -31,13 +40,139 @@ const ProspectDevis = () => {
     }));
   };
 
-  const handleSubmit = () => {
-    alert("Demande de devis à brancher au back");
-    console.log(formData);
+  const afficherNotification = (type, message) => {
+    setNotification({ show: true, type, message });
+    setTimeout(() => {
+      setNotification({ show: false, type: "", message: "" });
+    }, 3000);
+  };
+
+  const chargerHistorique = async (email) => {
+    if (!email?.trim()) {
+      setDevis([]);
+      return;
+    }
+
+    setLoadingHistorique(true);
+
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:8000/api/prospects/devis/?email=${encodeURIComponent(email)}`
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Impossible de charger l'historique.");
+      }
+
+      setDevis(data);
+    } catch (error) {
+      console.error("Erreur chargement historique :", error);
+      setDevis([]);
+    } finally {
+      setLoadingHistorique(false);
+    }
+  };
+
+  useEffect(() => {
+    if (formData.email.trim()) {
+      chargerHistorique(formData.email);
+    }
+  }, [formData.email]);
+
+  const handleSubmit = async () => {
+    if (!coachSelectionne?.id) {
+      afficherNotification("error", "Aucun coach sélectionné.");
+      return;
+    }
+
+    if (!formData.nom.trim() || !formData.prenom.trim() || !formData.email.trim()) {
+      afficherNotification("error", "Aucun coach sélectionné.");
+      return;
+    }
+
+    setSubmitting(true);
+
+    try {
+      const response = await fetch("http://127.0.0.1:8000/api/prospects/devis/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          coach_id: coachSelectionne.id,
+          nom: formData.nom,
+          prenom: formData.prenom,
+          email: formData.email,
+          telephone: formData.telephone,
+          age: formData.age ? Number(formData.age) : null,
+          taille: formData.taille ? Number(formData.taille) : null,
+          poids: formData.poids ? Number(formData.poids) : null,
+          niveauActivite: formData.niveauActivite,
+          typeEntrainement: formData.typeEntrainement,
+          objectifSportif: formData.objectifSportif,
+          budget: formData.budget,
+          pathologiesBlessures: formData.pathologiesBlessures,
+          message: formData.message,
+        }),
+      });
+
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`Erreur serveur: ${response.status} - ${text}`);
+      }
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Erreur lors de l'envoi du devis.");
+      }
+
+      afficherNotification("success", "Demande de devis envoyée avec succès.");
+
+      await chargerHistorique(formData.email);
+
+      setFormData({
+        nom: '',
+        prenom: '',
+        email: formData.email,
+        telephone: '',
+        age: '',
+        taille: '',
+        poids: '',
+        niveauActivite: '',
+        typeEntrainement: '',
+        objectifSportif: '',
+        budget: '',
+        pathologiesBlessures: '',
+        message: '',
+      });
+
+      console.log("Réponse devis :", data);
+    } catch (error) {
+      console.error("Erreur envoi devis :", error);
+      afficherNotification("error", error.message || "Impossible d'envoyer la demande de devis.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
     <>
+    {notification.show && (
+        <div className="fixed top-6 right-6 z-50">
+          <div
+            className={`rounded-xl px-4 py-3 shadow-lg ${
+              notification.type === "success"
+                ? "bg-green-600 text-white"
+                : "bg-red-600 text-white"
+            }`}
+          >
+            {notification.message}
+          </div>
+        </div>
+      )}
       <header className="sticky top-0 z-10 bg-[#121212]/80 backdrop-blur-md px-8 py-6 border-b border-[#2D2D2D]">
         <h1 className="text-2xl lg:text-3xl font-bold text-white">
           Mes{' '}
@@ -77,7 +212,6 @@ const ProspectDevis = () => {
             )}
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* INFOS PERSONNELLES */}
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-white">Informations personnelles</h3>
 
@@ -163,7 +297,6 @@ const ProspectDevis = () => {
                 </div>
               </div>
 
-              {/* BESOIN SPORTIF */}
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-white">Votre besoin</h3>
 
@@ -227,7 +360,6 @@ const ProspectDevis = () => {
               </div>
             </div>
 
-            {/* INFOS COMPLEMENTAIRES */}
             <div className="mt-8 space-y-4">
               <h3 className="text-lg font-semibold text-white">Informations complémentaires</h3>
 
@@ -262,10 +394,11 @@ const ProspectDevis = () => {
               <button
                 type="button"
                 onClick={handleSubmit}
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#FF6B00] to-[#FF9E00] text-white font-semibold hover:shadow-lg hover:shadow-[#FF6B00]/20 transition-all"
+                disabled={submitting}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#FF6B00] to-[#FF9E00] text-white font-semibold hover:shadow-lg hover:shadow-[#FF6B00]/20 transition-all disabled:opacity-60"
               >
                 <span className="material-icons-round text-xl">send</span>
-                Envoyer la demande
+                {submitting ? 'Envoi...' : 'Envoyer la demande'}
               </button>
             </div>
           </div>
@@ -285,31 +418,39 @@ const ProspectDevis = () => {
               {devis.length} demande{devis.length > 1 ? 's' : ''}
             </div>
           </div>
-
-          {devis.length === 0 ? (
-            <div className="border border-dashed border-[#3A3A3A] rounded-2xl p-10 text-center bg-[#181818]">
-              <div className="w-14 h-14 mx-auto rounded-2xl bg-[#2D2D2D] text-gray-400 flex items-center justify-center mb-4">
-                <span className="material-icons-round text-3xl">inventory_2</span>
+            
+          {loadingHistorique ? (
+              <div className="border border-dashed border-[#3A3A3A] rounded-2xl p-10 text-center bg-[#181818]">
+                <p className="text-gray-400 text-sm">Chargement de l'historique...</p>
               </div>
+            ) : devis.length === 0 ? (
+              <div className="border border-dashed border-[#3A3A3A] rounded-2xl p-10 text-center bg-[#181818]">
+                <div className="w-14 h-14 mx-auto rounded-2xl bg-[#2D2D2D] text-gray-400 flex items-center justify-center mb-4">
+                  <span className="material-icons-round text-3xl">inventory_2</span>
+                </div>
 
-              <h3 className="text-white font-semibold text-lg mb-2">
-                Aucun devis pour le moment
-              </h3>
+                <h3 className="text-white font-semibold text-lg mb-2">
+                  Aucun devis pour le moment
+                </h3>
 
-              <p className="text-gray-400 text-sm max-w-md mx-auto">
-                Tu n’as encore envoyé aucune demande de devis personnalisé.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {devis.map((devisItem) => (
+                <p className="text-gray-400 text-sm max-w-md mx-auto">
+                  Tu n’as encore envoyé aucune demande de devis personnalisé.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {devis.map((devisItem) => (
                 <div
                   key={devisItem.id}
                   className="bg-[#181818] border border-[#2D2D2D] rounded-2xl p-4 flex items-center justify-between"
                 >
                   <div>
-                    <p className="text-white font-medium">{devisItem.coach}</p>
-                    <p className="text-sm text-gray-400">{devisItem.date}</p>
+                    <p className="text-white font-medium">{devisItem.coach_nom || `Coach #${devisItem.coach}`}</p>
+                    <p className="text-sm text-gray-400">
+                      {devisItem.date_creation
+                        ? new Date(devisItem.date_creation).toLocaleDateString('fr-FR')
+                        : "Date inconnue"}
+                    </p>
                   </div>
 
                   <span className="px-3 py-1 rounded-full text-xs font-medium bg-[#FF6B00]/10 text-[#FF6B00] border border-[#FF6B00]/20">
