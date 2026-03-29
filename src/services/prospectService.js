@@ -22,6 +22,27 @@ const prospectService = {
     const response = await api.post('/prospects/checkout/activate-athlete/', payload);
     return response.data;
   },
+
+  // -----------------------------
+  // NOUVEAU FLOW : INVITATION COACH
+  // -----------------------------
+
+  getInvitationCheckoutPreview: async (token) => {
+    const response = await api.get('/prospects/invitations/checkout/preview/', {
+      params: { token },
+    });
+    return response.data;
+  },
+
+  payInvitationCheckout: async (payload) => {
+    const response = await api.post('/prospects/invitations/checkout/pay/', payload);
+    return response.data;
+  },
+
+  setInvitationPassword: async (payload) => {
+    const response = await api.post('/prospects/invitations/set-password/', payload);
+    return response.data;
+  },
 };
 
 export default prospectService;

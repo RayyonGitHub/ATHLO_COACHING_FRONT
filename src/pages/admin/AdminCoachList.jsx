@@ -43,10 +43,7 @@ const AdminCoachList = () => {
           <h1 className="text-slate-900 dark:text-slate-100 text-3xl md:text-4xl font-black leading-tight tracking-tight">Coach Management</h1>
           <p className="text-slate-500 text-base font-normal">Monitor, verify, and manage professional coaches across the platform.</p>
         </div>
-        <button className="flex min-w-[140px] cursor-pointer items-center justify-center rounded-lg h-11 px-5 bg-[#FF6A00] text-white text-sm font-bold shadow-lg shadow-[#FF6A00]/20 hover:bg-[#FF6A00]/90 transition-all active:scale-95">
-          <UserPlus size={18} className="mr-2" />
-          Add New Coach
-        </button>
+        
       </div>
 
       {/* Statistics Cards */}

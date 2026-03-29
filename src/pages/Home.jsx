@@ -19,7 +19,6 @@ const Home = () => {
 
             <div className="hidden md:flex items-center gap-8">
               <a href="#features" className="text-gray-600 dark:text-gray-400 hover:text-orange-500 transition-colors text-sm font-medium">Fonctionnalités</a>
-              <a href="#" className="text-gray-600 dark:text-gray-400 hover:text-orange-500 transition-colors text-sm font-medium">Prix</a>
               <Link to="/login" className="text-gray-900 dark:text-white font-medium text-sm hover:text-orange-500 transition-colors">Connexion</Link>
               <Link to="/register" className="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-all shadow-lg shadow-orange-500/20">
                 Inscription

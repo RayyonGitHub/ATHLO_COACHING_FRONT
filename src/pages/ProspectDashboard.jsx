@@ -25,8 +25,7 @@ const specialites = [
 const ProspectDashboard = () => {
   const navigate = useNavigate();
 
-  // États de recherche
-  const [searchMode, setSearchMode] = useState('distance'); // 'distance' ou 'ville'
+  const [searchMode, setSearchMode] = useState('distance');
   const [searchVille, setSearchVille] = useState('');
   const [userLocation, setUserLocation] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -47,7 +46,6 @@ const ProspectDashboard = () => {
   const [error, setError] = useState('');
   const [lastSearchParams, setLastSearchParams] = useState(null);
 
-
   const filteredVilles = useMemo(() => {
     if (!searchVille.trim()) return villes;
     return villes.filter((ville) =>
@@ -55,16 +53,15 @@ const ProspectDashboard = () => {
     );
   }, [searchVille]);
 
-  // Activation de la géolocalisation avec gestion explicite
   const enableGeolocation = useCallback(() => {
     if (!navigator.geolocation) {
-      setLocationError('La géolocalisation n\'est pas supportée par votre navigateur');
+      setLocationError("La géolocalisation n'est pas supportée par votre navigateur");
       return;
     }
 
     setLocationLoading(true);
     setLocationError('');
-    
+
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const nextLocation = {
@@ -79,29 +76,25 @@ const ProspectDashboard = () => {
         setLocationLoading(false);
         setLocationError('');
       },
-      (error) => {
-        console.error('Erreur géolocalisation:', error);
-        setLocationError('Impossible d\'obtenir votre position. Activez la localisation ou recherchez par ville.');
+      (geoError) => {
+        console.error('Erreur géolocalisation:', geoError);
+        setLocationError("Impossible d'obtenir votre position. Activez la localisation ou recherchez par ville.");
         setLocationEnabled(false);
         setLocationLoading(false);
       }
     );
   }, []);
 
-
-  // Désactiver la géolocalisation
   const disableGeolocation = useCallback(() => {
     setUserLocation(null);
     setLocationEnabled(false);
     setLocationError('');
-    
-    // Recherche par ville si le mode est ville et qu'une ville est saisie
+
     if (searchMode === 'ville' && searchVille.trim()) {
       rechercherCoachs();
     }
   }, [searchMode, searchVille]);
 
-  
   const rechercherCoachs = useCallback(async () => {
     try {
       setLoading(true);
@@ -109,28 +102,24 @@ const ProspectDashboard = () => {
 
       const params = new URLSearchParams();
 
-      // Mode de recherche selon l'option choisie
       if (searchMode === 'distance' && userLocation) {
         params.append('lat', userLocation.lat);
         params.append('lng', userLocation.lng);
         params.append('distance_max', distanceMax);
         setLastSearchParams(`Recherche à ${distanceMax}km autour de votre position`);
-      } 
-      else if (searchMode === 'ville') {
+      } else if (searchMode === 'ville') {
         if (searchVille.trim()) {
           params.append('ville', searchVille.trim());
           setLastSearchParams(`Recherche dans ${searchVille.trim()}`);
         } else {
           setLastSearchParams('Recherche dans toutes les villes');
         }
-      }
-      else {
+      } else {
         setError('Veuillez activer la localisation');
         setLoading(false);
         return;
       }
 
-      // Ajout des filtres
       if (filters.specialite) {
         params.append('specialite', filters.specialite);
       }
@@ -144,11 +133,10 @@ const ProspectDashboard = () => {
         params.append('type_offre', filters.type_offre);
       }
 
-      console.log('URL appelée :', `http://127.0.0.1:8000/api/prospect/coachs/?${params.toString()}`);
+      const url = `http://127.0.0.1:8000/api/prospects/coachs/?${params.toString()}`;
+      console.log('URL appelée :', url);
 
-      const response = await fetch(
-        `http://127.0.0.1:8000/api/prospect/coachs/?${params.toString()}`
-      );
+      const response = await fetch(url);
 
       if (!response.ok) {
         throw new Error('Erreur lors du chargement des coachs');
@@ -160,17 +148,17 @@ const ProspectDashboard = () => {
         id: coach.id,
         nom: coach.nom,
         ville: coach.ville || '',
-        distance: coach.distance,
-        specialites: coach.specialites_tags || [],
-        note: coach.note_moyenne || 0,
-        avis: coach.nombre_avis || 0,
-        tarifs: coach.offres_tarifs || { seance: 0, pack: 0, abonnement: 0 },
+        distance: coach.distance ?? coach.distance_km ?? null,
+        specialites: coach.specialites_tags || coach.specialites || [],
+        note: coach.note_moyenne ?? coach.note ?? 0,
+        avis: coach.nombre_avis ?? coach.avis ?? 0,
+        tarifs: coach.offres_tarifs || coach.tarifs || { seance: 0, pack: 0, abonnement: 0 },
         description: coach.specialite || 'Coach sportif',
         programmes_gratuits: coach.programmes_gratuits || [],
       }));
 
       setCoachs(formattedData);
-      
+
       if (formattedData.length === 0) {
         setError('Aucun coach trouvé dans cette zone');
       }
@@ -183,14 +171,12 @@ const ProspectDashboard = () => {
     }
   }, [searchMode, userLocation, searchVille, distanceMax, filters]);
 
-    useEffect(() => {
+  useEffect(() => {
     if (searchMode === 'distance' && locationEnabled && userLocation) {
       rechercherCoachs();
     }
   }, [searchMode, locationEnabled, userLocation, distanceMax, rechercherCoachs]);
 
-
-  // Recherche manuelle déclenchée par l'utilisateur
   const handleSearch = useCallback(() => {
     if (searchMode === 'distance' && !userLocation) {
       setLocationError('Veuillez activer la localisation pour rechercher autour de vous');
@@ -201,9 +187,9 @@ const ProspectDashboard = () => {
   }, [searchMode, userLocation, rechercherCoachs]);
 
   const acheterOffre = (coach, typeOffre = 'seance') => {
-  const prix = coach?.tarifs?.[typeOffre] || 0;
+    const prix = coach?.tarifs?.[typeOffre] || 0;
 
-  navigate('/prospect/checkout', {
+    navigate('/prospect/checkout', {
       state: {
         coach,
         selectedOffre: {
@@ -267,7 +253,6 @@ const ProspectDashboard = () => {
           </div>
         </section>
 
-        {/* Section mode de recherche */}
         <section className="bg-[#1E1E1E] border border-[#2D2D2D] rounded-3xl p-6">
           <div className="flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between">
             <div className="flex gap-2">
@@ -310,10 +295,8 @@ const ProspectDashboard = () => {
           </div>
         </section>
 
-        {/* Section recherche */}
         <section className="bg-[#1E1E1E] border border-[#2D2D2D] rounded-3xl p-6">
           <div className="space-y-6">
-            {/* Mode distance */}
             {searchMode === 'distance' && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -374,7 +357,6 @@ const ProspectDashboard = () => {
               </div>
             )}
 
-            {/* Mode ville */}
             {searchMode === 'ville' && (
               <div className="relative">
                 <label className="block text-sm font-medium text-gray-400 mb-2">
@@ -411,7 +393,6 @@ const ProspectDashboard = () => {
               </div>
             )}
 
-            {/* Filtres communs */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-[#2D2D2D]">
               <div>
                 <label className="block text-sm font-medium text-gray-400 mb-2">
@@ -494,9 +475,7 @@ const ProspectDashboard = () => {
           </div>
         </section>
 
-        {/* Le reste du code reste identique pour l'affichage des coachs */}
         <section>
-          {/* ... Le même code que précédemment pour l'affichage des résultats ... */}
           {loading ? (
             <div className="bg-[#1E1E1E] border border-[#2D2D2D] rounded-3xl p-10 text-center">
               <p className="text-white font-medium">Chargement des coachs...</p>
@@ -512,14 +491,13 @@ const ProspectDashboard = () => {
               </div>
               <p className="text-white font-medium">Aucun coach trouvé.</p>
               <p className="text-gray-500 text-sm mt-2">
-                {searchMode === 'distance' 
+                {searchMode === 'distance'
                   ? "Essayez d'augmenter le rayon de recherche ou modifiez les filtres."
                   : "Essayez une autre ville ou modifiez les filtres."}
               </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-              {/* Même code d'affichage des coachs */}
               {coachs.map((coach) => (
                 <div
                   key={coach.id}
@@ -534,7 +512,7 @@ const ProspectDashboard = () => {
                       <div className="min-w-0">
                         <h3 className="font-bold text-white text-lg">{coach.nom}</h3>
                         <p className="text-sm text-gray-400">{coach.ville}</p>
-                        {coach.distance != null && (
+                        {coach.distance != null && typeof coach.distance === 'number' && (
                           <p className="text-sm text-[#FF6B00]">
                             {coach.distance.toFixed(1)} km de vous
                           </p>
@@ -645,7 +623,6 @@ const ProspectDashboard = () => {
           )}
         </section>
 
-        {/* Section programmes gratuits */}
         {coachs.length > 0 && (
           <section className="bg-[#1E1E1E] border border-[#2D2D2D] rounded-3xl p-6 lg:p-8">
             <div className="mb-6">

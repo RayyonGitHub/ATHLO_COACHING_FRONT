@@ -42,7 +42,9 @@ import AdminGymList from './pages/admin/AdminGymList';
 import SessionBuilder from './components/SessionBuilder';
 import ExerciceManager from './pages/ExerciceManager';
 import Messages from './pages/Messages';
-import CoachSettings from "./pages/CoachSettings";
+import CoachSettings from './pages/CoachSettings';
+import InviteCheckout from './pages/InviteCheckout';
+import InviteSetPassword from './pages/InviteSetPassword';
 
 function App() {
   const currentUser = JSON.parse(localStorage.getItem('user')) || {};
@@ -54,6 +56,10 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+
+        {/* NOUVEAUX TUNNELS PUBLICS D'INVITATION */}
+        <Route path="/invite/checkout" element={<InviteCheckout />} />
+        <Route path="/invite/set-password" element={<InviteSetPassword />} />
 
         <Route path="/onboarding/coach/step2" element={<ProtectedRoute><CoachStep2 /></ProtectedRoute>} />
         <Route path="/onboarding/coach/step3" element={<ProtectedRoute><CoachStep3 /></ProtectedRoute>} />
@@ -134,6 +140,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/parametres"
           element={

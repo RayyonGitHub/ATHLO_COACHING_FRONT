@@ -30,7 +30,7 @@ const AdminLayout = ({ children }) => {
     { label: 'Overview', icon: <LayoutDashboard size={20} />, path: '/admin/dashboard' },
     { label: 'Coach Directory', icon: <Users size={20} />, path: '/admin/coachs' },
     { label: 'Gym Management', icon: <Store size={20} />, path: '/admin/salles' },
-    { label: 'Content Library', icon: <BookOpen size={20} />, path: '/admin/library' },
+    
   ];
 
   // Extraire les initiales (ex: "Alex Rivers" -> "AR", ou juste "A")
