@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { 
   Save, User, Scale, Ruler, Calendar, CheckCircle2, 
-  Loader2, AlertCircle, Target, Settings, Lock, Bell, Activity, X, PartyPopper
+  Loader2, AlertCircle, Target, Settings, Lock, Bell, Activity, X, PartyPopper, Link as LinkIcon
 } from 'lucide-react';
+// --- NOUVEAU : Import du service Strava ---
+import stravaService from '../services/stravaService';
 
 const AthleteSettings = () => {
   const [formData, setFormData] = useState({
@@ -11,6 +13,13 @@ const AthleteSettings = () => {
     genre: 'M', niveau_activite: '1.55', poids_cible: '',
     type_entrainement: 'Musculation', email: '', notifications_activees: true
   });
+
+  const [isSyncing, setIsSyncing] = useState(false);
+const [syncMessage, setSyncMessage] = useState('');
+
+  // --- NOUVEAU : États pour les intégrations ---
+  const [integrationsStatus, setIntegrationsStatus] = useState({ strava_connected: false, garmin_connected: false });
+  const [isStravaLoading, setIsStravaLoading] = useState(false);
 
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isSaveSuccessModalOpen, setIsSaveSuccessModalOpen] = useState(false);
@@ -32,6 +41,15 @@ const AthleteSettings = () => {
           headers: { Authorization: `Bearer ${token}` }
         });
         setFormData({ ...formData, ...response.data });
+
+        // --- NOUVEAU : Récupération du statut des intégrations ---
+        try {
+          const status = await stravaService.getStatus();
+          setIntegrationsStatus(status);
+        } catch (statusErr) {
+          console.error("Erreur chargement statut intégrations:", statusErr);
+        }
+
       } catch (err) {
         setError("Impossible de charger vos informations.");
       } finally {
@@ -63,6 +81,7 @@ const AthleteSettings = () => {
   };
 
   const handlePasswordChange = async (e) => {
+    // ... (Votre code original pour le mot de passe, inchangé)
     e.preventDefault();
     setPasswordError('');
     if (passwordData.new_password !== passwordData.confirm_password) {
@@ -90,6 +109,38 @@ const AthleteSettings = () => {
     }
   };
 
+  // --- NOUVEAU : Fonctions de connexion/déconnexion Strava ---
+  const handleConnectStrava = () => {
+    window.location.href = stravaService.getAuthUrl();
+  };
+
+  const handleDisconnectStrava = async () => {
+    setIsStravaLoading(true);
+    try {
+      await stravaService.disconnect();
+      setIntegrationsStatus(prev => ({ ...prev, strava_connected: false }));
+    } catch (error) {
+      console.error("Erreur lors de la déconnexion de Strava");
+    } finally {
+      setIsStravaLoading(false);
+    }
+  };
+  const handleSyncStrava = async () => {
+  setIsSyncing(true);
+  setSyncMessage('');
+  try {
+    const data = await stravaService.sync();
+    setSyncMessage(`${data.nouvelles_activites} nouvelles activités importées !`);
+    // On efface le message après 5 secondes
+    setTimeout(() => setSyncMessage(''), 5000);
+  } catch (error) {
+    console.error("Erreur de synchronisation Strava", error);
+    setSyncMessage("Erreur lors de la synchronisation.");
+  } finally {
+    setIsSyncing(false);
+  }
+};
+
   if (loading) return <div className="flex justify-center p-20"><Loader2 className="animate-spin text-[#FF6B00]" size={48} /></div>;
 
   return (
@@ -103,6 +154,8 @@ const AthleteSettings = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
+        
+        {/* ... (Toutes vos sections PHYSIQUE et OBJECTIFS restent inchangées ici) ... */}
         {/* PHYSIQUE */}
         <section className="bg-[#1E1E1E] border border-[#2D2D2D] rounded-3xl overflow-hidden shadow-xl">
           <div className="p-6 border-b border-[#2D2D2D] bg-[#252525] flex items-center gap-3">
@@ -182,6 +235,78 @@ const AthleteSettings = () => {
           </div>
         </section>
 
+        {/* --- NOUVEAU : SECTION APPLICATIONS CONNECTÉES --- */}
+        <section className="bg-[#1E1E1E] border border-[#2D2D2D] rounded-3xl overflow-hidden shadow-xl">
+          <div className="p-6 border-b border-[#2D2D2D] bg-[#252525] flex items-center gap-3">
+            <div className="p-2 bg-orange-500/10 text-orange-500 rounded-lg"><LinkIcon size={20} /></div>
+            <h3 className="font-bold text-white tracking-wide">Applications Connectées</h3>
+          </div>
+          <div className="p-6 md:p-8 space-y-6">
+            <p className="text-gray-400 text-sm mb-4">Connectez vos montres et applications pour importer automatiquement vos performances cardio (distance, temps, fréquence cardiaque).</p>
+            
+            {/* Strava Block */}
+            <div className="flex items-center justify-between p-4 bg-black/30 border border-[#2D2D2D] rounded-xl">
+              <div className="flex items-center gap-4">
+                {/* Icône factice Strava, vous pouvez remplacer par le vrai logo SVG si vous l'avez */}
+                <div className="w-10 h-10 bg-[#FC4C02] rounded-lg flex items-center justify-center text-white font-black text-xl">S</div>
+                <div>
+                  <h4 className="text-white font-bold">Strava</h4>
+                  <p className="text-[11px] text-gray-500">Importer les courses et sorties vélo</p>
+                </div>
+              </div>
+              
+              {integrationsStatus.strava_connected ? (
+                <div className="flex flex-col items-end gap-2">
+                  <div className="flex gap-2">
+                    <button 
+                      type="button" 
+                      onClick={handleSyncStrava}
+                      disabled={isSyncing}
+                      className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg text-sm font-bold flex items-center gap-2 transition-colors"
+                    >
+                      {isSyncing ? <Loader2 size={16} className="animate-spin" /> : <Activity size={16} />}
+                      Synchroniser
+                    </button>
+                    
+                    <button 
+                      type="button" 
+                      onClick={handleDisconnectStrava} 
+                      disabled={isStravaLoading}
+                      className="px-4 py-2 bg-red-500/10 text-red-500 hover:bg-red-500/20 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors"
+                    >
+                      {isStravaLoading ? <Loader2 size={16} className="animate-spin" /> : 'Déconnecter'}
+                    </button>
+                  </div>
+                  {syncMessage && <p className="text-[10px] font-bold text-green-500 animate-bounce">{syncMessage}</p>}
+                </div>
+              ) : (
+                <button 
+                  type="button" 
+                  onClick={handleConnectStrava} 
+                  className="px-4 py-2 bg-[#FC4C02] hover:bg-[#FC4C02]/80 text-white rounded-lg text-sm font-bold transition-colors"
+                >
+                  Connecter
+                </button>
+              )}
+            </div>
+
+            {/* Garmin Block (Préparation pour plus tard) */}
+            <div className="flex items-center justify-between p-4 bg-black/30 border border-[#2D2D2D] rounded-xl opacity-50">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 bg-[#007CC3] rounded-lg flex items-center justify-center text-white font-black">G</div>
+                <div>
+                  <h4 className="text-white font-bold">Garmin Connect</h4>
+                  <p className="text-[11px] text-gray-500">Bientôt disponible</p>
+                </div>
+              </div>
+              <button type="button" disabled className="px-4 py-2 bg-gray-700 text-gray-400 rounded-lg text-sm font-bold cursor-not-allowed">
+                Connecter
+              </button>
+            </div>
+          </div>
+        </section>
+        {/* --- FIN NOUVEAU --- */}
+
         {/* COMPTE */}
         <section className="bg-[#1E1E1E] border border-[#2D2D2D] rounded-3xl overflow-hidden shadow-xl">
           <div className="p-6 border-b border-[#2D2D2D] bg-[#252525] flex items-center gap-3">
@@ -218,7 +343,7 @@ const AthleteSettings = () => {
         </div>
       )}
 
-      {/* MODALE MOT DE PASSE (Restaurée) */}
+      {/* MODALE MOT DE PASSE */}
       {isPasswordModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
           <div className="bg-[#1E1E1E] border border-[#2D2D2D] rounded-3xl p-8 max-w-md w-full relative">
