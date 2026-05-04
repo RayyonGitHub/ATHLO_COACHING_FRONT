@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LayoutDashboard, Users, Dumbbell, Calendar, Settings, ChevronRight, LogOut, Menu, Activity, MessageCircle } from 'lucide-react';
+import { LayoutDashboard, Users, Dumbbell, Calendar, Settings, ChevronRight, LogOut, Menu, Activity, MessageCircle, ShoppingBag } from 'lucide-react'; // <-- NOUVEAU: ShoppingBag
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../../services/authService';
 
@@ -13,6 +13,7 @@ const Sidebar = ({ activePage = "Dashboard" }: SidebarProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const navigate = useNavigate();
 
+  // --- NOUVEAU : Ajout de la Boutique dans la liste ---
   const menuItems = [
     { icon: <LayoutDashboard size={20} />, label: 'Dashboard', path: '/dashboard' },
     { icon: <Users size={20} />, label: 'Mes Clients', path: '/clients' },
@@ -20,6 +21,7 @@ const Sidebar = ({ activePage = "Dashboard" }: SidebarProps) => {
     { icon: <Activity size={20} />, label: 'Exercices', path: '/exercices' },
     { icon: <Calendar size={20} />, label: 'Calendrier', path: '/calendar' },
     { icon: <MessageCircle size={20} />, label: 'Messagerie', path: '/messages' },
+    { icon: <ShoppingBag size={20} />, label: 'Boutique', path: '/boutique' }, // <-- AJOUTÉ ICI
     { icon: <Settings size={20} />, label: 'Paramètres', path: '/parametres' }, 
   ];
 

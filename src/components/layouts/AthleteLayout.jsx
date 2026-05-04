@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
-// 1. IMPORTATION DE TA VRAIE CLOCHE
 import AthleteNotificationBell from "../AthleteNotificationBell";
 
 const AthleteLayout = ({ user }) => {
@@ -51,6 +50,12 @@ const AthleteLayout = ({ user }) => {
                 <span className="hidden lg:block font-medium">Messagerie</span>
               </Link>
 
+              {/* --- NOUVEAU : LIEN BOUTIQUE --- */}
+              <Link to="/athlete/boutique" className={`flex items-center gap-4 px-3 py-3 lg:px-5 lg:py-3 rounded-xl transition-colors group ${isActive('boutique') ? 'bg-[#FF6B00]/10 text-[#FF6B00] font-medium' : 'text-gray-400 hover:bg-[#2D2D2D]'}`}>
+                <span className="material-icons-round text-2xl group-hover:text-[#FF6B00]">shopping_cart</span>
+                <span className="hidden lg:block font-medium">Boutique</span>
+              </Link>
+
               <Link to="/athlete/parametres" className={`flex items-center gap-4 px-3 py-3 lg:px-5 lg:py-3 rounded-xl transition-colors group ${isActive('parametres') ? 'bg-[#FF6B00]/10 text-[#FF6B00] font-medium' : 'text-gray-400 hover:bg-[#2D2D2D]'}`}>
                 <span className="material-icons-round text-2xl group-hover:text-[#FF6B00]">settings</span>
                 <span className="hidden lg:block font-medium">Paramètres</span>
@@ -78,7 +83,6 @@ const AthleteLayout = ({ user }) => {
               </h1>
             </div>
 
-            {/* 2. REMPLACEMENT DU BOUTON STATIQUE PAR TON COMPOSANT DYNAMIQUE */}
             <div className="flex items-center gap-4">
               <AthleteNotificationBell />
             </div>
