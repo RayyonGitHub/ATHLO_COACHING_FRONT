@@ -45,6 +45,7 @@ import Messages from './pages/Messages';
 import CoachSettings from './pages/CoachSettings';
 import InviteCheckout from './pages/InviteCheckout';
 import InviteSetPassword from './pages/InviteSetPassword';
+import AthleteInvoices from './pages/AthleteInvoices';
 
 function App() {
   const currentUser = JSON.parse(localStorage.getItem('user')) || {};
@@ -159,7 +160,8 @@ function App() {
               <AthleteLayout user={currentUser} />
             </ProtectedRoute>
           }
-        >
+        > 
+          <Route path="factures" element={<AthleteInvoices />} />
           <Route path="dashboard" element={<AthleteDashboard />} />
           <Route path="calendar" element={<AthleteCalendar />} />
           <Route path="programmes" element={<AthleteProgrammes />} />

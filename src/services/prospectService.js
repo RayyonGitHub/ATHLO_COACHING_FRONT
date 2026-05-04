@@ -43,6 +43,11 @@ const prospectService = {
     const response = await api.post('/prospects/invitations/set-password/', payload);
     return response.data;
   },
+  // --- À AJOUTER DANS l'objet prospectService ---
+  getCommandeHistory: async () => {
+    const response = await api.get('/athlete/commandes/');
+    return response.data;
+  },
 };
 
 export default prospectService;
