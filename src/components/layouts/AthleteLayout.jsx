@@ -30,6 +30,7 @@ const AthleteLayout = ({ user }) => {
                 <span className="hidden lg:block font-medium">Tableau de bord</span>
               </Link>
 
+              
               <Link to="/athlete/calendar" className={`flex items-center gap-4 px-3 py-3 lg:px-5 lg:py-3 rounded-xl transition-colors group ${isActive('calendar') ? 'bg-[#FF6B00]/10 text-[#FF6B00] font-medium' : 'text-gray-400 hover:bg-[#2D2D2D]'}`}>
                 <span className="material-icons-round text-2xl group-hover:text-[#FF6B00]">calendar_today</span>
                 <span className="hidden lg:block font-medium">Calendrier</span>
@@ -49,6 +50,7 @@ const AthleteLayout = ({ user }) => {
                 <span className="material-icons-round text-2xl group-hover:text-[#FF6B00]">chat</span>
                 <span className="hidden lg:block font-medium">Messagerie</span>
               </Link>
+<<<<<<< HEAD
 
               {/* --- NOUVEAU : LIEN BOUTIQUE --- */}
               <Link to="/athlete/boutique" className={`flex items-center gap-4 px-3 py-3 lg:px-5 lg:py-3 rounded-xl transition-colors group ${isActive('boutique') ? 'bg-[#FF6B00]/10 text-[#FF6B00] font-medium' : 'text-gray-400 hover:bg-[#2D2D2D]'}`}>
@@ -56,6 +58,16 @@ const AthleteLayout = ({ user }) => {
                 <span className="hidden lg:block font-medium">Boutique</span>
               </Link>
 
+=======
+              {/* --- LIEN FACTURES À AJOUTER --- */}
+              <Link 
+                to="/athlete/factures" 
+                className={`flex items-center gap-4 px-3 py-3 lg:px-5 lg:py-3 rounded-xl transition-colors group ${isActive('factures') ? 'bg-[#FF6B00]/10 text-[#FF6B00] font-medium' : 'text-gray-400 hover:bg-[#2D2D2D]'}`}
+              >
+                <span className="material-icons-round text-2xl group-hover:text-[#FF6B00]">receipt_long</span>
+                <span className="hidden lg:block font-medium">Factures</span>
+              </Link>
+>>>>>>> paiement-front
               <Link to="/athlete/parametres" className={`flex items-center gap-4 px-3 py-3 lg:px-5 lg:py-3 rounded-xl transition-colors group ${isActive('parametres') ? 'bg-[#FF6B00]/10 text-[#FF6B00] font-medium' : 'text-gray-400 hover:bg-[#2D2D2D]'}`}>
                 <span className="material-icons-round text-2xl group-hover:text-[#FF6B00]">settings</span>
                 <span className="hidden lg:block font-medium">Paramètres</span>

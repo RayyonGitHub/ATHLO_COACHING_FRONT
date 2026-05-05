@@ -3,8 +3,9 @@ import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid,
     Tooltip, ResponsiveContainer
 } from 'recharts';
-import { Users, CheckCircle, Flame, TrendingUp, Loader2, CalendarDays } from 'lucide-react';
+import { Users, CheckCircle, Flame, TrendingUp, Loader2, CalendarDays, DollarSign } from 'lucide-react';
 import coachService from '../services/coachService';
+
 
 const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
@@ -54,23 +55,28 @@ const CoachAnalytics = () => {
     }
 
     return (
-        <main className="flex-1 flex flex-col p-3 gap-3 overflow-hidden">
-            <div className="grid grid-cols-2 gap-3 flex-none">
-                <KPICard
-                    title="Athlètes"
-                    value={data?.total_athletes}
-                    icon={<Users className="w-4 h-4 text-indigo-900" />}
-                    borderColor="border-indigo-900"
-                />
-                <KPICard
-                    title="Assiduité"
-                    value={`${data?.completion_rate}%`}
-                    icon={<CheckCircle className="w-4 h-4 text-green-600" />}
-                    borderColor="border-green-500"
-                />
-       
-            </div>
-
+    <main className="flex-1 flex flex-col p-3 gap-3 overflow-hidden">
+        {/* LA LIGNE IMPORTANTE EST ICI : grid-cols-3 au lieu de grid-cols-2 */}
+        <div className="grid grid-cols-3 gap-3 flex-none">
+            <KPICard
+                title="Athlètes"
+                value={data?.total_athletes}
+                icon={<Users className="w-4 h-4 text-indigo-900" />}
+                borderColor="border-indigo-900"
+            />
+            <KPICard
+                title="Assiduité"
+                value={`${data?.completion_rate}%`}
+                icon={<CheckCircle className="w-4 h-4 text-green-600" />}
+                borderColor="border-green-500"
+            />
+            <KPICard
+                title="Revenus (CA)"
+                value={`${data?.total_volume || 0} €`}
+                icon={<DollarSign className="w-4 h-4 text-orange-600" />}
+                borderColor="border-orange-500"
+            />
+        </div>
 
             <div className="bg-white p-4 rounded-2xl shadow-lg border border-slate-100 flex flex-col flex-1 min-h-0">
                 <div className="flex items-center gap-2 mb-2 border-b border-slate-50 pb-2">
