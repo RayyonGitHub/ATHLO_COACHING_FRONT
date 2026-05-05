@@ -1,14 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
-import { MapPin, Phone, User, CreditCard, ArrowLeft, Truck, Loader2, ShieldCheck, Lock, Package } from 'lucide-react';
+import { MapPin, Phone, User, ArrowLeft, Truck, Package } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import api from '../services/api';
 
-const Checkout = () => {
-  const { cart, subTotal, shippingFee, cartTotal } = useCart();
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || '');
+
+// --- 1. SOUS-COMPOSANT : FORMULAIRE STRIPE ---
+const StripeShopForm = ({ cartTotal }) => {
+  const stripe = useStripe();
+  const elements = useElements();
   const navigate = useNavigate();
-  
-  // --- NOUVEAU : État pour la modale de chargement ---
-  const [isProcessing, setIsProcessing] = useState(false);
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   
   const [formData, setFormData] = useState({
     nom: '',
@@ -18,126 +25,162 @@ const Checkout = () => {
     telephone: ''
   });
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // On déclenche l'animation de chargement
-    setIsProcessing(true);
+    if (!stripe || !elements) return;
 
-    // Simulation du délai pour préparer la session Stripe
-    setTimeout(() => {
-      console.log("Données prêtes pour Stripe :", formData);
-      // Ici, tu feras ta redirection Stripe plus tard
-      // setIsProcessing(false); 
-    }, 2500);
+    setLoading(true);
+    setError('');
+
+    const { error: stripeError, paymentIntent } = await stripe.confirmPayment({
+      elements,
+      confirmParams: {
+        payment_method_data: {
+          billing_details: {
+            name: formData.nom,
+            phone: formData.telephone,
+            address: {
+              line1: formData.adresse,
+              city: formData.ville,
+              postal_code: formData.codePostal,
+              country: 'FR', // Par défaut France pour l'exemple
+            }
+          }
+        }
+      },
+      redirect: "if_required",
+    });
+
+    if (stripeError) {
+      setError(stripeError.message);
+      setLoading(false);
+    } else if (paymentIntent && paymentIntent.status === 'succeeded') {
+      // SUCCÈS ! La commande est payée.
+      // (Optionnel: Vider le panier ici si tu as une fonction clearCart dans useCart)
+      navigate('/athlete/factures'); // On redirige vers les factures pour l'instant
+    } else {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="max-w-6xl mx-auto py-10 px-4 relative">
-      
-      {/* --- NOUVELLE MODALE DE CHARGEMENT --- */}
-      {isProcessing && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="bg-[#1E1E1E] border border-[#2D2D2D] p-10 rounded-[40px] max-w-sm w-full text-center shadow-2xl shadow-[#FF6B00]/10 animate-in zoom-in duration-300">
-            <div className="relative w-24 h-24 mx-auto mb-8">
-              {/* Le cercle orange qui tourne */}
-              <div className="absolute inset-0 border-4 border-[#FF6B00]/10 rounded-full"></div>
-              <Loader2 className="text-[#FF6B00] animate-spin absolute inset-0" size={96} strokeWidth={1} />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <Lock className="text-white opacity-50" size={28} />
-              </div>
+    <>
+      {error && (
+        <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300 mb-6">
+          {error}
+        </div>
+      )}
+      <form onSubmit={handleSubmit} className="space-y-8">
+        {/* INFOS DE LIVRAISON */}
+        <div>
+          <h1 className="text-4xl font-black text-white italic uppercase tracking-tighter mb-2">
+            Livrai<span className="text-[#FF6B00]">son</span>
+          </h1>
+          <p className="text-gray-400 font-medium mb-6">Où devons-nous envoyer votre commande ?</p>
+          
+          <div className="space-y-4">
+            <div className="relative group">
+              <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
+              <input type="text" name="nom" placeholder="Nom complet" required className="w-full bg-[#1E1E1E] border border-[#2D2D2D] rounded-2xl py-4 pl-12 pr-4 text-white focus:border-[#FF6B00] outline-none" onChange={handleChange} />
             </div>
-            
-            <h3 className="text-2xl font-black text-white italic uppercase tracking-tighter mb-4">
-              Paiement <span className="text-[#FF6B00]">Sécurisé</span>
-            </h3>
-            <p className="text-gray-400 text-sm leading-relaxed mb-8 font-medium">
-              Nous préparons votre tunnel de paiement chiffré. Ne fermez pas cette page.
-            </p>
-            
-            <div className="flex items-center justify-center gap-2 text-[10px] text-gray-500 font-black uppercase tracking-widest bg-[#121212] py-3 rounded-2xl border border-[#2D2D2D]">
-              <ShieldCheck size={14} className="text-[#00C853]" />
-              Protocole SSL / Chiffrement AES-256
+            <div className="relative group">
+              <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
+              <input type="text" name="adresse" placeholder="Adresse de livraison" required className="w-full bg-[#1E1E1E] border border-[#2D2D2D] rounded-2xl py-4 pl-12 pr-4 text-white focus:border-[#FF6B00] outline-none" onChange={handleChange} />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <input type="text" name="codePostal" placeholder="Code Postal" required className="w-full bg-[#1E1E1E] border border-[#2D2D2D] rounded-2xl py-4 px-6 text-white focus:border-[#FF6B00] outline-none" onChange={handleChange} />
+              <input type="text" name="ville" placeholder="Ville" required className="w-full bg-[#1E1E1E] border border-[#2D2D2D] rounded-2xl py-4 px-6 text-white focus:border-[#FF6B00] outline-none" onChange={handleChange} />
+            </div>
+            <div className="relative group">
+              <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
+              <input type="tel" name="telephone" placeholder="Numéro de téléphone" required className="w-full bg-[#1E1E1E] border border-[#2D2D2D] rounded-2xl py-4 pl-12 pr-4 text-white focus:border-[#FF6B00] outline-none" onChange={handleChange} />
             </div>
           </div>
         </div>
-      )}
 
+        {/* PAIEMENT STRIPE */}
+        <div>
+          <h2 className="text-xl font-bold text-white mb-4">Paiement sécurisé</h2>
+          <div className="bg-[#1E1E1E] p-4 rounded-2xl border border-[#2D2D2D]">
+            <PaymentElement />
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          disabled={loading || !stripe || !elements}
+          className="w-full bg-white text-black font-black py-5 rounded-2xl hover:bg-[#FF6B00] hover:text-white transition-all disabled:opacity-50 uppercase italic"
+        >
+          {loading ? 'Traitement...' : `Payer ${cartTotal.toFixed(2)} €`}
+        </button>
+      </form>
+    </>
+  );
+};
+
+
+// --- 2. COMPOSANT PRINCIPAL ---
+const Checkout = () => {
+  const { cart, subTotal, shippingFee, cartTotal } = useCart();
+  const [clientSecret, setClientSecret] = useState('');
+  const [initError, setInitError] = useState('');
+
+  // Demande à Django de créer l'intention avec les articles du panier
+  useEffect(() => {
+    if (cart.length > 0) {
+      const itemsPayload = cart.map(item => ({ id: item.id, quantite: item.quantite }));
+      
+      api.post('/shop/create-intent/', { items: itemsPayload })
+        .then(res => setClientSecret(res.data.client_secret))
+        .catch(err => setInitError("Erreur lors de l'initialisation du paiement sécurisé."));
+    }
+  }, [cart]);
+
+  if (cart.length === 0) {
+    return (
+      <div className="max-w-6xl mx-auto py-20 px-4 text-center">
+        <h2 className="text-2xl font-bold text-white mb-4">Votre panier est vide.</h2>
+        <Link to="/athlete/boutique" className="text-[#FF6B00] hover:underline">Retour à la boutique</Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-6xl mx-auto py-10 px-4 relative">
       <Link to="/athlete/cart" className="flex items-center gap-2 text-gray-500 hover:text-white mb-8 transition-colors font-bold uppercase text-xs tracking-widest">
         <ArrowLeft size={18} /> Retour au panier
       </Link>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
         
-        {/* FORMULAIRE DE LIVRAISON */}
-        <div className="space-y-8">
-          <div>
-            <h1 className="text-4xl font-black text-white italic uppercase tracking-tighter mb-2">
-              Livrai<span className="text-[#FF6B00]">son</span>
-            </h1>
-            <p className="text-gray-400 font-medium">Où devons-nous envoyer votre commande Athlo ?</p>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="relative group">
-              <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-[#FF6B00] transition-colors" size={20} />
-              <input 
-                type="text" name="nom" placeholder="Nom complet" required
-                className="w-full bg-[#1E1E1E] border border-[#2D2D2D] rounded-2xl py-4 pl-12 pr-4 text-white focus:border-[#FF6B00] outline-none transition-all"
-                onChange={handleChange}
-              />
+        {/* COLONNE GAUCHE (FORMULAIRE) */}
+        <div>
+          {initError ? (
+            <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300">
+              {initError}
             </div>
-
-            <div className="relative group">
-              <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-[#FF6B00] transition-colors" size={20} />
-              <input 
-                type="text" name="adresse" placeholder="Adresse de livraison" required
-                className="w-full bg-[#1E1E1E] border border-[#2D2D2D] rounded-2xl py-4 pl-12 pr-4 text-white focus:border-[#FF6B00] outline-none transition-all"
-                onChange={handleChange}
-              />
+          ) : clientSecret ? (
+            <Elements stripe={stripePromise} options={{ clientSecret, appearance: { theme: 'night' } }}>
+              <StripeShopForm cartTotal={cartTotal} />
+            </Elements>
+          ) : (
+            <div className="flex items-center gap-3 text-[#FF6B00] font-bold">
+              <span className="material-symbols-outlined animate-spin">sync</span>
+              Génération du paiement sécurisé...
             </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <input 
-                type="text" name="codePostal" placeholder="Code Postal" required
-                className="w-full bg-[#1E1E1E] border border-[#2D2D2D] rounded-2xl py-4 px-6 text-white focus:border-[#FF6B00] outline-none transition-all"
-                onChange={handleChange}
-              />
-              <input 
-                type="text" name="ville" placeholder="Ville" required
-                className="w-full bg-[#1E1E1E] border border-[#2D2D2D] rounded-2xl py-4 px-6 text-white focus:border-[#FF6B00] outline-none transition-all"
-                onChange={handleChange}
-              />
-            </div>
-
-            <div className="relative group">
-              <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-[#FF6B00] transition-colors" size={20} />
-              <input 
-                type="tel" name="telephone" placeholder="Numéro de téléphone" required
-                className="w-full bg-[#1E1E1E] border border-[#2D2D2D] rounded-2xl py-4 pl-12 pr-4 text-white focus:border-[#FF6B00] outline-none transition-all"
-                onChange={handleChange}
-              />
-            </div>
-
-            <button type="submit" className="w-full bg-white text-black font-black py-5 rounded-2xl hover:bg-[#FF6B00] hover:text-white transition-all flex items-center justify-center gap-3 mt-8 shadow-xl uppercase italic">
-              <CreditCard size={22} />
-              Payer {cartTotal.toFixed(2)} €
-            </button>
-          </form>
+          )}
         </div>
 
-        {/* RÉCAPITULATIF DE COMMANDE */}
+        {/* COLONNE DROITE (RÉSUMÉ) */}
         <div className="bg-[#1E1E1E] border border-[#2D2D2D] rounded-3xl p-8 sticky top-24">
           <h2 className="text-xl font-bold text-white mb-8 flex items-center gap-3">
             <Package className="text-[#FF6B00]" />
             Récapitulatif
           </h2>
           
-          <div className="space-y-6 mb-8 max-h-[300px] overflow-y-auto pr-2">
+          <div className="space-y-6 mb-8 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
             {cart.map(item => (
               <div key={item.id} className="flex justify-between items-center bg-[#121212] p-4 rounded-xl border border-[#2D2D2D]">
                 <div className="flex items-center gap-4">
