@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { MapPin, Phone, User, CreditCard, ArrowLeft, Truck, Loader2, ShieldCheck, Lock, Package } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-
+import productService from '../services/productService'; // N'oublie pas l'import !
 const Checkout = () => {
   const { cart, subTotal, shippingFee, cartTotal } = useCart();
   const navigate = useNavigate();
@@ -22,18 +22,34 @@ const Checkout = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    // On déclenche l'animation de chargement
+  const handleSubmit = async(e) => {
+  e.preventDefault();
     setIsProcessing(true);
 
-    // Simulation du délai pour préparer la session Stripe
-    setTimeout(() => {
-      console.log("Données prêtes pour Stripe :", formData);
-      // Ici, tu feras ta redirection Stripe plus tard
-      // setIsProcessing(false); 
-    }, 2500);
+    try {
+      // 1. On prépare les données pour ton API Django
+      const orderPayload = {
+        adresse_livraison: `${formData.adresse}, ${formData.codePostal} ${formData.ville}`,
+        total: cartTotal,
+        lignes: cart.map(item => ({
+          produit_id: item.id,
+          quantite: item.quantite,
+          prix_unitaire: item.prix
+        }))
+      };
+
+      // 2. On utilise TA fonction pour envoyer au serveur
+      await productService.createOrder(orderPayload);
+      
+      // 3. Redirection pour valider le test
+      setIsProcessing(false);
+      navigate('/athlete/nutrition'); 
+      
+    } catch (error) {
+      console.error("Erreur de paiement:", error);
+      alert("Une erreur est survenue lors de la création de la commande.");
+      setIsProcessing(false);
+    }
   };
 
   return (

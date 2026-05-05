@@ -51,7 +51,9 @@ import ProductManager from './pages/ProductManager';
 import StravaCallback from './pages/StravaCallback';
 import AthleteShop from './pages/AthleteShop';
 import CartPage from './pages/CartPage';
-
+import RecipeManager from './pages/RecipeManager';
+import MealPlanBuilder from './pages/MealPlanBuilder'; // Import en haut
+import AthleteNutrition from './pages/AthleteNutrition';
 function App() {
   const currentUser = JSON.parse(localStorage.getItem('user')) || {};
 
@@ -98,6 +100,7 @@ function App() {
               </ProtectedRoute>
             }
           >
+            <Route path="nutrition" element={<AthleteNutrition />} />
             <Route path="dashboard" element={<AthleteDashboard />} />
             <Route path="calendar" element={<AthleteCalendar />} />
             <Route path="programmes" element={<AthleteProgrammes />} />
@@ -127,6 +130,27 @@ function App() {
           <Route path="/admin/salles" element={<AdminRoute><AdminLayout><AdminGymList /></AdminLayout></AdminRoute>} />
 
           <Route path="*" element={<Navigate to="/login" replace />} />
+          <Route 
+            path="/nutrition" 
+            element={
+              <ProtectedRoute>
+                <MainLayout activePageLabel="Nutrition" headerSection="Bibliothèque" headerSubSection="Base de données">
+                  <RecipeManager />
+                </MainLayout>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/nutrition/builder" 
+            element={
+              <ProtectedRoute>
+                <MainLayout activePageLabel="Créateur de Plan" headerSection="Nutrition" headerSubSection="Builder">
+                  <MealPlanBuilder />
+                </MainLayout>
+              </ProtectedRoute>
+            } 
+          />
+        
         </Routes>
       </Router>
     </CartProvider>

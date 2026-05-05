@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Sidebar from './Sidebar';
 import Header from './Header';
-import { authService } from '../../services/authService'; // <-- Vérifie bien ce chemin
+import { authService } from '../../services/authService';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -24,14 +24,11 @@ const MainLayout = ({
 
   useEffect(() => {
     try {
-      // 1. On récupère les infos de l'utilisateur connecté
       const user = authService.getCurrentUser();
       
       if (user && user.name) {
-        // 2. On met à jour le nom
         setCoachName(user.name);
         
-        // 3. On calcule automatiquement les initiales (ex: "Bouthayna C." -> "BC")
         const parts = user.name.trim().split(' ');
         if (parts.length >= 2) {
           setCoachInitials((parts[0][0] + parts[1][0]).toUpperCase());
@@ -55,7 +52,8 @@ const MainLayout = ({
           coachPlan="Premium"
           coachInitials={coachInitials}
         />
-        <main className="flex-1 flex flex-col min-h-0 bg-gray-50">
+        {/* On a remis ton bg-gray-50 d'origine avec juste le overflow-y-auto ajouté */}
+        <main className="flex-1 flex flex-col min-h-0 bg-gray-50 overflow-y-auto">
           {children}
         </main>
       </div>

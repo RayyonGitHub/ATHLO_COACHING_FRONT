@@ -50,10 +50,15 @@ const AthleteLayout = ({ user }) => {
                 <span className="hidden lg:block font-medium">Messagerie</span>
               </Link>
 
-              {/* --- NOUVEAU : LIEN BOUTIQUE --- */}
               <Link to="/athlete/boutique" className={`flex items-center gap-4 px-3 py-3 lg:px-5 lg:py-3 rounded-xl transition-colors group ${isActive('boutique') ? 'bg-[#FF6B00]/10 text-[#FF6B00] font-medium' : 'text-gray-400 hover:bg-[#2D2D2D]'}`}>
                 <span className="material-icons-round text-2xl group-hover:text-[#FF6B00]">shopping_cart</span>
                 <span className="hidden lg:block font-medium">Boutique</span>
+              </Link>
+
+              {/* --- NOUVEAU : LIEN NUTRITION --- */}
+              <Link to="/athlete/nutrition" className={`flex items-center gap-4 px-3 py-3 lg:px-5 lg:py-3 rounded-xl transition-colors group ${isActive('nutrition') ? 'bg-[#FF6B00]/10 text-[#FF6B00] font-medium' : 'text-gray-400 hover:bg-[#2D2D2D]'}`}>
+                <span className="material-icons-round text-2xl group-hover:text-[#FF6B00]">restaurant</span>
+                <span className="hidden lg:block font-medium">Nutrition</span>
               </Link>
 
               <Link to="/athlete/parametres" className={`flex items-center gap-4 px-3 py-3 lg:px-5 lg:py-3 rounded-xl transition-colors group ${isActive('parametres') ? 'bg-[#FF6B00]/10 text-[#FF6B00] font-medium' : 'text-gray-400 hover:bg-[#2D2D2D]'}`}>
