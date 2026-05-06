@@ -72,10 +72,10 @@ function App() {
           <Route path="/demo" element={<DemoDashboard />} />
 
           {/* STRAVA */}
-          <Route 
-            path="/auth/strava/callback" 
-            element={<ProtectedRoute><StravaCallback /></ProtectedRoute>} 
-          />
+                <Route 
+                  path="/auth/strava/callback" 
+                  element={<StravaCallback />} 
+                />
 
           {/* ONBOARDING */}
           <Route path="/onboarding/coach/step2" element={<ProtectedRoute><CoachStep2 /></ProtectedRoute>} />
