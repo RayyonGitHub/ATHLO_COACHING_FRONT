@@ -4,7 +4,91 @@ import {
   Loader2, CheckCircle2, TrendingUp, X 
 } from 'lucide-react';
 import productService from '../services/productService';
+import api from '../services/api';
 
+// --- COMPOSANT : Gestionnaire de création rapide de catégories ---
+// Corrigé pour éviter l'imbrication de balises <form>
+const CategoryManager = ({ onCategoryAdded }) => {
+  const [isAdding, setIsAdding] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleAddCategory = async () => {
+    if (!newCategoryName.trim()) return;
+
+    setLoading(true);
+    try {
+      // 1. On génère le slug automatiquement à partir du nom
+      const generatedSlug = newCategoryName
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)+/g, '');
+
+      // 2. On envoie le nom ET le slug à l'API Django
+      const response = await api.post('/shop/categories/', { 
+        nom: newCategoryName,
+        slug: generatedSlug
+      });
+      
+      onCategoryAdded(response.data); 
+      setNewCategoryName('');
+      setIsAdding(false);
+    } catch (error) {
+      console.error("Erreur création catégorie :", error.response?.data || error);
+      alert("Erreur lors de l'ajout de la catégorie.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!isAdding) {
+    return (
+      <button 
+        type="button" 
+        onClick={() => setIsAdding(true)}
+        className="flex items-center gap-1 mt-2 text-xs text-[#FF6B00] hover:text-white transition-colors font-bold"
+      >
+        <Plus size={14} /> Nouvelle catégorie
+      </button>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-2 mt-2">
+      <input
+        type="text"
+        value={newCategoryName}
+        onChange={(e) => setNewCategoryName(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            handleAddCategory();
+          }
+        }}
+        placeholder="Nom de la catégorie..."
+        className="flex-1 bg-black/50 border border-[#2D2D2D] rounded-lg px-2 py-1 text-white text-xs outline-none focus:border-[#FF6B00]"
+        autoFocus
+      />
+      <button 
+        type="button" 
+        onClick={handleAddCategory}
+        disabled={loading}
+        className="bg-[#FF6B00] text-white p-1 rounded hover:bg-[#e66000] disabled:opacity-50"
+      >
+        <CheckCircle2 size={16} />
+      </button>
+      <button 
+        type="button" 
+        onClick={() => setIsAdding(false)}
+        className="text-gray-500 hover:text-red-500 p-1"
+      >
+        <X size={16} />
+      </button>
+    </div>
+  );
+};
+
+// --- COMPOSANT PRINCIPAL : ProductManager ---
 const ProductManager = () => {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -12,7 +96,6 @@ const ProductManager = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // État du formulaire
   const [formData, setFormData] = useState({
     nom: '',
     description: '',
@@ -23,17 +106,15 @@ const ProductManager = () => {
     image: null
   });
 
-  // Charger les produits et les catégories au démarrage
   useEffect(() => {
     fetchData();
   }, []);
 
   const fetchData = async () => {
     try {
-      // On récupère les données via le service qu'on a créé
       const [productsData, categoriesData] = await Promise.all([
         productService.getProducts(),
-        productService.getCategories ? productService.getCategories() : Promise.resolve([]) // Assurez-vous d'avoir getCategories dans productService
+        productService.getCategories ? productService.getCategories() : api.get('/shop/categories/').then(res => res.data)
       ]);
       setProducts(productsData);
       setCategories(categoriesData);
@@ -44,28 +125,34 @@ const ProductManager = () => {
     }
   };
 
-  // Gérer les champs textes et select
+  const handleNewCategory = (newCategory) => {
+    setCategories(prev => [...prev, newCategory]);
+    setFormData(prev => ({ ...prev, categorie: newCategory.id }));
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // Gérer l'upload d'image
   const handleImageChange = (e) => {
     setFormData(prev => ({ ...prev, image: e.target.files[0] }));
   };
 
-  // Soumettre le formulaire
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Comme on envoie un fichier (l'image), on doit utiliser FormData au lieu d'un simple JSON
     const data = new FormData();
     data.append('nom', formData.nom);
     data.append('description', formData.description);
     data.append('prix', formData.prix);
-    if (formData.categorie) data.append('categorie', formData.categorie);
+    
+    // Correction pour éviter l'erreur 500 si la catégorie est vide
+    if (formData.categorie && formData.categorie !== "") {
+      data.append('categorie', parseInt(formData.categorie, 10));
+    }
+    
     data.append('type_produit', formData.type_produit);
     data.append('stock', formData.stock);
     if (formData.image) data.append('image', formData.image);
@@ -73,9 +160,8 @@ const ProductManager = () => {
 
     try {
       await productService.createProduct(data);
-      await fetchData(); // On rafraîchit la liste
-      setIsModalOpen(false); // On ferme la modale
-      // On reset le formulaire
+      await fetchData();
+      setIsModalOpen(false);
       setFormData({ nom: '', description: '', prix: '', categorie: '', type_produit: 'PHYSIQUE', stock: 0, image: null });
     } catch (error) {
       console.error("Erreur lors de la création :", error);
@@ -85,7 +171,6 @@ const ProductManager = () => {
     }
   };
 
-  // Supprimer un produit
   const handleDelete = async (id) => {
     if(window.confirm("Êtes-vous sûr de vouloir supprimer ce produit ?")) {
       try {
@@ -104,7 +189,6 @@ const ProductManager = () => {
   return (
     <div className="flex flex-col gap-8 pb-20 animate-in fade-in duration-700 max-w-6xl mx-auto">
       
-      {/* HEADER */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">
@@ -120,7 +204,6 @@ const ProductManager = () => {
         </button>
       </div>
 
-      {/* LISTE DES PRODUITS */}
       <div className="bg-[#1E1E1E] border border-[#2D2D2D] rounded-3xl overflow-hidden shadow-xl">
         <div className="p-6 border-b border-[#2D2D2D] bg-[#252525] flex items-center gap-3">
           <div className="p-2 bg-[#FF6B00]/10 text-[#FF6B00] rounded-lg"><Package size={20} /></div>
@@ -137,7 +220,6 @@ const ProductManager = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {products.map(product => (
                 <div key={product.id} className="bg-black/30 border border-[#2D2D2D] rounded-2xl overflow-hidden group hover:border-[#FF6B00]/50 transition-colors flex flex-col">
-                  {/* Image Placeholder */}
                   <div className="h-48 bg-[#252525] flex items-center justify-center relative overflow-hidden">
                     {product.image ? (
                       <img src={product.image} alt={product.nom} className="w-full h-full object-cover" />
@@ -149,7 +231,6 @@ const ProductManager = () => {
                     </div>
                   </div>
                   
-                  {/* Infos */}
                   <div className="p-5 flex-1 flex flex-col">
                     <div className="flex justify-between items-start mb-2">
                       <h4 className="text-white font-bold text-lg line-clamp-1">{product.nom}</h4>
@@ -181,7 +262,6 @@ const ProductManager = () => {
         </div>
       </div>
 
-      {/* MODALE D'AJOUT DE PRODUIT */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
           <div className="bg-[#1E1E1E] border border-[#2D2D2D] rounded-3xl p-6 w-full max-w-2xl relative my-8">
@@ -221,6 +301,7 @@ const ProductManager = () => {
                       <option key={cat.id} value={cat.id}>{cat.nom}</option>
                     ))}
                   </select>
+                  <CategoryManager onCategoryAdded={handleNewCategory} />
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-bold text-gray-500 uppercase ml-1">Stock Initial</label>

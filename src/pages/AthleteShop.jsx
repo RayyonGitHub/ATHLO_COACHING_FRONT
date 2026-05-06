@@ -20,12 +20,18 @@ const AthleteShop = () => {
     fetchData();
   }, []);
 
-  const fetchData = async () => {
+ const fetchData = async () => {
     try {
       const [productsData, categoriesData] = await Promise.all([
         productService.getProducts(),
         productService.getCategories()
       ]);
+      
+      // --- AJOUTE CES DEUX LIGNES POUR DEBUGGER ---
+      console.log("📦 PRODUITS REÇUS :", productsData);
+      console.log("🏷️ CATÉGORIES REÇUES :", categoriesData);
+      // ------------------------------------------
+
       setProducts(productsData);
       setCategories(categoriesData);
     } catch (error) {
