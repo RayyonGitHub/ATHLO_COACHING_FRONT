@@ -2,16 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import { MapPin, Phone, User, ArrowLeft, Truck, Package } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import productService from '../services/productService'; // N'oublie pas l'import !
-const Checkout = () => {
-  const { cart, subTotal, shippingFee, cartTotal } = useCart();
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import api from '../services/api';
 
+// Initialisation de Stripe en dehors du composant
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || '');
 
-// --- 1. SOUS-COMPOSANT : FORMULAIRE STRIPE ---
+// --- 1. SOUS-COMPOSANT : FORMULAIRE DE PAIEMENT STRIPE ---
 const StripeShopForm = ({ cartTotal }) => {
   const stripe = useStripe();
   const elements = useElements();
@@ -48,7 +46,7 @@ const StripeShopForm = ({ cartTotal }) => {
               line1: formData.adresse,
               city: formData.ville,
               postal_code: formData.codePostal,
-              country: 'FR', // Par défaut France pour l'exemple
+              country: 'FR',
             }
           }
         }
@@ -60,9 +58,8 @@ const StripeShopForm = ({ cartTotal }) => {
       setError(stripeError.message);
       setLoading(false);
     } else if (paymentIntent && paymentIntent.status === 'succeeded') {
-      // SUCCÈS ! La commande est payée.
-      // (Optionnel: Vider le panier ici si tu as une fonction clearCart dans useCart)
-      navigate('/athlete/factures'); // On redirige vers les factures pour l'instant
+      // SUCCÈS ! Redirection vers les factures
+      navigate('/athlete/factures'); 
     } else {
       setLoading(false);
     }
@@ -137,7 +134,10 @@ const Checkout = () => {
       
       api.post('/shop/create-intent/', { items: itemsPayload })
         .then(res => setClientSecret(res.data.client_secret))
-        .catch(err => setInitError("Erreur lors de l'initialisation du paiement sécurisé."));
+        .catch(err => {
+          console.error(err);
+          setInitError("Erreur lors de l'initialisation du paiement sécurisé.");
+        });
     }
   }, [cart]);
 
@@ -222,6 +222,6 @@ const Checkout = () => {
       </div>
     </div>
   );
-}};
+};
 
 export default Checkout;
