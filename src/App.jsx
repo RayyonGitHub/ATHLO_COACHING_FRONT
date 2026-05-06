@@ -3,10 +3,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 
 // Context
 import { CartProvider } from './context/CartContext';
-// Import
-import Checkout from './pages/Checkout';
-
-
 
 // Pages & Components
 import Home from './pages/Home';
@@ -47,6 +43,9 @@ import Messages from './pages/Messages';
 import CoachSettings from './pages/CoachSettings';
 import InviteCheckout from './pages/InviteCheckout';
 import InviteSetPassword from './pages/InviteSetPassword';
+
+// Boutique & Strava
+import Checkout from './pages/Checkout';
 import ProductManager from './pages/ProductManager';
 import StravaCallback from './pages/StravaCallback';
 import AthleteShop from './pages/AthleteShop';
@@ -54,6 +53,8 @@ import CartPage from './pages/CartPage';
 import RecipeManager from './pages/RecipeManager';
 import MealPlanBuilder from './pages/MealPlanBuilder'; // Import en haut
 import AthleteNutrition from './pages/AthleteNutrition';
+import AthleteInvoices from './pages/AthleteInvoices';
+
 function App() {
   const currentUser = JSON.parse(localStorage.getItem('user')) || {};
 
@@ -81,15 +82,15 @@ function App() {
           <Route path="/onboarding/coach/step3" element={<ProtectedRoute><CoachStep3 /></ProtectedRoute>} />
 
           {/* ESPACE COACH */}
-          <Route path="/dashboard" element={<ProtectedRoute><MainLayout activePageLabel="Dashboard"><CoachAnalytics /></MainLayout></ProtectedRoute>} />
-          <Route path="/clients" element={<ProtectedRoute><MainLayout activePageLabel="Mes Clients"><ClientList /></MainLayout></ProtectedRoute>} />
-          <Route path="/exercices" element={<ProtectedRoute><MainLayout activePageLabel="Exercices"><ExerciceManager /></MainLayout></ProtectedRoute>} />
-          <Route path="/programmes" element={<ProtectedRoute><MainLayout activePageLabel="Programmes"><ProgrammeList /></MainLayout></ProtectedRoute>} />
-          <Route path="/calendar" element={<ProtectedRoute><MainLayout activePageLabel="Calendrier"><CoachCalendar /></MainLayout></ProtectedRoute>} />
-          <Route path="/messages" element={<ProtectedRoute><MainLayout activePageLabel="Messagerie"><Messages /></MainLayout></ProtectedRoute>} />
-          <Route path="/builder" element={<ProtectedRoute><MainLayout activePageLabel="Créateur de Séance"><SessionBuilder /></MainLayout></ProtectedRoute>} />
+          <Route path="/dashboard" element={<ProtectedRoute><MainLayout activePageLabel="Dashboard" headerSection="Coach" headerSubSection="Analyses & Performance"><CoachAnalytics /></MainLayout></ProtectedRoute>} />
+          <Route path="/clients" element={<ProtectedRoute><MainLayout activePageLabel="Mes Clients" headerSection="Coach" headerSubSection="Annuaire Clients"><ClientList /></MainLayout></ProtectedRoute>} />
+          <Route path="/exercices" element={<ProtectedRoute><MainLayout activePageLabel="Exercices" headerSection="Bibliothèque" headerSubSection="Base de données"><ExerciceManager /></MainLayout></ProtectedRoute>} />
+          <Route path="/programmes" element={<ProtectedRoute><MainLayout activePageLabel="Programmes" headerSection="Coach" headerSubSection="Gestion des Programmes"><ProgrammeList /></MainLayout></ProtectedRoute>} />
+          <Route path="/calendar" element={<ProtectedRoute><MainLayout activePageLabel="Calendrier" headerSection="Coach" headerSubSection="Agenda & Planification"><CoachCalendar /></MainLayout></ProtectedRoute>} />
+          <Route path="/messages" element={<ProtectedRoute><MainLayout activePageLabel="Messagerie" headerSection="Coach" headerSubSection="Conversations"><Messages /></MainLayout></ProtectedRoute>} />
+          <Route path="/builder" element={<ProtectedRoute><MainLayout activePageLabel="Créateur de Séance" headerSection="Programmes" headerSubSection="Builder"><SessionBuilder /></MainLayout></ProtectedRoute>} />
           <Route path="/boutique" element={<ProtectedRoute><MainLayout activePageLabel="Boutique"><ProductManager /></MainLayout></ProtectedRoute>} />
-          <Route path="/parametres" element={<ProtectedRoute><MainLayout activePageLabel="Paramètres"><CoachSettings /></MainLayout></ProtectedRoute>} />
+          <Route path="/parametres" element={<ProtectedRoute><MainLayout activePageLabel="Paramètres" headerSection="Coach" headerSubSection="Mon Compte"><CoachSettings /></MainLayout></ProtectedRoute>} />
 
           {/* ESPACE ATHLÈTE */}
           <Route
@@ -108,9 +109,9 @@ function App() {
             <Route path="messages" element={<Messages />} />
             <Route path="boutique" element={<AthleteShop />} />
             <Route path="cart" element={<CartPage />} />
+            <Route path="checkout" element={<Checkout />} />
+            <Route path="factures" element={<AthleteInvoices />} />
             <Route path="parametres" element={<AthleteSettings />} />
-            <Route path="cart" element={<CartPage />} />
-            <Route path="checkout" element={<Checkout />} /> {/* <-- ICI */}
           </Route>
 
           {/* ESPACE PROSPECT */}

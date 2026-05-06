@@ -30,6 +30,7 @@ const AthleteLayout = ({ user }) => {
                 <span className="hidden lg:block font-medium">Tableau de bord</span>
               </Link>
 
+              
               <Link to="/athlete/calendar" className={`flex items-center gap-4 px-3 py-3 lg:px-5 lg:py-3 rounded-xl transition-colors group ${isActive('calendar') ? 'bg-[#FF6B00]/10 text-[#FF6B00] font-medium' : 'text-gray-400 hover:bg-[#2D2D2D]'}`}>
                 <span className="material-icons-round text-2xl group-hover:text-[#FF6B00]">calendar_today</span>
                 <span className="hidden lg:block font-medium">Calendrier</span>
@@ -59,6 +60,14 @@ const AthleteLayout = ({ user }) => {
               <Link to="/athlete/nutrition" className={`flex items-center gap-4 px-3 py-3 lg:px-5 lg:py-3 rounded-xl transition-colors group ${isActive('nutrition') ? 'bg-[#FF6B00]/10 text-[#FF6B00] font-medium' : 'text-gray-400 hover:bg-[#2D2D2D]'}`}>
                 <span className="material-icons-round text-2xl group-hover:text-[#FF6B00]">restaurant</span>
                 <span className="hidden lg:block font-medium">Nutrition</span>
+              </Link  >
+              {/* --- LIEN FACTURES À AJOUTER --- */}
+              <Link 
+                to="/athlete/factures" 
+                className={`flex items-center gap-4 px-3 py-3 lg:px-5 lg:py-3 rounded-xl transition-colors group ${isActive('factures') ? 'bg-[#FF6B00]/10 text-[#FF6B00] font-medium' : 'text-gray-400 hover:bg-[#2D2D2D]'}`}
+              >
+                <span className="material-icons-round text-2xl group-hover:text-[#FF6B00]">receipt_long</span>
+                <span className="hidden lg:block font-medium">Factures</span>
               </Link>
 
               <Link to="/athlete/parametres" className={`flex items-center gap-4 px-3 py-3 lg:px-5 lg:py-3 rounded-xl transition-colors group ${isActive('parametres') ? 'bg-[#FF6B00]/10 text-[#FF6B00] font-medium' : 'text-gray-400 hover:bg-[#2D2D2D]'}`}>
