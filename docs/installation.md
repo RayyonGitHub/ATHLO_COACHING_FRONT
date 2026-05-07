@@ -22,7 +22,7 @@ Avant de commencer, assurez-vous d’avoir installé :
 ### 1. Cloner le dépôt
 
 ```bash
-git clone https://github.com/uha-fr/archiweb_2026_projets_gr06_front.git
+git clone https://github.com/uha-fr/endyearproject_2026_front.git
 cd <nom_du_dossier_front>
 git switch develop-front
 ```
