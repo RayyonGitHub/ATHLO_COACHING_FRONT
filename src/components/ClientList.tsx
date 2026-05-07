@@ -17,7 +17,7 @@ const ClientList = () => {
   const [formData, setFormData] = useState({
     nom: '', prenom: '', email: '', date_naissance: '', telephone: '',
     poids: '', taille: '', objectifs_sportifs: '', pathologies_blessures: '',
-    consentement_rgpd: false, tags: '', est_archive: false
+    consentement_rgpd: false, est_archive: false, abonnement_type: '', // <-- AJOUTÉ ICI
   });
   const [successMessage, setSuccessMessage] = useState(false);
 
@@ -88,7 +88,7 @@ const ClientList = () => {
     const finalData = {
       ...formData,
       pathologies_blessures: formData.pathologies_blessures || "Aucune",
-      tags: formData.tags || "Standard"
+    offer_type: formData.abonnement_type || "abonnement",
     };
 
     try {
@@ -133,7 +133,7 @@ const ClientList = () => {
     if (client) { setEditingClient(client); setFormData(client); }
     else {
       setEditingClient(null);
-      setFormData({ nom: '', prenom: '', email: '', date_naissance: '', telephone: '', poids: '', taille: '', objectifs_sportifs: '', pathologies_blessures: '', consentement_rgpd: false, tags: 'Standard', est_archive: false });
+      setFormData({ nom: '', prenom: '', email: '', date_naissance: '', telephone: '', poids: '', taille: '', objectifs_sportifs: '', pathologies_blessures: '', consentement_rgpd: false, est_archive: false , abonnement_type: '' });
     }
     setIsModalOpen(true);
   };
@@ -232,7 +232,7 @@ const ClientList = () => {
                       <td className="px-6 py-5 text-[11px] font-bold space-y-1 uppercase tracking-tight">
                         <div className="text-gray-700 truncate max-w-[180px]">Objectif: {client.objectifs_sportifs}</div>
                         <div className="text-orange-500 truncate max-w-[180px]">Pathologie: {client.pathologies_blessures || "Néant"}</div>
-                        <div className="text-indigo-900 tracking-tighter">Tag: {client.tags}</div>
+                        <div className="text-indigo-900 tracking-tighter">Abonnement: {client.abonnement_type}</div>
                       </td>
                       <td className="px-6 py-4">
                         <span className={`text-[10px] font-black uppercase tracking-wider ${client.consentement_rgpd ? 'text-green-600' : 'text-orange-500'}`}>{client.consentement_rgpd ? '● Conforme' : '○ En attente'}</span>
@@ -281,7 +281,39 @@ const ClientList = () => {
         <div className={`absolute inset-0 bg-gray-950/40 backdrop-blur-sm transition-opacity duration-300 ${isModalOpen ? 'opacity-100' : 'opacity-0'}`} onClick={closeModal}></div>
         <div className={`relative bg-white rounded-[2.5rem] shadow-2xl w-full max-w-3xl p-10 overflow-hidden transform transition-all duration-300 ease-out ${isModalOpen ? 'translate-y-0 scale-100 opacity-100' : 'translate-y-4 scale-95 opacity-0'}`}>
           <h2 className="text-3xl font-black text-orange-500 mb-8">{editingClient ? 'Modifier le profil' : 'Nouveau sportif'}</h2>
+          
           <form onSubmit={handleSubmit} className="space-y-6">
+            
+            {/* NOUVEAU BLOC : SÉLECTION DU TARIF */}
+            {!editingClient && (
+              <div className="mb-6">
+                <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                  Sélectionner l'offre
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-gray-400">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" />
+                    </svg>
+                  </div>
+                  <select
+                    required
+                    value={formData.abonnement_type}
+                    onChange={(e) => setFormData({ ...formData, abonnement_type: e.target.value })}
+                    className="w-full bg-white border-2 border-gray-100 rounded-2xl pl-12 pr-4 py-3.5 focus:outline-none focus:border-indigo-900 transition-all text-gray-700 font-medium appearance-none cursor-pointer"
+                  >
+                    <option value="abonnement">Abonnement Mensuel</option>
+                    <option value="pack">Pack 10 Séances</option>
+                    <option value="seance">Séance Unique</option>
+                  </select>
+                  <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 text-gray-400"><path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
+                  </div>
+                </div>
+              </div>
+            )}
+            {/* FIN NOUVEAU BLOC */}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
@@ -300,7 +332,8 @@ const ClientList = () => {
                   value={formData.email}
                   onChange={e => { setFormData({ ...formData, email: e.target.value }); setErrors({ ...errors, email: null }) }}
                 />
-                {errors.email && <p className="text-red-500 text-[10px] font-bold mt-1 ml-2 uppercase tracking-tighter">{errors.email}</p>}                <div className="grid grid-cols-2 gap-3">
+                {errors.email && <p className="text-red-500 text-[10px] font-bold mt-1 ml-2 uppercase tracking-tighter">{errors.email}</p>}                
+                <div className="grid grid-cols-2 gap-3">
                 </div>
                 
                   <div>
@@ -319,7 +352,8 @@ const ClientList = () => {
                       onChange={e => { setFormData({ ...formData, date_naissance: e.target.value }); setErrors({ ...errors, date_naissance: null }) }}
                     />
                     {errors.date_naissance && <p className="text-red-500 text-[10px] font-bold mt-1 ml-2 uppercase tracking-tighter">{errors.date_naissance}</p>}
-                  </div>                </div>
+                  </div>                
+                </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <input
@@ -353,8 +387,9 @@ const ClientList = () => {
                     onChange={e => { setFormData({ ...formData, objectifs_sportifs: e.target.value }); setErrors({ ...errors, objectifs_sportifs: null }) }}
                   />
                   {errors.objectifs_sportifs && <p className="text-red-500 text-[10px] font-bold mt-1 ml-2 uppercase tracking-tighter">{errors.objectifs_sportifs}</p>}
-                </div>                <textarea placeholder="Pathologies" className="border-2 border-gray-100 p-3.5 rounded-2xl w-full h-24 resize-none outline-none" value={formData.pathologies_blessures} onChange={e => setFormData({ ...formData, pathologies_blessures: e.target.value })} />
-                <input placeholder="Tags" className="border-2 border-gray-100 p-3.5 rounded-2xl w-full outline-none" value={formData.tags} onChange={e => setFormData({ ...formData, tags: e.target.value })} />
+                </div>                
+                <textarea placeholder="Pathologies" className="border-2 border-gray-100 p-3.5 rounded-2xl w-full h-24 resize-none outline-none" value={formData.pathologies_blessures} onChange={e => setFormData({ ...formData, pathologies_blessures: e.target.value })} />
+                <input placeholder="Tags" className="border-2 border-gray-100 p-3.5 rounded-2xl w-full outline-none" value={formData.abonnement_type} onChange={e => setFormData({ ...formData, abonnement_type: e.target.value })} />
               </div>
             </div>
             <div className="flex justify-between items-center pt-4 border-t border-gray-50">
