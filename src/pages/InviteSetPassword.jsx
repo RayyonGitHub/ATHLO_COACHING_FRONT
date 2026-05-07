@@ -78,11 +78,12 @@ const InviteSetPassword = () => {
 
       setSuccess(true);
     } catch (err) {
-      console.error(err);
+      console.error("DÉTAIL DE L'ERREUR 400 :", err.response?.data); // AJOUTE CETTE LIGNE
       setError(
         err.response?.data?.message ||
-          err.response?.data?.detail ||
-          "Impossible d'activer le compte."
+        err.response?.data?.detail ||
+        JSON.stringify(err.response?.data) || // AJOUTE CECI pour voir les erreurs de validation
+        "Impossible d'activer le compte."
       );
     } finally {
       setLoading(false);
