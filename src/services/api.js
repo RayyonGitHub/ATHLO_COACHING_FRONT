@@ -40,6 +40,10 @@ api.interceptors.response.use(
 export const adminAPI = {
   getCoaches: () => api.get('/admin/coachs/'),
   getAthletes: () => api.get('/admin/athletes/'),
+  deleteAthlete: (id) => api.delete(`/admin/athletes/${id}/`),
+  getProspects: () => api.get('/admin/prospects/'),
+  getFinanceHistory: () => api.get('/admin/finance/'),
+  deleteProspect: (id) => api.delete(`/admin/prospects/${id}/`),
   updateUser: (id, data) => api.patch(`/admin/users/${id}/update/`, data),
   changePassword: (id, password) => api.post(`/admin/users/${id}/change-password/`, { password }),
   forceLogout: (id) => api.post(`/admin/users/${id}/force-logout/`),

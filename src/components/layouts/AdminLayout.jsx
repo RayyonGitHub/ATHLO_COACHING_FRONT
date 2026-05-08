@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Store, BookOpen, LogOut, Search, Bell, HelpCircle, Dumbbell, History, Settings } from 'lucide-react';
+import { LayoutDashboard, Users, Store, BookOpen, LogOut, Search, Bell, HelpCircle, Dumbbell, History, Settings, CreditCard } from 'lucide-react';
 
 const AdminLayout = ({ children }) => {
   const navigate = useNavigate();
@@ -29,7 +29,10 @@ const AdminLayout = ({ children }) => {
   const navItems = [
     { label: 'Overview', icon: <LayoutDashboard size={20} />, path: '/admin/dashboard' },
     { label: 'Coach Directory', icon: <Users size={20} />, path: '/admin/coachs' },
+    { label: 'Athlètes & Prospects', icon: <BookOpen size={20} />, path: '/admin/athletes' },
+    { label: 'Finances & Factures', icon: <CreditCard size={20} />, path: '/admin/finance' },
     { label: 'Gym Management', icon: <Store size={20} />, path: '/admin/salles' },
+
     
   ];
 

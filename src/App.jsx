@@ -37,6 +37,8 @@ import AdminLayout from './components/layouts/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminCoachList from './pages/admin/AdminCoachList';
 import AdminGymList from './pages/admin/AdminGymList';
+import AdminAthleteList from './pages/admin/AdminAthleteList';
+import AdminFinance from './pages/admin/AdminFinance';
 import SessionBuilder from './components/SessionBuilder';
 import ExerciceManager from './pages/ExerciceManager';
 import Messages from './pages/Messages';
@@ -129,7 +131,8 @@ function App() {
           <Route path="/admin/dashboard" element={<AdminRoute><AdminLayout><AdminDashboard /></AdminLayout></AdminRoute>} />
           <Route path="/admin/coachs" element={<AdminRoute><AdminLayout><AdminCoachList /></AdminLayout></AdminRoute>} />
           <Route path="/admin/salles" element={<AdminRoute><AdminLayout><AdminGymList /></AdminLayout></AdminRoute>} />
-
+          <Route path="/admin/athletes" element={<AdminRoute><AdminLayout><AdminAthleteList /></AdminLayout></AdminRoute>} />
+          <Route path="/admin/finance" element={<AdminRoute><AdminLayout><AdminFinance /></AdminLayout></AdminRoute>} />
           <Route path="*" element={<Navigate to="/login" replace />} />
           <Route 
             path="/nutrition" 
