@@ -45,7 +45,8 @@ import Messages from './pages/Messages';
 import CoachSettings from './pages/CoachSettings';
 import InviteCheckout from './pages/InviteCheckout';
 import InviteSetPassword from './pages/InviteSetPassword';
-
+import AdminCatalog from './pages/admin/AdminCatalog';
+import AdminSettings from './pages/admin/AdminSettings';
 // Boutique & Strava
 import Checkout from './pages/Checkout';
 import ProductManager from './pages/ProductManager';
@@ -133,6 +134,8 @@ function App() {
           <Route path="/admin/salles" element={<AdminRoute><AdminLayout><AdminGymList /></AdminLayout></AdminRoute>} />
           <Route path="/admin/athletes" element={<AdminRoute><AdminLayout><AdminAthleteList /></AdminLayout></AdminRoute>} />
           <Route path="/admin/finance" element={<AdminRoute><AdminLayout><AdminFinance /></AdminLayout></AdminRoute>} />
+          <Route path="/admin/catalogue" element={<AdminRoute><AdminLayout><AdminCatalog /></AdminLayout></AdminRoute>} />
+          <Route path="/admin/settings" element={<AdminRoute><AdminLayout><AdminSettings /></AdminLayout></AdminRoute>} />
           <Route path="*" element={<Navigate to="/login" replace />} />
           <Route 
             path="/nutrition" 

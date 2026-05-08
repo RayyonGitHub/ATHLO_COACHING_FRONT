@@ -48,5 +48,17 @@ export const adminAPI = {
   changePassword: (id, password) => api.post(`/admin/users/${id}/change-password/`, { password }),
   forceLogout: (id) => api.post(`/admin/users/${id}/force-logout/`),
   toggleStatus: (id, action) => api.post(`/admin/users/${id}/toggle-status/`, { action }),
+  getAdminExercices: () => api.get('/admin/exercices/'),
+  createAdminExercice: (data) => api.post('/admin/exercices/', data),
+  updateAdminExercice: (id, data) => api.put(`/admin/exercices/${id}/`, data),
+  deleteAdminExercice: (id) => api.delete(`/admin/exercices/${id}/`),
+  
+  getAdminCategories: () => api.get('/admin/categories/'),
+  createAdminCategory: (data) => api.post('/admin/categories/', data),
+  deleteAdminCategory: (id) => api.delete(`/admin/categories/${id}/`),
+  getMe: () => api.get('/admin/me/'),
+  updateMe: (data) => api.patch('/admin/me/', data),
+  changeMyPassword: (data) => api.post('/admin/me/change-password/', data),
 };
+
 export default api;

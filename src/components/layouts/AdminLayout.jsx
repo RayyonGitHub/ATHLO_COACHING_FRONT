@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Store, BookOpen, LogOut, Search, Bell, HelpCircle, Dumbbell, History, Settings, CreditCard } from 'lucide-react';
+import { LayoutDashboard, Users, Store, BookOpen, LogOut, Search, Bell, HelpCircle, Dumbbell, History, Settings, CreditCard, FolderOpen } from 'lucide-react';
 
 const AdminLayout = ({ children }) => {
   const navigate = useNavigate();
@@ -30,6 +30,7 @@ const AdminLayout = ({ children }) => {
     { label: 'Overview', icon: <LayoutDashboard size={20} />, path: '/admin/dashboard' },
     { label: 'Coach Directory', icon: <Users size={20} />, path: '/admin/coachs' },
     { label: 'Athlètes & Prospects', icon: <BookOpen size={20} />, path: '/admin/athletes' },
+    { label: 'Catalogue Global', icon: <FolderOpen size={20} />, path: '/admin/catalogue' },
     { label: 'Finances & Factures', icon: <CreditCard size={20} />, path: '/admin/finance' },
     { label: 'Gym Management', icon: <Store size={20} />, path: '/admin/salles' },
 
@@ -72,14 +73,11 @@ const AdminLayout = ({ children }) => {
           <div className="pt-6 pb-2 px-3">
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">System</p>
           </div>
-          <Link to="#" className="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[#16161A] rounded-lg transition-colors">
-            <History size={20} className="text-slate-400" />
-            <span className="text-sm font-medium">System Logs</span>
-          </Link>
-          <Link to="#" className="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[#16161A] rounded-lg transition-colors">
-            <Settings size={20} className="text-slate-400" />
-            <span className="text-sm font-medium">Settings</span>
-          </Link>
+         
+          <Link to="/admin/settings" className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${location.pathname === '/admin/settings' ? 'bg-[#FF6A00]/10 text-[#FF6A00]' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[#16161A]'}`}>
+          <Settings size={20} className={location.pathname === '/admin/settings' ? 'text-[#FF6A00]' : 'text-slate-400'} />
+          <span className={`text-sm ${location.pathname === '/admin/settings' ? 'font-bold' : 'font-medium'}`}>Settings</span>
+        </Link>
         </nav>
 
         <div className="p-4 border-t border-slate-200 dark:border-[#262626]">

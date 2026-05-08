@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios'; // <-- Import de base pour contourner l'intercepteur
 import api from '../../services/api';
 
 const AdminLogin = () => {
@@ -15,22 +16,26 @@ const AdminLogin = () => {
     setError('');
 
     try {
-      const response = await api.post('/admin/login/', formData);
+      // On utilise axios direct pour ne pas déclencher la redirection automatique 401 de api.js
+      const response = await axios.post('http://127.0.0.1:8000/api/admin/login/', formData);
       
-      // On stocke les infos pour AdminRoute et Axios
+      // On stocke les infos pour AdminRoute et Axios (avec tous les noms utilisés dans ton app)
+      localStorage.setItem('token', response.data.token);
       localStorage.setItem('authToken', response.data.token);
       localStorage.setItem('access_token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
+      
       if (response.data.refresh) {
         localStorage.setItem('refreshToken', response.data.refresh);
       }
       
-      // On injecte le token dans axios pour la requête suivante
+      // On injecte le token dans l'instance api pour les prochaines requêtes
       api.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
       
       navigate('/admin/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || "Erreur de connexion.");
+      // L'erreur est maintenant bien captée ici, sans redirection !
+      setError(err.response?.data?.message || "Identifiants incorrects.");
     } finally {
       setLoading(false);
     }
@@ -72,6 +77,7 @@ const AdminLogin = () => {
             <p className="text-slate-400">Veuillez entrer vos identifiants pour accéder au cockpit.</p>
           </div>
           
+          {/* C'est ici que l'erreur s'affichera désormais */}
           {error && (
             <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm text-center font-bold">
               {error}
