@@ -37,5 +37,12 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
+export const adminAPI = {
+  getCoaches: () => api.get('/admin/coachs/'),
+  getAthletes: () => api.get('/admin/athletes/'),
+  updateUser: (id, data) => api.patch(`/admin/users/${id}/update/`, data),
+  changePassword: (id, password) => api.post(`/admin/users/${id}/change-password/`, { password }),
+  forceLogout: (id) => api.post(`/admin/users/${id}/force-logout/`),
+  toggleStatus: (id, action) => api.post(`/admin/users/${id}/toggle-status/`, { action }),
+};
 export default api;

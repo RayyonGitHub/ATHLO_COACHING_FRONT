@@ -2,16 +2,19 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { 
   Save, User, Briefcase, MapPin, Tag, Phone, 
-  Loader2, AlertCircle, Settings, Lock, CheckCircle2, X, DollarSign
+  Loader2, AlertCircle, Settings, Lock, CheckCircle2, X, DollarSign, Dumbbell
 } from 'lucide-react';
+import api from '../services/api';
 
 const CoachSettings = () => {
   const [formData, setFormData] = useState({
     prenom: '', nom: '', email: '',
     telephone: '', specialite: '', ville: '',
-    specialites_tags: '', offres_tarifs: ''
+    specialites_tags: '', offres_tarifs: '',
+    salles: [] // Nouvel état pour les salles
   });
 
+  const [sallesDisponibles, setSallesDisponibles] = useState([]);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isSaveSuccessModalOpen, setIsSaveSuccessModalOpen] = useState(false);
 
@@ -25,20 +28,22 @@ const CoachSettings = () => {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchData = async () => {
       try {
         const token = localStorage.getItem('authToken') || localStorage.getItem('access_token');
-        const response = await axios.get('http://127.0.0.1:8000/api/coach/me/', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        
+        // On récupère en parallèle le profil et les salles
+        const [profileRes, sallesRes] = await Promise.all([
+          axios.get('http://127.0.0.1:8000/api/coach/me/', { headers: { Authorization: `Bearer ${token}` } }),
+          api.get('/prospects/salles/')
+        ]);
 
-        let data = response.data;
+        let data = profileRes.data;
         let offres = data.offres_tarifs;
 
-        // On gère le cas de l'objet vide {}
         if (typeof offres === 'object' && offres !== null) {
           if (Object.keys(offres).length === 0) {
-            offres = ''; // Si c'est {}, on vide la case
+            offres = '';
           } else {
             offres = JSON.stringify(offres, null, 2);
           }
@@ -47,15 +52,19 @@ const CoachSettings = () => {
         setFormData({ 
           ...formData, 
           ...data,
-          offres_tarifs: offres || ''
+          offres_tarifs: offres || '',
+          salles: data.salles || [] // On charge les IDs des salles du coach
         });
+
+        setSallesDisponibles(sallesRes.data);
+
       } catch (err) {
         setError("Impossible de charger vos informations.");
       } finally {
         setLoading(false);
       }
     };
-    fetchProfile();
+    fetchData();
   }, []);
 
   const handleChange = (e) => {
@@ -63,44 +72,44 @@ const CoachSettings = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  // CoachSettings.jsx
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setSaving(true);
-  try {
-    const token = localStorage.getItem('authToken') || localStorage.getItem('access_token');
-    
-    // 1. Enregistrement dans la base de données (PATCH)
-    await axios.patch('http://127.0.0.1:8000/api/coach/me/', formData, {
-      headers: { Authorization: `Bearer ${token}` }
+  const toggleSalle = (id) => {
+    setFormData(prev => {
+      const isSelected = prev.salles.includes(id);
+      return {
+        ...prev,
+        salles: isSelected 
+          ? prev.salles.filter(salleId => salleId !== id)
+          : [...prev.salles, id]
+      };
     });
+  };
 
-    // --- 🛠️ CORRECTION : Synchronisation du LocalStorage ---
-    // 2. On récupère l'objet user stocké en local
-    // (Je suppose que la clé est 'user' d'après ton App.jsx:26)
-    const storedUser = JSON.parse(localStorage.getItem('user'));
-    
-    if (storedUser) {
-      // 3. On met à jour les champs de l'utilisateur avec tes nouvelles infos tapées
-      // On met à jour 'first_name' et 'last_name' (noms des modèles Django)
-      storedUser.first_name = formData.prenom;
-      storedUser.last_name = formData.nom;
-      // On met à jour 'name' (le champ complet que MainLayout lit en ligne 30)
-      storedUser.name = `${formData.prenom} ${formData.nom}`;
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const token = localStorage.getItem('authToken') || localStorage.getItem('access_token');
+      
+      await axios.patch('http://127.0.0.1:8000/api/coach/me/', formData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
 
-      // 4. On réenregistre l'objet user modifié dans le LocalStorage
-      localStorage.setItem('user', JSON.stringify(storedUser));
+      const storedUser = JSON.parse(localStorage.getItem('user'));
+      if (storedUser) {
+        storedUser.first_name = formData.prenom;
+        storedUser.last_name = formData.nom;
+        storedUser.name = `${formData.prenom} ${formData.nom}`;
+        localStorage.setItem('user', JSON.stringify(storedUser));
+      }
+
+      setIsSaveSuccessModalOpen(true);
+    } catch (err) {
+      setError("Erreur lors de la sauvegarde.");
+      console.error(err);
+    } finally {
+      setSaving(false);
     }
-    // --------------------------------------------------------
-
-    setIsSaveSuccessModalOpen(true);
-  } catch (err) {
-    setError("Erreur lors de la sauvegarde.");
-    console.error(err);
-  } finally {
-    setSaving(false);
-  }
-};
+  };
 
   const handlePasswordChange = async (e) => {
     e.preventDefault();
@@ -134,25 +143,18 @@ const handleSubmit = async (e) => {
 
   return (
     <div className="max-w-4xl mx-auto flex flex-col gap-8 pb-32 pt-6 px-4 animate-in fade-in duration-500 overflow-y-auto">
-      
       <div className="flex flex-col gap-1">
-        <h2 className="text-3xl font-bold text-gray-900">
-          Mon <span className="text-[#FF6B00]">Profil</span>
-        </h2>
-        <p className="text-gray-500 text-sm">
-          Gérez vos informations personnelles et professionnelles.
-        </p>
+        <h2 className="text-3xl font-bold text-gray-900">Mon <span className="text-[#FF6B00]">Profil</span></h2>
+        <p className="text-gray-500 text-sm">Gérez vos informations personnelles et professionnelles.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
-        
         {/* SECTION 1 : INFORMATIONS PERSONNELLES */}
         <section className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
           <div className="p-5 border-b border-gray-100 flex items-center gap-3">
             <div className="p-2 bg-blue-50 text-blue-600 rounded-xl"><User size={20} /></div>
             <h3 className="font-semibold text-gray-900 text-lg">Informations personnelles</h3>
           </div>
-          
           <div className="p-6 md:p-8 space-y-6 bg-gray-50/30">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
@@ -164,50 +166,65 @@ const handleSubmit = async (e) => {
                 <input type="text" name="nom" value={formData.nom || ''} onChange={handleChange} className="w-full bg-white border border-gray-200 text-gray-900 px-4 py-2.5 rounded-xl focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 outline-none transition-all" />
               </div>
             </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1.5"><Phone size={14} className="text-gray-400"/> Téléphone</label>
-                <input type="text" name="telephone" value={formData.telephone || ''} onChange={handleChange} placeholder="Ex: 06 12 34 56 78" className="w-full bg-white border border-gray-200 text-gray-900 px-4 py-2.5 rounded-xl focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 outline-none transition-all" />
+                <input type="text" name="telephone" value={formData.telephone || ''} onChange={handleChange} className="w-full bg-white border border-gray-200 text-gray-900 px-4 py-2.5 rounded-xl focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 outline-none transition-all" />
               </div>
               <div>
-                <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1.5"><MapPin size={14} className="text-gray-400"/> Ville</label>
-                <input type="text" name="ville" value={formData.ville || ''} onChange={handleChange} placeholder="Ex: Paris, Lyon..." className="w-full bg-white border border-gray-200 text-gray-900 px-4 py-2.5 rounded-xl focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 outline-none transition-all" />
+                <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1.5"><MapPin size={14} className="text-gray-400"/> Ville principale</label>
+                <input type="text" name="ville" value={formData.ville || ''} onChange={handleChange} className="w-full bg-white border border-gray-200 text-gray-900 px-4 py-2.5 rounded-xl focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 outline-none transition-all" />
               </div>
             </div>
           </div>
         </section>
 
-        {/* SECTION 2 : ACTIVITÉ PROFESSIONNELLE */}
+        {/* SECTION 2 : ACTIVITÉ & SALLES */}
         <section className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
           <div className="p-5 border-b border-gray-100 flex items-center gap-3">
             <div className="p-2 bg-orange-50 text-[#FF6B00] rounded-xl"><Briefcase size={20} /></div>
-            <h3 className="font-semibold text-gray-900 text-lg">Activité professionnelle</h3>
+            <h3 className="font-semibold text-gray-900 text-lg">Activité & Lieux</h3>
           </div>
-          
           <div className="p-6 md:p-8 space-y-6 bg-gray-50/30">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Spécialité principale</label>
-              <input type="text" name="specialite" value={formData.specialite || ''} onChange={handleChange} placeholder="Ex: Préparateur physique, Coach Perte de poids..." className="w-full bg-white border border-gray-200 text-gray-900 px-4 py-2.5 rounded-xl focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 outline-none transition-all" />
+              <input type="text" name="specialite" value={formData.specialite || ''} onChange={handleChange} className="w-full bg-white border border-gray-200 text-gray-900 px-4 py-2.5 rounded-xl focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 outline-none transition-all" />
             </div>
-
             <div>
               <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1.5"><Tag size={14} className="text-gray-400"/> Mots-clés / Tags</label>
-              <input type="text" name="specialites_tags" value={formData.specialites_tags || ''} onChange={handleChange} placeholder="Ex: Crossfit, Nutrition, Yoga, HIIT..." className="w-full bg-white border border-gray-200 text-gray-900 px-4 py-2.5 rounded-xl focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 outline-none transition-all" />
-              <p className="text-xs text-gray-500 mt-2">Séparez vos spécialités par des virgules pour un meilleur référencement.</p>
+              <input type="text" name="specialites_tags" value={formData.specialites_tags || ''} onChange={handleChange} className="w-full bg-white border border-gray-200 text-gray-900 px-4 py-2.5 rounded-xl focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 outline-none transition-all" />
             </div>
-
             <div>
               <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1.5"><DollarSign size={14} className="text-gray-400"/> Offres et tarifs</label>
-              <textarea 
-                name="offres_tarifs" 
-                value={formData.offres_tarifs || ''} 
-                onChange={handleChange} 
-                rows="4"
-                placeholder="Ex: Séance individuelle: 50€ | Pack 10 séances: 450€" 
-                className="w-full bg-white border border-gray-200 text-gray-900 px-4 py-3 rounded-xl focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 outline-none transition-all resize-none" 
-              />
+              <textarea name="offres_tarifs" value={formData.offres_tarifs || ''} onChange={handleChange} rows="4" className="w-full bg-white border border-gray-200 text-gray-900 px-4 py-3 rounded-xl focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 outline-none transition-all resize-none" />
             </div>
+            
+            {/* NOUVEAU BLOC : Salles Partenaires */}
+            <div className="pt-4 border-t border-gray-200">
+              <label className="flex items-center gap-1.5 text-sm font-bold text-gray-900 mb-3"><Dumbbell size={16} className="text-[#FF6B00]"/> Salles Partenaires</label>
+              <p className="text-sm text-gray-500 mb-4">Sélectionnez les salles dans lesquelles vous donnez vos coachings.</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-60 overflow-y-auto p-1">
+                {sallesDisponibles.length === 0 ? (
+                  <p className="text-sm text-gray-400 italic">Aucune salle disponible.</p>
+                ) : (
+                  sallesDisponibles.map(salle => (
+                    <label key={salle.id} className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${formData.salles.includes(salle.id) ? 'bg-orange-50 border-orange-200 shadow-sm' : 'bg-white border-gray-200 hover:border-orange-300'}`}>
+                      <input 
+                        type="checkbox" 
+                        className="mt-1 w-4 h-4 text-[#FF6B00] rounded border-gray-300 focus:ring-[#FF6B00]"
+                        checked={formData.salles.includes(salle.id)}
+                        onChange={() => toggleSalle(salle.id)}
+                      />
+                      <div>
+                        <p className={`text-sm font-bold ${formData.salles.includes(salle.id) ? 'text-[#FF6B00]' : 'text-gray-900'}`}>{salle.nom}</p>
+                        <p className="text-xs text-gray-500">{salle.ville}</p>
+                      </div>
+                    </label>
+                  ))
+                )}
+              </div>
+            </div>
+
           </div>
         </section>
 
@@ -217,14 +234,11 @@ const handleSubmit = async (e) => {
             <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl"><Settings size={20} /></div>
             <h3 className="font-semibold text-gray-900 text-lg">Paramètres du compte</h3>
           </div>
-          
           <div className="p-6 md:p-8 space-y-6 bg-gray-50/30">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Adresse email</label>
-              {/* CORRECTION : w-full au lieu de md:w-1/2 pour que l'email rentre parfaitement */}
               <input type="email" name="email" value={formData.email || ''} onChange={handleChange} className="w-full bg-white border border-gray-200 text-gray-900 px-4 py-2.5 rounded-xl focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 outline-none transition-all" />
             </div>
-            
             <div className="pt-2">
               <button type="button" onClick={() => setIsPasswordModalOpen(true)} className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-[#FF6B00] transition-colors group px-4 py-2 rounded-lg bg-white border border-gray-200 hover:border-[#FF6B00]/30 shadow-sm cursor-pointer">
                 <Lock size={16} className="text-gray-400 group-hover:text-[#FF6B00] transition-colors" /> Modifier mon mot de passe
@@ -233,7 +247,6 @@ const handleSubmit = async (e) => {
           </div>
         </section>
 
-        {/* BOUTON DE SAUVEGARDE */}
         <div className="pt-4 flex justify-end">
           <button type="submit" disabled={saving} className="w-full md:w-auto bg-[#FF6B00] hover:bg-[#e66000] text-white px-8 py-3 rounded-xl font-semibold shadow-md shadow-orange-500/20 flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer disabled:opacity-70">
             {saving ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />} Enregistrer les modifications
@@ -241,7 +254,7 @@ const handleSubmit = async (e) => {
         </div>
       </form>
 
-      {/* MODALE DE SUCCÈS */}
+      {/* MODALES */}
       {isSaveSuccessModalOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm">
           <div className="bg-white border border-gray-100 rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl animate-in zoom-in-95 duration-200">
@@ -250,19 +263,11 @@ const handleSubmit = async (e) => {
             </div>
             <h3 className="text-xl font-bold text-gray-900 mb-2">Profil mis à jour</h3>
             <p className="text-gray-500 text-sm mb-6">Vos informations professionnelles ont été enregistrées avec succès.</p>
-<button 
-  onClick={() => {
-    setIsSaveSuccessModalOpen(false);
-    window.location.reload(); 
-  }} 
-  className="w-full bg-gray-900 hover:bg-gray-800 text-white font-medium py-2.5 rounded-xl transition-colors cursor-pointer"
->
-  Fermer
-</button>          </div>
+            <button onClick={() => { setIsSaveSuccessModalOpen(false); window.location.reload(); }} className="w-full bg-gray-900 hover:bg-gray-800 text-white font-medium py-2.5 rounded-xl transition-colors cursor-pointer">Fermer</button>
+          </div>
         </div>
       )}
 
-      {/* MODALE MOT DE PASSE */}
       {isPasswordModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm">
           <div className="bg-white border border-gray-100 rounded-3xl p-8 max-w-md w-full relative shadow-2xl animate-in zoom-in-95 duration-200">
