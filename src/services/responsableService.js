@@ -12,5 +12,10 @@ export const responsableService = {
     const url = date ? `/responsable/planning/?date=${date}` : '/responsable/planning/';
     const response = await api.get(url);
     return response.data;
+  },
+  getCoachSupervision: async () => {
+    const response = await api.get('/responsable/supervision-coachs/');
+    return response.data;
   }
 };
+  
