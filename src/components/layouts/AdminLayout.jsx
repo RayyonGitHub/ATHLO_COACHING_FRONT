@@ -33,7 +33,7 @@ const AdminLayout = ({ children }) => {
     { label: 'Catalogue Global', icon: <FolderOpen size={20} />, path: '/admin/catalogue' },
     { label: 'Finances & Factures', icon: <CreditCard size={20} />, path: '/admin/finance' },
     { label: 'Gym Management', icon: <Store size={20} />, path: '/admin/salles' },
-
+    { label: 'Responsables Salles', icon: <Users size={20} />, path: '/admin/responsables' },
     
   ];
 
