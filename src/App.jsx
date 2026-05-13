@@ -57,6 +57,8 @@ import RecipeManager from './pages/RecipeManager';
 import MealPlanBuilder from './pages/MealPlanBuilder'; // Import en haut
 import AthleteNutrition from './pages/AthleteNutrition';
 import AthleteInvoices from './pages/AthleteInvoices';
+import ResponsableDashboard from './pages/responsable/ResponsableDashboard';
+import ResponsableLayout from './components/layouts/ResponsableLayout';
 
 function App() {
   const currentUser = JSON.parse(localStorage.getItem('user')) || {};
@@ -157,6 +159,11 @@ function App() {
               </ProtectedRoute>
             } 
           />
+         {/* ESPACE RESPONSABLE DE SALLE */}
+          <Route path="/responsable" element={<ProtectedRoute><ResponsableLayout /></ProtectedRoute>}>
+            <Route path="dashboard" element={<ResponsableDashboard />} />
+            {/* Les futures pages (planning, etc.) iront ici */}
+          </Route>
         
         </Routes>
       </Router>
