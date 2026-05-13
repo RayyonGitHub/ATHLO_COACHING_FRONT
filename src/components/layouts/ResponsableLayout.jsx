@@ -57,6 +57,18 @@ const ResponsableLayout = () => {
             <span className="material-symbols-outlined mr-3">groups</span>
             <span>Supervision Coachs</span>
           </Link>
+          
+          <Link 
+            to="/responsable/statistiques" 
+            className={`flex items-center px-4 py-3 transition-transform active:scale-95 group ${
+              isActive('statistiques') 
+                ? 'bg-[#1f1f25] text-[#fcf8fe] border-l-4 border-[#ff915a]' 
+                : 'text-[#acaab0] hover:bg-[#1f1f25] transition-colors'
+            }`}
+          >
+            <span className="material-symbols-outlined mr-3">bar_chart</span>
+            <span>Statistiques</span>
+          </Link>
 
           <Link 
             to="/responsable/cours" 

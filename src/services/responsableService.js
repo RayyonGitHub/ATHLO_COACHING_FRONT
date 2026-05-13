@@ -16,6 +16,10 @@ export const responsableService = {
   getCoachSupervision: async () => {
     const response = await api.get('/responsable/supervision-coachs/');
     return response.data;
+  },
+  getStatistiques: async () => {
+    const response = await api.get('/responsable/statistiques/');
+    return response.data;
   }
 };
   
