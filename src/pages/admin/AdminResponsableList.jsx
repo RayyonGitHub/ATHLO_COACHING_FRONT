@@ -13,7 +13,7 @@ const AdminResponsableList = () => {
     first_name: '',
     last_name: '',
     email: '',
-    password: '',
+    // Mot de passe retiré d'ici
     telephone: '',
     salle_id: ''
   });
@@ -47,7 +47,8 @@ const AdminResponsableList = () => {
     try {
       await api.post('/admin/responsables/', formData);
       setIsModalOpen(false);
-      setFormData({ first_name: '', last_name: '', email: '', password: '', telephone: '', salle_id: '' });
+      // Mot de passe retiré du reset
+      setFormData({ first_name: '', last_name: '', email: '', telephone: '', salle_id: '' });
       fetchData(); 
     } catch (error) {
       console.error("Erreur création", error);
@@ -188,10 +189,7 @@ const AdminResponsableList = () => {
                 <input type="email" name="email" required value={formData.email} onChange={handleInputChange} className="w-full border border-slate-200 dark:border-[#26262B] dark:bg-[#0B0B0F] p-2.5 rounded-lg text-sm dark:text-white focus:border-[#FF6A00] outline-none transition-colors" />
               </div>
               
-              <div>
-                <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">Mot de passe provisoire</label>
-                <input type="password" name="password" required value={formData.password} onChange={handleInputChange} className="w-full border border-slate-200 dark:border-[#26262B] dark:bg-[#0B0B0F] p-2.5 rounded-lg text-sm dark:text-white focus:border-[#FF6A00] outline-none transition-colors" />
-              </div>
+              {/* Le champ mot de passe a été supprimé ici */}
               
               <div>
                 <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">Téléphone</label>

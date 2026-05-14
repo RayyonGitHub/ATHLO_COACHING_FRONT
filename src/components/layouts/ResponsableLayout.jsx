@@ -69,35 +69,18 @@ const ResponsableLayout = () => {
             <span className="material-symbols-outlined mr-3">bar_chart</span>
             <span>Statistiques</span>
           </Link>
-
-          <Link 
-            to="/responsable/cours" 
-            className={`flex items-center px-4 py-3 transition-transform active:scale-95 group ${
-              isActive('cours') 
-                ? 'bg-[#1f1f25] text-[#fcf8fe] border-l-4 border-[#ff915a]' 
-                : 'text-[#acaab0] hover:bg-[#1f1f25] transition-colors'
-            }`}
-          >
-            <span className="material-symbols-outlined mr-3">fitness_center</span>
-            <span>Cours Collectifs</span>
-          </Link>
-
-          <Link 
-            to="/responsable/ressources" 
-            className={`flex items-center px-4 py-3 transition-transform active:scale-95 group ${
-              isActive('ressources') 
-                ? 'bg-[#1f1f25] text-[#fcf8fe] border-l-4 border-[#ff915a]' 
-                : 'text-[#acaab0] hover:bg-[#1f1f25] transition-colors'
-            }`}
-          >
-            <span className="material-symbols-outlined mr-3">folder_shared</span>
-            <span>Ressources</span>
-          </Link>
         </nav>
         
         <div className="px-3 pb-8 space-y-1 border-t border-[#48474c]/10 pt-4">
-          <Link to="/responsable/parametres" className="flex items-center px-4 py-3 text-[#acaab0] hover:bg-[#1f1f25] transition-all duration-200 group">
-            <span className="material-symbols-outlined mr-3">settings</span>
+          <Link 
+            to="/responsable/parametres" 
+            className={`flex items-center px-4 py-3 transition-transform active:scale-95 group ${
+              isActive('parametres') 
+                ? 'bg-[#1f1f25] text-[#fcf8fe] border-l-4 border-[#ff915a]' 
+                : 'text-[#acaab0] hover:bg-[#1f1f25] transition-all duration-200'
+            }`}
+          >
+            <span className={`material-symbols-outlined mr-3 ${isActive('parametres') ? 'text-[#ff915a]' : ''}`}>settings</span>
             <span>Paramètres</span>
           </Link>
           <button 

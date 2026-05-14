@@ -63,6 +63,7 @@ import ResponsablePlanning from './pages/responsable/ResponsablePlanning';
 import ResponsableCoachs from './pages/responsable/ResponsableCoachs';
 import ResponsableStats from './pages/responsable/ResponsableStats';
 import AdminResponsableList from './pages/admin/AdminResponsableList';
+import ResponsableSettings from './pages/responsable/ResponsableSettings';
 
 function App() {
   const currentUser = JSON.parse(localStorage.getItem('user')) || {};
@@ -169,7 +170,8 @@ function App() {
             <Route path="dashboard" element={<ResponsableDashboard />} />
             <Route path="planning" element={<ResponsablePlanning />} />
             <Route path="coachs" element={<ResponsableCoachs />} />
-            <Route path="statistiques" element={<ResponsableStats />} /> {/* NOUVELLE ROUTE */}
+            <Route path="statistiques" element={<ResponsableStats />} /> 
+            <Route path="parametres" element={<ResponsableSettings />} />
           </Route>
         
         </Routes>
