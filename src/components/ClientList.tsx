@@ -26,10 +26,11 @@ const ClientList = () => {
     fetchClients();
     
     // Vérifier si le coach a configuré ses paiements
-    const checkStripe = async () => {
+   const checkStripe = async () => {
       try {
         const response = await api.get('/coach/me/');
-        setIsStripeConfigured(!!response.data.stripe_account_id);
+        // On se base sur le statut final de complétion
+        setIsStripeConfigured(!!response.data.stripe_onboarding_complete);
       } catch (error) {
         console.error(error);
       }

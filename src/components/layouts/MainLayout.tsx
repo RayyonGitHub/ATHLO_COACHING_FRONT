@@ -40,11 +40,12 @@ const MainLayout = ({
       }
 
       // Vérification discrète du compte Stripe Connect
+    // Vérification discrète du compte Stripe Connect
       const checkStripeConfig = async () => {
         try {
           const res = await api.get('/coach/me/');
-          // S'il n'y a pas d'ID de compte connecté, on affiche l'alerte
-          if (!res.data.stripe_account_id) {
+          // On vérifie maintenant si l'onboarding complet a été validé par Stripe
+          if (!res.data.stripe_onboarding_complete) {
             setShowStripeWarning(true);
           }
         } catch (error) {

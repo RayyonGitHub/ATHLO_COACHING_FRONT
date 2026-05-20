@@ -11,7 +11,8 @@ const CoachSettings = () => {
     prenom: '', nom: '', email: '',
     telephone: '', specialite: '', ville: '',
     specialites_tags: '', offres_tarifs: '',
-    salles: [] // Nouvel état pour les salles
+    salles: [], // Nouvel état pour les salles
+    stripe_onboarding_complete: false
   });
 
   const [sallesDisponibles, setSallesDisponibles] = useState([]);
@@ -305,7 +306,7 @@ const handleStripeConnect = async () => {
           </div>
         </section>
 
-        {/* NOUVELLE SECTION : CONFIGURATION DES VERSEMENTS */}
+{/* NOUVELLE SECTION : CONFIGURATION DES VERSEMENTS */}
         <section className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
           <div className="p-5 border-b border-gray-100 flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -313,7 +314,7 @@ const handleStripeConnect = async () => {
               <h3 className="font-semibold text-gray-900 text-lg">Configuration des versements</h3>
             </div>
             <div>
-              {formData.stripe_account_id ? (
+              {formData.stripe_onboarding_complete ? (
                 <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold border border-green-200">COMPTE BANCAIRE LIÉ</span>
               ) : (
                 <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold border border-red-200">À CONFIGURER</span>
@@ -330,10 +331,14 @@ const handleStripeConnect = async () => {
                 type="button" 
                 onClick={handleStripeConnect} 
                 disabled={isSubLoading}
-                className="shrink-0 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-70 cursor-pointer"
+                className={`shrink-0 text-white px-6 py-3 rounded-xl font-bold shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-70 cursor-pointer ${
+                  formData.stripe_onboarding_complete 
+                    ? "bg-gray-800 hover:bg-gray-900 shadow-gray-800/20" 
+                    : "bg-blue-600 hover:bg-blue-700 shadow-blue-500/20"
+                }`}
               >
                 {isSubLoading ? <Loader2 className="animate-spin" size={18}/> : <DollarSign size={18}/>}
-                {formData.stripe_account_id ? "Mettre à jour mon compte bancaire" : "Connecter mon compte bancaire"}
+                {formData.stripe_onboarding_complete ? "Mettre à jour mon compte bancaire" : "Connecter mon compte bancaire"}
               </button>
             </div>
           </div>
