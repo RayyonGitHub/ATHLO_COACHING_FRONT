@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 // --- NOUVEAU : Ajout de l'icône Utensils dans les imports ---
-import { LayoutDashboard, Users, Dumbbell, Calendar, Settings, ChevronRight, LogOut, Menu, Activity, MessageCircle, ShoppingBag, Utensils } from 'lucide-react'; 
+import { LayoutDashboard, Users, Dumbbell, Calendar, Settings, ChevronRight, LogOut, Menu, Activity, MessageCircle, ShoppingBag, Utensils, FileText } from 'lucide-react'; 
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../../services/authService';
 
@@ -22,6 +22,7 @@ const Sidebar = ({ activePage = "Dashboard" }: SidebarProps) => {
     { icon: <Activity size={20} />, label: 'Exercices', path: '/exercices' },
     { icon: <Calendar size={20} />, label: 'Calendrier', path: '/calendar' },
     { icon: <MessageCircle size={20} />, label: 'Messagerie', path: '/messages' },
+    { icon: <FileText size={20} />, label: 'Devis', path: '/devis' },
     { icon: <Utensils size={20} />, label: 'Nutrition', path: '/nutrition' }, // <-- AJOUTÉ ICI
     { icon: <ShoppingBag size={20} />, label: 'Boutique', path: '/boutique' }, 
     { icon: <Settings size={20} />, label: 'Paramètres', path: '/parametres' }, 

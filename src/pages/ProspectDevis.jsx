@@ -158,6 +158,22 @@ const ProspectDevis = () => {
     }
   };
 
+  const statutLabel = (statut) => {
+    if (statut === 'accepte') return 'Accepté';
+    if (statut === 'refuse') return 'Refusé';
+    return 'En attente';
+  };
+
+  const statutClasses = (statut) => {
+    if (statut === 'accepte') {
+      return 'bg-green-500/10 text-green-300 border-green-500/20';
+    }
+    if (statut === 'refuse') {
+      return 'bg-red-500/10 text-red-300 border-red-500/20';
+    }
+    return 'bg-[#FF6B00]/10 text-[#FF6B00] border-[#FF6B00]/20';
+  };
+
   return (
     <>
     {notification.show && (
@@ -442,7 +458,7 @@ const ProspectDevis = () => {
                 {devis.map((devisItem) => (
                 <div
                   key={devisItem.id}
-                  className="bg-[#181818] border border-[#2D2D2D] rounded-2xl p-4 flex items-center justify-between"
+                  className="bg-[#181818] border border-[#2D2D2D] rounded-2xl p-4 flex items-center justify-between gap-4"
                 >
                   <div>
                     <p className="text-white font-medium">{devisItem.coach_nom || `Coach #${devisItem.coach}`}</p>
@@ -453,9 +469,11 @@ const ProspectDevis = () => {
                     </p>
                   </div>
 
-                  <span className="px-3 py-1 rounded-full text-xs font-medium bg-[#FF6B00]/10 text-[#FF6B00] border border-[#FF6B00]/20">
-                    {devisItem.statut}
-                  </span>
+                  <div className="flex items-center gap-3">
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium border ${statutClasses(devisItem.statut)}`}>
+                      {statutLabel(devisItem.statut)}
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>

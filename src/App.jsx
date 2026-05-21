@@ -31,6 +31,7 @@ import CoachStep3 from './pages/onboarding/CoachStep3';
 import ProspectLayout from './components/layouts/ProspectLayout';
 import ProspectSalles from './pages/ProspectSalles';
 import ProspectDevis from './pages/ProspectDevis';
+import CoachDevis from './pages/CoachDevis';
 import AdminRoute from './components/AdminRoute';
 import AdminLogin from './pages/admin/AdminLogin';
 import AdminLayout from './components/layouts/AdminLayout';
@@ -98,6 +99,7 @@ function App() {
           <Route path="/programmes" element={<ProtectedRoute><MainLayout activePageLabel="Programmes" headerSection="Coach" headerSubSection="Gestion des Programmes"><ProgrammeList /></MainLayout></ProtectedRoute>} />
           <Route path="/calendar" element={<ProtectedRoute><MainLayout activePageLabel="Calendrier" headerSection="Coach" headerSubSection="Agenda & Planification"><CoachCalendar /></MainLayout></ProtectedRoute>} />
           <Route path="/messages" element={<ProtectedRoute><MainLayout activePageLabel="Messagerie" headerSection="Coach" headerSubSection="Conversations"><Messages /></MainLayout></ProtectedRoute>} />
+          <Route path="/devis" element={<ProtectedRoute><MainLayout activePageLabel="Devis" headerSection="Coach" headerSubSection="Demandes & Offres"><CoachDevis /></MainLayout></ProtectedRoute>} />
           <Route path="/builder" element={<ProtectedRoute><MainLayout activePageLabel="Créateur de Séance" headerSection="Programmes" headerSubSection="Builder"><SessionBuilder /></MainLayout></ProtectedRoute>} />
           <Route path="/boutique" element={<ProtectedRoute><MainLayout activePageLabel="Boutique"><ProductManager /></MainLayout></ProtectedRoute>} />
           <Route path="/parametres" element={<ProtectedRoute><MainLayout activePageLabel="Paramètres" headerSection="Coach" headerSubSection="Mon Compte"><CoachSettings /></MainLayout></ProtectedRoute>} />
@@ -131,6 +133,7 @@ function App() {
             <Route path="devis" element={<ProspectDevis />} />
           </Route>
           <Route path="/prospect/checkout" element={<ProtectedRoute><ProspectCheckout /></ProtectedRoute>} />
+          <Route path="/prospect/invite-checkout" element={<InviteCheckout />} />
           <Route path="/prospect/payment/success" element={<ProtectedRoute><ProspectPaymentSuccess /></ProtectedRoute>} />
           <Route path="/prospect/payment/failed" element={<ProtectedRoute><ProspectPaymentFailed /></ProtectedRoute>} />
 

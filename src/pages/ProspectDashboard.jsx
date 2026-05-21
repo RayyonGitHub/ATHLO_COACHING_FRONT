@@ -159,6 +159,10 @@ const ProspectDashboard = () => {
     });
   };
 
+  const demanderDevis = (coach) => {
+    navigate('/prospect/devis', { state: { coach } });
+  };
+
   return (
     <>
       <header className="sticky top-0 z-10 bg-[#121212]/80 backdrop-blur-md px-8 py-6 border-b border-[#2D2D2D]">
