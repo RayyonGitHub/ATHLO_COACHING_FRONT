@@ -20,6 +20,8 @@ const SessionBuilder = () => {
   // ÉTATS POUR LE PROGRAMME
   const [programmes, setProgrammes] = useState([]);
   const [selectedProgrammeId, setSelectedProgrammeId] = useState('');
+  const [sallesCoach, setSallesCoach] = useState([]);
+  const [selectedSalleId, setSelectedSalleId] = useState('');
 
   // NOUVEAUX ÉTATS POUR LE MODE "ÉDITION DE CALENDRIER"
   const [editMode, setEditMode] = useState(false);
@@ -31,12 +33,14 @@ const SessionBuilder = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [exosRes, progsRes] = await Promise.all([
+        const [exosRes, progsRes, sallesRes] = await Promise.all([
           api.get('/exercices/'),
-          api.get('/programmes/')
+          api.get('/programmes/'),
+          api.get('/coach/salles-disponibles/')
         ]);
         setExercicesLib(exosRes.data);
         setProgrammes(progsRes.data);
+        setSallesCoach(sallesRes.data || []);
 
         // Lecture de l'URL Bouthayna
         const searchParams = new URLSearchParams(location.search);
@@ -57,6 +61,7 @@ const SessionBuilder = () => {
             // On va chercher les infos de la séance existante
             const seanceRes = await api.get(`/seances/${seanceIdFromUrl}/`);
             setSessionTitle(seanceRes.data.titre || 'Séance sans titre');
+            setSelectedSalleId(seanceRes.data.salle ? String(seanceRes.data.salle) : '');
 
             // Si la séance avait DÉJÀ des exercices, on les charge !
             if (seanceRes.data.exercices_details && seanceRes.data.exercices_details.length > 0) {
@@ -148,6 +153,10 @@ const SessionBuilder = () => {
           ordre: index + 1
         }))
       };
+
+      if (selectedSalleId) {
+        payload.salle = parseInt(selectedSalleId, 10);
+      }
 
       if (editMode) {
         // MODE ÉDITION (PATCH)
@@ -304,6 +313,17 @@ const SessionBuilder = () => {
               onChange={(e) => setSessionTitle(e.target.value)}
               className={`w-full bg-transparent text-2xl font-black text-slate-900 dark:text-white placeholder-slate-400 outline-none ${editMode ? 'text-opacity-70' : ''}`}
             />
+
+            <select
+              value={selectedSalleId}
+              onChange={(e) => setSelectedSalleId(e.target.value)}
+              className="w-full bg-white dark:bg-[#0B0B0F] border border-slate-200 dark:border-[#26262B] rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-[#FF6A00]/50 outline-none text-slate-900 dark:text-white transition-all font-medium"
+            >
+              <option value="">-- Associer une salle (optionnel) --</option>
+              {sallesCoach.map((salle) => (
+                <option key={salle.id} value={salle.id}>{salle.nom} - {salle.ville}</option>
+              ))}
+            </select>
           </div>
 
           <div

@@ -39,11 +39,17 @@ const buildPayload = (type, data) => {
     if (type === 'indisponibilite' || type === 'conge') {
         return { ...basePayload, est_conge: type === 'conge' };
     } else {
-        return {
+        const payload = {
             ...basePayload,
             est_collective: type === 'collective',
             capacite_max: type === 'collective' ? data.capacite_max : 1
         };
+
+        if (data.salle_id) {
+            payload.salle = parseInt(data.salle_id, 10);
+        }
+
+        return payload;
     }
 };
 
@@ -57,7 +63,7 @@ const CoachCalendar = () => {
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
     const [exportUrl, setExportUrl] = useState('');
 
-    const initialFormState = { type: 'individuelle', titre: '', capacite_max: 1, jour: '', heure_debut: '', heure_fin: '', est_completee: false };
+    const initialFormState = { type: 'individuelle', titre: '', capacite_max: 1, jour: '', heure_debut: '', heure_fin: '', est_completee: false, salle_id: '' };
 
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [addFormData, setAddFormData] = useState(initialFormState);
@@ -69,6 +75,7 @@ const CoachCalendar = () => {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [eventToDelete, setEventToDelete] = useState(null);
     const [errorModal, setErrorModal] = useState({ show: false, message: '' });
+    const [coachSalles, setCoachSalles] = useState([]);
 
     const [isRemoveParticipantModalOpen, setIsRemoveParticipantModalOpen] = useState(false);
     const [participantToRemove, setParticipantToRemove] = useState(null);
@@ -88,7 +95,19 @@ const CoachCalendar = () => {
 
     useEffect(() => {
         fetchSeances();
+        fetchCoachSalles();
     }, []);
+
+    const fetchCoachSalles = async () => {
+        try {
+            const res = await axios.get('http://localhost:8000/api/coach/salles-disponibles/', {
+                headers: { 'Authorization': `Bearer ${authService.getToken()}` }
+            });
+            setCoachSalles(res.data || []);
+        } catch (err) {
+            console.error('Erreur chargement salles coach', err);
+        }
+    };
     // --- VÉRIFICATION DES DATES PASSÉES (Pour le calendrier) ---
     const isDateAllowed = (info) => {
         // Bloque le clic ou le drag & drop si la case visée est avant "maintenant"
@@ -113,7 +132,7 @@ const CoachCalendar = () => {
     const handleDateSelect = (selectInfo) => {
         const start = new Date(selectInfo.startStr);
         const end = new Date(selectInfo.endStr);
-        setAddFormData({ type: 'individuelle', titre: '', capacite_max: 1, jour: toDateInput(start), heure_debut: toTimeInput(start), heure_fin: toTimeInput(end), est_completee: false });
+        setAddFormData({ type: 'individuelle', titre: '', capacite_max: 1, jour: toDateInput(start), heure_debut: toTimeInput(start), heure_fin: toTimeInput(end), est_completee: false, salle_id: '' });
         setIsAddModalOpen(true);
     };
 
@@ -148,7 +167,8 @@ const CoachCalendar = () => {
             jour: toDateInput(start),
             heure_debut: toTimeInput(start),
             heure_fin: toTimeInput(end),
-            est_completee: eventData.completed || false
+            est_completee: eventData.completed || false,
+            salle_id: eventData.salle ? String(eventData.salle) : ''
         });
         setActiveTab('details');
         setIsEditModalOpen(true);
@@ -447,6 +467,18 @@ const CoachCalendar = () => {
                             <input type="time" value={addFormData.heure_debut} min={addFormData.jour === todayStr ? currentTimeStr : "00:00"} onChange={(e) => setAddFormData({ ...addFormData, heure_debut: e.target.value })} className="w-full border-slate-200 rounded-xl p-3 cursor-pointer" required />
                             <input type="time" value={addFormData.heure_fin} onChange={(e) => setAddFormData({ ...addFormData, heure_fin: e.target.value })} className="w-full border-slate-200 rounded-xl p-3 cursor-pointer" required />
                         </div>
+                        {(addFormData.type === 'individuelle' || addFormData.type === 'collective') && (
+                            <select
+                                value={addFormData.salle_id}
+                                onChange={(e) => setAddFormData({ ...addFormData, salle_id: e.target.value })}
+                                className="w-full border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none transition-all cursor-pointer"
+                            >
+                                <option value="">-- Associer une salle --</option>
+                                {coachSalles.map((salle) => (
+                                    <option key={salle.id} value={salle.id}>{salle.nom} - {salle.ville}</option>
+                                ))}
+                            </select>
+                        )}
                         {addFormData.type === 'collective' && <input type="number" min="2" placeholder="Capacité max" value={addFormData.capacite_max} onChange={(e) => setAddFormData({ ...addFormData, capacite_max: parseInt(e.target.value) })} className="w-full border-slate-200 rounded-xl p-3" />}
                         <div className="pt-4 flex justify-end gap-2">
                             <button type="button" onClick={() => setIsAddModalOpen(false)} className="px-5 py-2.5 font-bold text-slate-500 hover:bg-slate-100 rounded-xl transition-all cursor-pointer">Annuler</button>
@@ -499,6 +531,21 @@ const CoachCalendar = () => {
                                     <div><label className="block text-xs font-black text-slate-400 uppercase tracking-wider mb-1">Début</label><input type="time" value={editFormData.heure_debut} min={editFormData.jour === todayStr ? currentTimeStr : "00:00"} onChange={(e) => setEditFormData({ ...editFormData, heure_debut: e.target.value })} className="w-full border-slate-200 rounded-xl p-3 cursor-pointer" required /></div>
                                     <div><label className="block text-xs font-black text-slate-400 uppercase tracking-wider mb-1">Fin</label><input type="time" value={editFormData.heure_fin} onChange={(e) => setEditFormData({ ...editFormData, heure_fin: e.target.value })} className="w-full border-slate-200 rounded-xl p-3 cursor-pointer" required /></div>
                                 </div>
+                                {(editFormData.type === 'individuelle' || editFormData.type === 'collective') && (
+                                    <div>
+                                        <label className="block text-xs font-black text-slate-400 uppercase tracking-wider mb-1">Salle</label>
+                                        <select
+                                            value={editFormData.salle_id}
+                                            onChange={(e) => setEditFormData({ ...editFormData, salle_id: e.target.value })}
+                                            className="w-full border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none cursor-pointer"
+                                        >
+                                            <option value="">-- Associer une salle --</option>
+                                            {coachSalles.map((salle) => (
+                                                <option key={salle.id} value={salle.id}>{salle.nom} - {salle.ville}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
                                 {editFormData.type === 'collective' && (
                                     <div><label className="block text-xs font-black text-slate-400 uppercase tracking-wider mb-1">Capacité maximale</label><input type="number" min="2" value={editFormData.capacite_max} onChange={(e) => setEditFormData({ ...editFormData, capacite_max: parseInt(e.target.value) })} className="w-full border-slate-200 rounded-xl p-3" /></div>
                                 )}

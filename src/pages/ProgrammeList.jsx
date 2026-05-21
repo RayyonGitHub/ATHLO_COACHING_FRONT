@@ -14,7 +14,8 @@ const ProgrammeList = () => {
   const [selectedProg, setSelectedProg] = useState(null); // Gère la modale "Détails du programme"
   const [scheduleModalOpen, setScheduleModalOpen] = useState(false); // Gère la modale "Choisir une date"
   const [selectedSeance, setSelectedSeance] = useState(null); // La séance qu'on est en train de planifier
-  const [scheduleData, setScheduleData] = useState({ jour: '', heure_debut: '', heure_fin: '' });
+  const [scheduleData, setScheduleData] = useState({ jour: '', heure_debut: '', heure_fin: '', salle_id: '' });
+  const [sallesCoach, setSallesCoach] = useState([]);
   const [successModalOpen, setSuccessModalOpen] = useState(false); // Modale de succès
   const [errorModal, setErrorModal] = useState({ show: false, message: '' });
 
@@ -37,6 +38,9 @@ const ProgrammeList = () => {
       ]);
       setProgrammes(progRes.data);
       setClients(clientsRes.data);
+
+      const sallesRes = await api.get('/coach/salles-disponibles/');
+      setSallesCoach(sallesRes.data || []);
     } catch (error) {
       console.error("Erreur lors du chargement des données:", error);
     } finally {
@@ -71,7 +75,8 @@ const ProgrammeList = () => {
       await api.patch(`/seances/${selectedSeance.id}/`, {
         jour_prevu: scheduleData.jour,
         heure_debut: scheduleData.heure_debut,
-        heure_fin: scheduleData.heure_fin
+        heure_fin: scheduleData.heure_fin,
+        salle: scheduleData.salle_id ? parseInt(scheduleData.salle_id, 10) : null
       });
       
       // On ferme les modales et on affiche le succès
@@ -83,7 +88,7 @@ const ProgrammeList = () => {
       fetchData();
       
       // Reset du formulaire
-      setScheduleData({ jour: '', heure_debut: '', heure_fin: '' });
+      setScheduleData({ jour: '', heure_debut: '', heure_fin: '', salle_id: '' });
     } catch (error) {
       console.error("Erreur de planification:", error);
       
@@ -266,7 +271,16 @@ const ProgrammeList = () => {
                       Modifier Exos
                     </button>
                     <button 
-                      onClick={() => { setSelectedSeance(seance); setScheduleModalOpen(true); }}
+                      onClick={() => {
+                        setSelectedSeance(seance);
+                        setScheduleData({
+                          jour: seance.jour_prevu || '',
+                          heure_debut: seance.heure_debut ? String(seance.heure_debut).slice(0, 5) : '',
+                          heure_fin: seance.heure_fin ? String(seance.heure_fin).slice(0, 5) : '',
+                          salle_id: seance.salle ? String(seance.salle) : '',
+                        });
+                        setScheduleModalOpen(true);
+                      }}
                       className="px-3 py-2 text-xs font-bold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-1 cursor-pointer"
                     >
                       <Calendar size={14} /> Planifier
@@ -311,6 +325,19 @@ const ProgrammeList = () => {
                   value={scheduleData.heure_fin} onChange={e => setScheduleData({...scheduleData, heure_fin: e.target.value})}
                 />
               </div>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Salle</label>
+              <select
+                value={scheduleData.salle_id}
+                onChange={(e) => setScheduleData({ ...scheduleData, salle_id: e.target.value })}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none focus:border-indigo-500 cursor-pointer"
+              >
+                <option value="">-- Sélectionner une salle --</option>
+                {sallesCoach.map((salle) => (
+                  <option key={salle.id} value={salle.id}>{salle.nom} - {salle.ville}</option>
+                ))}
+              </select>
             </div>
             <div className="pt-4 flex gap-2">
               <button type="button" onClick={() => setScheduleModalOpen(false)} className="flex-1 py-3 text-sm font-bold text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors cursor-pointer">Annuler</button>

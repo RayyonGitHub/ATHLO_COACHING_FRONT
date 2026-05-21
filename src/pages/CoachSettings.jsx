@@ -16,6 +16,7 @@ const CoachSettings = () => {
   });
 
   const [sallesDisponibles, setSallesDisponibles] = useState([]);
+  const [villeSearch, setVilleSearch] = useState('');
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isSaveSuccessModalOpen, setIsSaveSuccessModalOpen] = useState(false);
   const [isSubLoading, setIsSubLoading] = useState(false);
@@ -27,6 +28,16 @@ const CoachSettings = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+
+  const fetchSallesDisponibles = async (ville = '') => {
+    const params = {};
+    if (ville && ville.trim()) {
+      params.ville = ville.trim();
+    }
+
+    const res = await api.get('/coach/salles-disponibles/', { params });
+    setSallesDisponibles(res.data || []);
+  };
 
 
   const handleUpgradePremium = async () => {
@@ -69,12 +80,8 @@ const handleStripeConnect = async () => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem('authToken') || localStorage.getItem('access_token');
-        
-        // On récupère en parallèle le profil et les salles
-        const [profileRes, sallesRes] = await Promise.all([
-          axios.get('http://127.0.0.1:8000/api/coach/me/', { headers: { Authorization: `Bearer ${token}` } }),
-          api.get('/prospects/salles/')
-        ]);
+
+        const profileRes = await axios.get('http://127.0.0.1:8000/api/coach/me/', { headers: { Authorization: `Bearer ${token}` } });
 
         let data = profileRes.data;
         let offres = data.offres_tarifs;
@@ -87,14 +94,14 @@ const handleStripeConnect = async () => {
           }
         }
 
-        setFormData({ 
-          ...formData, 
+        setFormData(prev => ({
+          ...prev,
           ...data,
           offres_tarifs: offres || '',
           salles: data.salles || [] // On charge les IDs des salles du coach
-        });
+        }));
 
-        setSallesDisponibles(sallesRes.data);
+        await fetchSallesDisponibles(data.ville || '');
 
       } catch (err) {
         setError("Impossible de charger vos informations.");
@@ -104,6 +111,18 @@ const handleStripeConnect = async () => {
     };
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (!loading && !formData.ville) {
+      const timeoutId = setTimeout(() => {
+        fetchSallesDisponibles(villeSearch).catch(() => {
+          setError("Impossible de charger les salles.");
+        });
+      }, 250);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [villeSearch, formData.ville, loading]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -241,6 +260,18 @@ const handleStripeConnect = async () => {
             <div className="pt-4 border-t border-gray-200">
               <label className="flex items-center gap-1.5 text-sm font-bold text-gray-900 mb-3"><Dumbbell size={16} className="text-[#FF6B00]"/> Salles Partenaires</label>
               <p className="text-sm text-gray-500 mb-4">Sélectionnez les salles dans lesquelles vous donnez vos coachings.</p>
+              {!formData.ville && (
+                <div className="mb-4">
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">Filtrer par ville</label>
+                  <input
+                    type="text"
+                    value={villeSearch}
+                    onChange={(e) => setVilleSearch(e.target.value)}
+                    placeholder="Ex: Amiens"
+                    className="w-full bg-white border border-gray-200 text-gray-900 px-4 py-2.5 rounded-xl focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 outline-none transition-all"
+                  />
+                </div>
+              )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-60 overflow-y-auto p-1">
                 {sallesDisponibles.length === 0 ? (
                   <p className="text-sm text-gray-400 italic">Aucune salle disponible.</p>
