@@ -91,7 +91,7 @@ const AthleteStats = () => {
         <StatCard 
             icon={<Zap className="text-yellow-400"/>} 
             label="Volume Max" 
-            value={stats ? Math.max(...stats.volume_history.map(d => d.volume)) : 0} 
+            value={stats?.volume_history?.length ? Math.max(...stats.volume_history.map(d => d.volume)) : 0}
             unit="kg" 
         />
         <StatCard 
