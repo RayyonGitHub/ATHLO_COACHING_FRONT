@@ -66,7 +66,9 @@ const StripePaymentForm = ({ checkoutToken, total }) => {
       setLoading(false);
     } else if (paymentIntent && paymentIntent.status === 'succeeded') {
       // Le paiement est réussi chez Stripe, on redirige vers TON flux normal avec le token d'activation
-      navigate(`/prospect/payment/success?token=${encodeURIComponent(checkoutToken)}`);
+      navigate(
+        `/prospect/payment/success?token=${encodeURIComponent(checkoutToken)}&payment_intent=${encodeURIComponent(paymentIntent.id)}`
+      );
     } else {
       setLoading(false);
     }

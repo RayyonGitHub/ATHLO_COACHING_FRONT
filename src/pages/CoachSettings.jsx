@@ -307,7 +307,7 @@ const handleStripeConnect = async () => {
               {formData.platform_plan === 'premium' ? (
                 <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold border border-green-200">PREMIUM ACTIF</span>
               ) : (
-                <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-bold border border-gray-200">FREEMIUM (Gratuit)</span>
+                <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-bold border border-gray-200">PREEMIUM</span>
               )}
             </div>
           </div>

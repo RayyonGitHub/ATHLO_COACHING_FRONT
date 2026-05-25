@@ -7,6 +7,7 @@ const ProspectPaymentSuccess = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token') || '';
+  const paymentIntentId = searchParams.get('payment_intent') || '';
 
   const [checkout, setCheckout] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -57,13 +58,16 @@ const ProspectPaymentSuccess = () => {
       }
     };
 
-    if (token) {
+    if (!paymentIntentId) {
+      setError('Preuve de paiement manquante. Merci de reprendre le paiement.');
+      setLoading(false);
+    } else if (token) {
       fetchData();
     } else {
       setError('Token de paiement manquant.');
       setLoading(false);
     }
-  }, [token]);
+  }, [token, paymentIntentId]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -81,6 +85,7 @@ const ProspectPaymentSuccess = () => {
     try {
       const response = await prospectService.activateAthleteProfile({
         checkout_token: token,
+        payment_intent_id: paymentIntentId,
         prenom: profileForm.prenom,
         nom: profileForm.nom,
         telephone: profileForm.telephone,

@@ -54,7 +54,7 @@ const Sidebar = ({ activePage = "Dashboard" }: SidebarProps) => {
         </button>
       </div>
 
-      <nav className="flex-1 px-3 space-y-2">
+      <nav className="flex-1 px-3 space-y-2 overflow-y-auto max-h-screen">
         {menuItems.map((item, index) => {
           const isActive = activePage === item.label;
 

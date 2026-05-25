@@ -10,6 +10,20 @@ const api = axios.create({
   },
 });
 
+let isRefreshing = false;
+let pending401 = [];
+
+const flushPending401 = (error, token = null) => {
+  pending401.forEach(({ resolve, reject }) => {
+    if (error) {
+      reject(error);
+    } else {
+      resolve(token);
+    }
+  });
+  pending401 = [];
+};
+
 // Intercepteur pour ajouter le token à chaque requête
 api.interceptors.request.use(
   (config) => {
@@ -28,12 +42,55 @@ api.interceptors.request.use(
 // Intercepteur pour gérer les erreurs d'authentification
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      // Token expiré ou invalide -> Logout and redirect
-      authService.logout();
-      window.location.href = '/login';
+  async (error) => {
+    const originalRequest = error.config || {};
+
+    if (error.response?.status === 401 && !originalRequest._retry && !String(originalRequest.url || '').includes('/auth/token/refresh/')) {
+      const refreshToken = authService.getRefreshToken();
+      if (!refreshToken) {
+        authService.logout();
+        window.location.href = '/login';
+        return Promise.reject(error);
+      }
+
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          pending401.push({ resolve, reject });
+        }).then((token) => {
+          originalRequest.headers = originalRequest.headers || {};
+          originalRequest.headers.Authorization = `Bearer ${token}`;
+          return api(originalRequest);
+        });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        const refreshResponse = await axios.post(`${API_BASE_URL}/auth/token/refresh/`, {
+          refresh: refreshToken,
+        });
+        const newAccessToken = refreshResponse.data?.access;
+
+        if (!newAccessToken) {
+          throw new Error('Token refresh failed');
+        }
+
+        authService.setToken(newAccessToken);
+        flushPending401(null, newAccessToken);
+        originalRequest.headers = originalRequest.headers || {};
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        return api(originalRequest);
+      } catch (refreshError) {
+        flushPending401(refreshError, null);
+        authService.logout();
+        window.location.href = '/login';
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
+      }
     }
+
     return Promise.reject(error);
   }
 );

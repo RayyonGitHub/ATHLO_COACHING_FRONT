@@ -16,6 +16,9 @@ export const authService = {
 
       if (response.data.token) {
         localStorage.setItem('authToken', response.data.token);
+        if (response.data.refresh) {
+          localStorage.setItem('refreshToken', response.data.refresh);
+        }
         localStorage.setItem('user', JSON.stringify(response.data.user));
       }
 
@@ -50,6 +53,7 @@ export const authService = {
 
   logout: () => {
     localStorage.removeItem('authToken');
+    localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
   },
 
@@ -64,5 +68,13 @@ export const authService = {
 
   getToken: () => {
     return localStorage.getItem('authToken');
+  },
+
+  setToken: (token) => {
+    localStorage.setItem('authToken', token);
+  },
+
+  getRefreshToken: () => {
+    return localStorage.getItem('refreshToken');
   },
 };
