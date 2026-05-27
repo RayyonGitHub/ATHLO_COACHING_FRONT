@@ -52,6 +52,7 @@ import AdminSettings from './pages/admin/AdminSettings';
 import Checkout from './pages/Checkout';
 import ProductManager from './pages/ProductManager';
 import StravaCallback from './pages/StravaCallback';
+import GoogleCalendarCallback from './pages/GoogleCalendarCallback';
 import AthleteShop from './pages/AthleteShop';
 import CartPage from './pages/CartPage';
 import RecipeManager from './pages/RecipeManager';
@@ -86,6 +87,10 @@ function App() {
                 <Route 
                   path="/auth/strava/callback" 
                   element={<StravaCallback />} 
+                />
+                <Route
+                  path="/auth/google/callback"
+                  element={<GoogleCalendarCallback />}
                 />
 
           {/* ONBOARDING */}

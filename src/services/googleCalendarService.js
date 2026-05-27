@@ -5,7 +5,7 @@ const GOOGLE_REDIRECT_URI = 'http://localhost:5173/auth/google/callback';
 const GOOGLE_SCOPE = 'https://www.googleapis.com/auth/calendar';
 
 const googleCalendarService = {
-  getAuthUrl() {
+  getAuthUrl(state) {
     const params = new URLSearchParams({
       client_id: GOOGLE_CLIENT_ID,
       redirect_uri: GOOGLE_REDIRECT_URI,
@@ -14,6 +14,10 @@ const googleCalendarService = {
       access_type: 'offline',
       prompt: 'consent',
     });
+
+    if (state) {
+      params.set('state', state);
+    }
 
     return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
   },
