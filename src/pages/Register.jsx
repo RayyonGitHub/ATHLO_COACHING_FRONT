@@ -10,7 +10,8 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
-    fullName: '',
+    first_name: '',
+    last_name: '',
     email: '',
     password: '',
   });
@@ -148,20 +149,37 @@ const Register = () => {
               </div>
             </div>
 
-            <div className="space-y-1">
-              <label className="block text-sm font-medium text-gray-400" htmlFor="fullName">
-                Nom Complet
-              </label>
-              <input
-                id="fullName"
-                name="fullName"
-                type="text"
-                value={formData.fullName}
-                onChange={handleInputChange}
-                placeholder="John Doe"
-                required
-                className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff6a00] focus:ring-1 focus:ring-[#ff6a00] transition"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="block text-sm font-medium text-gray-400" htmlFor="first_name">
+                  Prénom
+                </label>
+                <input
+                  id="first_name"
+                  name="first_name"
+                  type="text"
+                  value={formData.first_name}
+                  onChange={handleInputChange}
+                  placeholder="John"
+                  required
+                  className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff6a00] focus:ring-1 focus:ring-[#ff6a00] transition"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-sm font-medium text-gray-400" htmlFor="last_name">
+                  Nom
+                </label>
+                <input
+                  id="last_name"
+                  name="last_name"
+                  type="text"
+                  value={formData.last_name}
+                  onChange={handleInputChange}
+                  placeholder="Doe"
+                  className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff6a00] focus:ring-1 focus:ring-[#ff6a00] transition"
+                />
+              </div>
             </div>
 
             <div className="space-y-1">

@@ -28,14 +28,16 @@ const MainLayout = ({
   useEffect(() => {
     try {
       const user = authService.getCurrentUser();
-      
-      if (user && user.name) {
-        setCoachName(user.name);
-        const parts = user.name.trim().split(' ');
+
+      if (user) {
+        const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.name || 'Coach';
+        setCoachName(fullName);
+
+        const parts = fullName.trim().split(' ').filter(Boolean);
         if (parts.length >= 2) {
           setCoachInitials((parts[0][0] + parts[1][0]).toUpperCase());
         } else {
-          setCoachInitials(user.name.substring(0, 2).toUpperCase());
+          setCoachInitials(fullName.substring(0, 2).toUpperCase());
         }
       }
 
