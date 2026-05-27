@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { responsableService } from '../../services/responsableService';
+import api from '../../services/api';
 
 const ResponsableCoachs = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [editingCoach, setEditingCoach] = useState(null);
+  const [editForm, setEditForm] = useState({});
+  const [showDeleteModal, setShowDeleteModal] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -19,6 +23,38 @@ const ResponsableCoachs = () => {
     };
     fetchData();
   }, []);
+
+  const handleEdit = async (coach) => {
+    try {
+      const res = await api.get(`/responsable/coachs/${coach.id}/`);
+      setEditForm(res.data);
+      setEditingCoach(coach.id);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      await api.patch(`/responsable/coachs/${editingCoach}/`, editForm);
+      setEditingCoach(null);
+      const response = await responsableService.getCoachSupervision();
+      setData(response);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDelete = async (coachId) => {
+    try {
+      await api.delete(`/responsable/coachs/${coachId}/`);
+      setShowDeleteModal(null);
+      const response = await responsableService.getCoachSupervision();
+      setData(response);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   if (loading) return <div className="p-8 text-[#ff915a] animate-pulse font-bold">Chargement de la supervision...</div>;
   if (error) return <div className="p-8 text-[#ff7351]">{error}</div>;
@@ -78,6 +114,7 @@ const ResponsableCoachs = () => {
                 <th className="px-8 py-5 border-b border-[#48474c]/20">Charge (Mois)</th>
                 <th className="px-8 py-5 border-b border-[#48474c]/20">Indice d'Activité</th>
                 <th className="px-8 py-5 border-b border-[#48474c]/20 text-right">Revenus Générés</th>
+                <th className="px-8 py-5 border-b border-[#48474c]/20 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="text-sm divide-y divide-[#48474c]/10">
@@ -113,6 +150,17 @@ const ResponsableCoachs = () => {
                     <td className="px-8 py-6 text-right font-black text-[#fcf8fe]">
                       {coach.revenus_generes.toLocaleString('fr-FR')} €
                     </td>
+                    
+                    <td className="px-8 py-6 text-right">
+                      <div className="flex gap-2 justify-end">
+                        <button onClick={() => handleEdit(coach)} className="px-3 py-1.5 bg-[#ff915a] text-white rounded-lg text-xs font-bold hover:bg-[#ff915a]/80 transition">
+                          Éditer
+                        </button>
+                        <button onClick={() => setShowDeleteModal(coach.id)} className="px-3 py-1.5 bg-[#ff7351] text-white rounded-lg text-xs font-bold hover:bg-[#ff7351]/80 transition">
+                          Retirer
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 ))
               )}
@@ -121,6 +169,39 @@ const ResponsableCoachs = () => {
           </table>
         </div>
       </section>
+      
+      {editingCoach && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50" onClick={() => setEditingCoach(null)}>
+          <div className="bg-[#1f1f25] rounded-2xl p-8 max-w-lg w-full m-4" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-2xl font-bold text-[#fcf8fe] mb-6">Éditer le Coach</h3>
+            <div className="space-y-4">
+              <input type="text" placeholder="Prénom" value={editForm.prenom || ''} onChange={(e) => setEditForm({...editForm, prenom: e.target.value})} className="w-full bg-[#131317] border border-[#48474c]/20 rounded-xl px-4 py-3 text-white" />
+              <input type="text" placeholder="Nom" value={editForm.nom || ''} onChange={(e) => setEditForm({...editForm, nom: e.target.value})} className="w-full bg-[#131317] border border-[#48474c]/20 rounded-xl px-4 py-3 text-white" />
+              <input type="tel" placeholder="Téléphone" value={editForm.telephone || ''} onChange={(e) => setEditForm({...editForm, telephone: e.target.value})} className="w-full bg-[#131317] border border-[#48474c]/20 rounded-xl px-4 py-3 text-white" />
+              <input type="text" placeholder="Ville" value={editForm.ville || ''} onChange={(e) => setEditForm({...editForm, ville: e.target.value})} className="w-full bg-[#131317] border border-[#48474c]/20 rounded-xl px-4 py-3 text-white" />
+              <input type="text" placeholder="Spécialité" value={editForm.specialite || ''} onChange={(e) => setEditForm({...editForm, specialite: e.target.value})} className="w-full bg-[#131317] border border-[#48474c]/20 rounded-xl px-4 py-3 text-white" />
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button onClick={handleSave} className="flex-1 bg-[#ff915a] text-white py-3 rounded-xl font-bold hover:bg-[#ff915a]/80 transition">Enregistrer</button>
+              <button onClick={() => setEditingCoach(null)} className="px-6 bg-[#48474c] text-white py-3 rounded-xl font-bold hover:bg-[#48474c]/80 transition">Annuler</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50" onClick={() => setShowDeleteModal(null)}>
+          <div className="bg-[#1f1f25] rounded-2xl p-8 max-w-md w-full m-4" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-2xl font-bold text-[#ff7351] mb-4">⚠️ Retrait Définitif</h3>
+            <p className="text-[#fcf8fe] mb-2 font-bold">Cette action est IRRÉVERSIBLE.</p>
+            <p className="text-[#acaab0] mb-6">Ce coach sera banni de votre salle et ne pourra plus JAMAIS y être réaffecté. Êtes-vous sûr de vouloir continuer ?</p>
+            <div className="flex gap-3">
+              <button onClick={() => handleDelete(showDeleteModal)} className="flex-1 bg-[#ff7351] text-white py-3 rounded-xl font-bold hover:bg-[#ff7351]/80 transition">Retirer Définitivement</button>
+              <button onClick={() => setShowDeleteModal(null)} className="px-6 bg-[#48474c] text-white py-3 rounded-xl font-bold hover:bg-[#48474c]/80 transition">Annuler</button>
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* FOOTER INFO / DATA PRIVACY POLICY */}
       <footer className="pt-8 flex flex-col items-center gap-4">

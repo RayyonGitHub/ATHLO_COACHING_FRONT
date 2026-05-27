@@ -132,12 +132,12 @@ const ResponsableDashboard = () => {
             </div>
             <div className="flex-1 grid grid-cols-2 md:grid-cols-3 gap-8 border-l border-[#48474c]/20 pl-8">
               <div>
-                <p className="text-xs text-[#acaab0] uppercase tracking-tighter mb-1">Ventes Coachs</p>
-                <p className="text-xl font-bold text-[#fcf8fe]">{kpis.revenus_generes.toLocaleString('fr-FR')} €</p>
+                <p className="text-xs text-[#acaab0] uppercase tracking-tighter mb-1">Abonnements</p>
+                <p className="text-xl font-bold text-[#fcf8fe]">{(kpis.revenus_abonnements ?? 0).toLocaleString('fr-FR')} €</p>
               </div>
               <div>
                 <p className="text-xs text-[#acaab0] uppercase tracking-tighter mb-1">Boutique & Extras</p>
-                <p className="text-xl font-bold text-[#acaab0]">-- €</p>
+                <p className="text-xl font-bold text-[#fcf8fe]">{(kpis.revenus_boutique ?? 0).toLocaleString('fr-FR')} €</p>
               </div>
             </div>
           </div>

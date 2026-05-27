@@ -58,7 +58,11 @@ const StripeShopForm = ({ cartTotal }) => {
       setError(stripeError.message);
       setLoading(false);
     } else if (paymentIntent && paymentIntent.status === 'succeeded') {
-      // SUCCÈS ! Redirection vers les factures
+      try {
+        await api.post('/shop/confirm-order/', { payment_intent_id: paymentIntent.id });
+      } catch (err) {
+        console.error('Erreur confirmation commande:', err);
+      }
       navigate('/athlete/factures'); 
     } else {
       setLoading(false);

@@ -1,10 +1,39 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
+import api from '../../services/api';
 
 const ResponsableLayout = () => {
   const location = useLocation();
+  const [notifications, setNotifications] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
 
   const isActive = (path) => location.pathname.includes(path);
+
+  useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const fetchNotifications = async () => {
+    try {
+      const res = await api.get('/responsable/notifications/');
+      setNotifications(res.data);
+    } catch (err) {
+      console.error('Erreur notifications:', err);
+    }
+  };
+
+  const markAsRead = async (id) => {
+    try {
+      await api.patch(`/responsable/notifications/${id}/`, { est_lu: true });
+      fetchNotifications();
+    } catch (err) {
+      console.error('Erreur lecture notification:', err);
+    }
+  };
+
+  const unreadCount = notifications.filter(n => !n.est_lu).length;
 
   return (
     <div className="flex min-h-screen overflow-x-hidden bg-[#0e0e12] text-[#fcf8fe] font-sans selection:bg-[#ff915a]/30">
@@ -102,13 +131,32 @@ const ResponsableLayout = () => {
             <h2 className="font-headline text-lg uppercase tracking-widest text-[#fcf8fe] font-black">ATHLO Management</h2>
           </div>
           <div className="flex items-center gap-6">
-            <div className="flex gap-4">
-              <span className="material-symbols-outlined text-[#acaab0] hover:text-[#ff915a] cursor-pointer transition-colors">notifications</span>
-              <span className="material-symbols-outlined text-[#acaab0] hover:text-[#ff915a] cursor-pointer transition-colors">account_circle</span>
+            <div className="relative">
+              <button onClick={() => setShowNotifications(!showNotifications)} className="relative">
+                <span className="material-symbols-outlined text-[#acaab0] hover:text-[#ff915a] cursor-pointer transition-colors">notifications</span>
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-[#ff915a] text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full">{unreadCount}</span>
+                )}
+              </button>
+              {showNotifications && (
+                <div className="absolute right-0 top-12 w-96 bg-[#1f1f25] border border-[#48474c]/20 rounded-2xl shadow-2xl p-4 max-h-96 overflow-y-auto z-50">
+                  <h3 className="text-sm font-bold text-[#fcf8fe] mb-3 uppercase tracking-wider">Notifications</h3>
+                  {notifications.length === 0 ? (
+                    <p className="text-[#acaab0] text-sm">Aucune notification</p>
+                  ) : (
+                    notifications.map(notif => (
+                      <div key={notif.id} onClick={() => markAsRead(notif.id)} className={`p-3 rounded-xl mb-2 cursor-pointer transition-all ${notif.est_lu ? 'bg-[#131317]' : 'bg-[#ff915a]/10 border border-[#ff915a]/20'}`}>
+                        <p className="text-sm text-[#fcf8fe]">{notif.message}</p>
+                        <span className="text-[10px] text-[#acaab0] mt-1 block">{new Date(notif.date_creation).toLocaleString()}</span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
             </div>
-            <button className="bg-[#1f1f25] text-[#acaab0] px-6 py-2 rounded-xl text-sm font-bold border border-[#48474c]/20 hover:text-[#ff915a] transition-all">
-              Mode Opérationnel
-            </button>
+            <Link to="/responsable/parametres">
+              <span className="material-symbols-outlined text-[#acaab0] hover:text-[#ff915a] cursor-pointer transition-colors">account_circle</span>
+            </Link>
           </div>
         </header>
 
