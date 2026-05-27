@@ -1,18 +1,24 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { authService } from '../services/authService';
+import api from '../services/api';
 
 const ProspectDevis = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const currentUser = authService.getCurrentUser();
   const coachSelectionne = location.state?.coach || null;
 
   const [devis, setDevis] = useState([]);
   const [loadingHistorique, setLoadingHistorique] = useState(false);
+  const [showModal, setShowModal] = useState(Boolean(coachSelectionne));
 
   const [formData, setFormData] = useState({
     nom: '',
     prenom: '',
-    email: '',
+    email: currentUser?.email || '',
     telephone: '',
+    offreType: 'seance',
     age: '',
     taille: '',
     poids: '',
@@ -56,17 +62,8 @@ const ProspectDevis = () => {
     setLoadingHistorique(true);
 
     try {
-      const response = await fetch(
-        `http://127.0.0.1:8000/api/prospects/devis/?email=${encodeURIComponent(email)}`
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Impossible de charger l'historique.");
-      }
-
-      setDevis(data);
+      const response = await api.get('/prospects/devis/', { params: { email } });
+      setDevis(response.data);
     } catch (error) {
       console.error("Erreur chargement historique :", error);
       setDevis([]);
@@ -81,27 +78,32 @@ const ProspectDevis = () => {
     }
   }, [formData.email]);
 
+  useEffect(() => {
+    if (coachSelectionne) setShowModal(true);
+  }, [coachSelectionne]);
+
   const handleSubmit = async () => {
     if (!coachSelectionne?.id) {
       afficherNotification("error", "Aucun coach sélectionné.");
       return;
     }
 
-    if (!formData.nom.trim() || !formData.prenom.trim() || !formData.email.trim()) {
-      afficherNotification("error", "Aucun coach sélectionné.");
+    if (!formData.nom.trim() || !formData.prenom.trim() || !formData.email.trim() || !formData.budget.trim()) {
+      afficherNotification("error", "Nom, prénom, email et prix proposé sont requis.");
+      return;
+    }
+
+    if (Number(String(formData.budget).replace(',', '.')) <= 0) {
+      afficherNotification("error", "Le prix proposé doit être supérieur à 0.");
       return;
     }
 
     setSubmitting(true);
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/prospects/devis/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
+      const response = await api.post('/prospects/devis/', {
           coach_id: coachSelectionne.id,
+          offreType: formData.offreType,
           nom: formData.nom,
           prenom: formData.prenom,
           email: formData.email,
@@ -115,21 +117,10 @@ const ProspectDevis = () => {
           budget: formData.budget,
           pathologiesBlessures: formData.pathologiesBlessures,
           message: formData.message,
-        }),
-      });
-
-      if (!response.ok) {
-        const text = await response.text();
-        throw new Error(`Erreur serveur: ${response.status} - ${text}`);
-      }
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Erreur lors de l'envoi du devis.");
-      }
+        });
 
       afficherNotification("success", "Demande de devis envoyée avec succès.");
+      setShowModal(false);
 
       await chargerHistorique(formData.email);
 
@@ -138,6 +129,7 @@ const ProspectDevis = () => {
         prenom: '',
         email: formData.email,
         telephone: '',
+        offreType: 'seance',
         age: '',
         taille: '',
         poids: '',
@@ -149,7 +141,7 @@ const ProspectDevis = () => {
         message: '',
       });
 
-      console.log("Réponse devis :", data);
+      console.log("Réponse devis :", response.data);
     } catch (error) {
       console.error("Erreur envoi devis :", error);
       afficherNotification("error", error.message || "Impossible d'envoyer la demande de devis.");
@@ -174,6 +166,32 @@ const ProspectDevis = () => {
     return 'bg-[#FF6B00]/10 text-[#FF6B00] border-[#FF6B00]/20';
   };
 
+  const offreLabel = (type) => {
+    if (type === 'pack') return 'Pack';
+    if (type === 'abonnement') return 'Abonnement';
+    return 'Séance individuelle';
+  };
+
+  const payerDevis = (devisItem) => {
+    navigate('/prospect/checkout', {
+      state: {
+        coach: {
+          id: devisItem.coach,
+          full_name: devisItem.coach_nom,
+          nom: devisItem.coach_nom,
+          ville: '',
+          specialites: [],
+        },
+        selectedOffre: {
+          type: 'devis',
+          devisId: devisItem.id,
+          prix: Number(devisItem.prix_propose || 0),
+          description: offreLabel(devisItem.offre_type),
+        },
+      },
+    });
+  };
+
   return (
     <>
     {notification.show && (
@@ -190,22 +208,35 @@ const ProspectDevis = () => {
         </div>
       )}
       <header className="sticky top-0 z-10 bg-[#121212]/80 backdrop-blur-md px-8 py-6 border-b border-[#2D2D2D]">
-        <h1 className="text-2xl lg:text-3xl font-bold text-white">
-          Mes{' '}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF6B00] to-[#FF9E00]">
-            devis
-          </span>
-        </h1>
-        <p className="text-gray-400 mt-1">
-          Décrivez votre profil et votre besoin pour recevoir une proposition adaptée
-        </p>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl lg:text-3xl font-bold text-white">
+              Mes{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF6B00] to-[#FF9E00]">
+                devis
+              </span>
+            </h1>
+            <p className="text-gray-400 mt-1">
+              Suivez vos demandes et payez les propositions acceptées.
+            </p>
+          </div>
+        </div>
       </header>
 
       <div className="p-6 lg:p-8 space-y-8">
-        <section className="bg-[#1E1E1E] border border-[#2D2D2D] rounded-3xl p-8 lg:p-10 overflow-hidden relative">
+        {showModal && (
+        <div className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-black/70 p-4 lg:p-8" onClick={() => setShowModal(false)}>
+        <section className="w-full max-w-5xl bg-[#1E1E1E] border border-[#2D2D2D] rounded-3xl p-8 lg:p-10 overflow-hidden relative" onClick={(e) => e.stopPropagation()}>
           <div className="absolute top-0 right-0 w-40 h-40 bg-[#FF6B00]/10 rounded-full blur-3xl"></div>
 
           <div className="relative z-10">
+            <button
+              type="button"
+              onClick={() => setShowModal(false)}
+              className="absolute right-0 top-0 rounded-xl bg-[#2D2D2D] px-3 py-2 text-sm font-bold text-gray-300 hover:text-white"
+            >
+              Fermer
+            </button>
             <div className="w-14 h-14 rounded-2xl bg-gradient-to-r from-[#FF6B00]/20 to-[#FF9E00]/20 text-[#FF6B00] flex items-center justify-center mb-5">
               <span className="material-icons-round text-3xl">request_quote</span>
             </div>
@@ -318,6 +349,22 @@ const ProspectDevis = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-400 mb-2">
+                    Type de devis
+                  </label>
+                  <select
+                    name="offreType"
+                    value={formData.offreType}
+                    onChange={handleChange}
+                    className="w-full bg-[#2D2D2D] border border-[#3D3D3D] rounded-xl py-3 px-4 text-white outline-none focus:border-[#FF6B00]"
+                  >
+                    <option value="seance">Séance individuelle</option>
+                    <option value="pack">Pack</option>
+                    <option value="abonnement">Abonnement</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-2">
                     Niveau d’activité
                   </label>
                   <select
@@ -363,13 +410,15 @@ const ProspectDevis = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">Budget estimé</label>
+                  <label className="block text-sm font-medium text-gray-400 mb-2">Prix proposé (€)</label>
                   <input
-                    type="text"
+                    type="number"
+                    min="1"
+                    step="0.01"
                     name="budget"
                     value={formData.budget}
                     onChange={handleChange}
-                    placeholder="Ex : 100€ / mois"
+                    placeholder="Ex : 100"
                     className="w-full bg-[#2D2D2D] border border-[#3D3D3D] rounded-xl py-3 px-4 text-white outline-none focus:border-[#FF6B00]"
                   />
                 </div>
@@ -419,6 +468,8 @@ const ProspectDevis = () => {
             </div>
           </div>
         </section>
+        </div>
+        )}
 
         <section className="bg-[#1E1E1E] border border-[#2D2D2D] rounded-3xl p-6 lg:p-8">
           <div className="flex items-center justify-between mb-6">
@@ -463,6 +514,7 @@ const ProspectDevis = () => {
                   <div>
                     <p className="text-white font-medium">{devisItem.coach_nom || `Coach #${devisItem.coach}`}</p>
                     <p className="text-sm text-gray-400">
+                      {offreLabel(devisItem.offre_type)} • {' '}
                       {devisItem.date_creation
                         ? new Date(devisItem.date_creation).toLocaleDateString('fr-FR')
                         : "Date inconnue"}
@@ -470,9 +522,23 @@ const ProspectDevis = () => {
                   </div>
 
                   <div className="flex items-center gap-3">
+                    {devisItem.statut === 'accepte' && devisItem.prix_propose && (
+                      <span className="text-sm font-bold text-white">
+                        {Number(devisItem.prix_propose).toFixed(2)} €
+                      </span>
+                    )}
                     <span className={`px-3 py-1 rounded-full text-xs font-medium border ${statutClasses(devisItem.statut)}`}>
                       {statutLabel(devisItem.statut)}
                     </span>
+                    {devisItem.statut === 'accepte' && devisItem.prix_propose && (
+                      <button
+                        type="button"
+                        onClick={() => payerDevis(devisItem)}
+                        className="rounded-lg bg-[#FF6B00] px-4 py-2 text-xs font-bold text-white hover:bg-[#FF8A2A]"
+                      >
+                        Payer
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}

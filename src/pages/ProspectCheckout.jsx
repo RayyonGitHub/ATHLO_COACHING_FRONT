@@ -178,14 +178,15 @@ const ProspectCheckout = () => {
     if (coach && selectedOffre) {
       prospectService.payCheckout({
         coach_id: coach.id,
-        offer_type: selectedOffre.type
+        offer_type: selectedOffre.type,
+        devis_id: selectedOffre.devisId
       })
       .then(res => {
         setClientSecret(res.client_secret);
         setCheckoutToken(res.checkout_token);
       })
       .catch(err => {
-        setInitError("Impossible d'initialiser le paiement sécurisé avec le serveur.");
+        setInitError(err?.response?.data?.message || "Impossible d'initialiser le paiement sécurisé avec le serveur.");
       });
     }
   }, [coach, selectedOffre]);

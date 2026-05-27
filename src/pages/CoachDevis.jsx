@@ -19,6 +19,12 @@ const statusClass = (status) => {
   return 'bg-amber-100 text-amber-700 border-amber-200';
 };
 
+const offerLabel = (type) => {
+  if (type === 'pack') return 'Pack';
+  if (type === 'abonnement') return 'Abonnement';
+  return 'Séance individuelle';
+};
+
 const CoachDevis = () => {
   const [devis, setDevis] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -58,9 +64,12 @@ const CoachDevis = () => {
   const traiterDevis = async (devisId, action) => {
     setProcessingId(devisId);
     try {
-      const res = await api.post(`/coach/devis/${devisId}/traiter/`, { action });
+      const res = await api.post(`/coach/devis/${devisId}/traiter/`, {
+        action,
+      });
+      const updatedDevis = res?.data?.devis;
       const newStatus = res?.data?.devis_statut;
-      setDevis((prev) => prev.map((d) => (d.id === devisId ? { ...d, statut: newStatus } : d)));
+      setDevis((prev) => prev.map((d) => (d.id === devisId ? { ...d, ...(updatedDevis || {}), statut: newStatus } : d)));
       showNotification('success', action === 'accepter' ? 'Devis accepté.' : 'Devis refusé.');
     } catch (e) {
       showNotification('error', e?.response?.data?.error || 'Erreur lors du traitement du devis.');
@@ -133,8 +142,17 @@ const CoachDevis = () => {
                   {statusLabel(item.statut)}
                 </span>
               </div>
+              {item.prix_propose && (
+                <div className="mt-4 rounded-xl border border-orange-200 bg-orange-50 p-3 text-sm font-bold text-orange-700">
+                  {offerLabel(item.offre_type)} • Prix proposé par le prospect : {Number(item.prix_propose).toFixed(2)} €
+                </div>
+              )}
 
               <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
+                  <p className="text-gray-500">Type de devis</p>
+                  <p className="text-gray-900">{offerLabel(item.offre_type)}</p>
+                </div>
                 <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
                   <p className="text-gray-500">Email</p>
                   <p className="text-gray-900 break-all">{item.email || '-'}</p>
