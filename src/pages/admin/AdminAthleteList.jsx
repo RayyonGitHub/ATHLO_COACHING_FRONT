@@ -15,7 +15,7 @@ const AdminAthleteList = () => {
     try {
       if (activeTab === 'athletes') {
         const res = await adminAPI.getAthletes();
-        setAthletes(res.data);
+        setAthletes((res.data || []).filter((user) => user.role === 'athlete'));
       } else {
         const res = await adminAPI.getProspects();
         setProspects(res.data);

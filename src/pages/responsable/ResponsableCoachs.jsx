@@ -14,7 +14,15 @@ const ResponsableCoachs = () => {
     const fetchData = async () => {
       try {
         const response = await responsableService.getCoachSupervision();
-        setData(response);
+        const coachs = (response.coachs || []).filter((user) => user.role === 'coach');
+        setData({
+          ...response,
+          coachs,
+          kpis: {
+            ...response.kpis,
+            total_coachs: coachs.length,
+          },
+        });
       } catch (err) {
         setError("Impossible de charger les données de supervision.");
       } finally {
@@ -39,7 +47,15 @@ const ResponsableCoachs = () => {
       await api.patch(`/responsable/coachs/${editingCoach}/`, editForm);
       setEditingCoach(null);
       const response = await responsableService.getCoachSupervision();
-      setData(response);
+      const coachs = (response.coachs || []).filter((user) => user.role === 'coach');
+      setData({
+        ...response,
+        coachs,
+        kpis: {
+          ...response.kpis,
+          total_coachs: coachs.length,
+        },
+      });
     } catch (err) {
       console.error(err);
     }
@@ -50,7 +66,15 @@ const ResponsableCoachs = () => {
       await api.delete(`/responsable/coachs/${coachId}/`);
       setShowDeleteModal(null);
       const response = await responsableService.getCoachSupervision();
-      setData(response);
+      const coachs = (response.coachs || []).filter((user) => user.role === 'coach');
+      setData({
+        ...response,
+        coachs,
+        kpis: {
+          ...response.kpis,
+          total_coachs: coachs.length,
+        },
+      });
     } catch (err) {
       console.error(err);
     }
