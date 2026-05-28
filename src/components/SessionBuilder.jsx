@@ -175,9 +175,11 @@ const SessionBuilder = () => {
     } catch (error) {
       console.error("Erreur de sauvegarde:", error);
       setIsSaving(false);
-            const errorMsg = error.response?.data?.horaire_conflit 
-        ? error.response.data.horaire_conflit 
-        : "Erreur lors de la sauvegarde de la séance.";
+      const errorMsg =
+        error.response?.data?.erreur ||
+        error.response?.data?.horaire_conflit ||
+        error.response?.data?.erreur_interne ||
+        "Erreur lors de la sauvegarde de la séance.";
         
       setErrorModal({ show: true, message: errorMsg });
     } finally {

@@ -45,9 +45,7 @@ const buildPayload = (type, data) => {
             capacite_max: type === 'collective' ? data.capacite_max : 1
         };
 
-        if (data.salle_id) {
-            payload.salle = parseInt(data.salle_id, 10);
-        }
+        payload.salle = data.salle_id ? parseInt(data.salle_id, 10) : null;
 
         return payload;
     }
@@ -76,6 +74,8 @@ const CoachCalendar = () => {
     const [eventToDelete, setEventToDelete] = useState(null);
     const [errorModal, setErrorModal] = useState({ show: false, message: '' });
     const [coachSalles, setCoachSalles] = useState([]);
+    const [clients, setClients] = useState([]);
+    const [selectedClientId, setSelectedClientId] = useState('');
 
     const [isRemoveParticipantModalOpen, setIsRemoveParticipantModalOpen] = useState(false);
     const [participantToRemove, setParticipantToRemove] = useState(null);
@@ -96,6 +96,7 @@ const CoachCalendar = () => {
     useEffect(() => {
         fetchSeances();
         fetchCoachSalles();
+        fetchClients();
     }, []);
 
     const fetchCoachSalles = async () => {
@@ -106,6 +107,17 @@ const CoachCalendar = () => {
             setCoachSalles(res.data || []);
         } catch (err) {
             console.error('Erreur chargement salles coach', err);
+        }
+    };
+
+    const fetchClients = async () => {
+        try {
+            const res = await axios.get('http://localhost:8000/api/clients/', {
+                headers: { 'Authorization': `Bearer ${authService.getToken()}` }
+            });
+            setClients(res.data || []);
+        } catch (err) {
+            console.error('Erreur chargement clients coach', err);
         }
     };
     // --- VÉRIFICATION DES DATES PASSÉES (Pour le calendrier) ---
@@ -168,8 +180,9 @@ const CoachCalendar = () => {
             heure_debut: toTimeInput(start),
             heure_fin: toTimeInput(end),
             est_completee: eventData.completed || false,
-            salle_id: eventData.salle ? String(eventData.salle) : ''
+            salle_id: eventData.salle_id || eventData.salle ? String(eventData.salle_id || eventData.salle) : ''
         });
+        setSelectedClientId('');
         setActiveTab('details');
         setIsEditModalOpen(true);
     };
@@ -349,6 +362,30 @@ const CoachCalendar = () => {
         }
     };
 
+    const handleAddParticipant = async () => {
+        if (!selectedEvent?.db_id || !selectedClientId) return;
+        try {
+            const token = authService.getToken();
+            if (!token) return;
+
+            await axios.post(
+                `http://localhost:8000/api/inscriptions/coach/inscrire/${selectedEvent.db_id}/`,
+                { client_id: selectedClientId },
+                { headers: { 'Authorization': `Bearer ${token}` } }
+            );
+
+            const refreshed = await calendarService.getCoachCalendar();
+            setSelectedClientId('');
+            setSeances(refreshed);
+            setSelectedEvent(refreshed.find(s => s.db_id === selectedEvent.db_id) || selectedEvent);
+        } catch (error) {
+            setErrorModal({
+                show: true,
+                message: error.response?.data?.erreur || "Impossible d'ajouter ce participant."
+            });
+        }
+    };
+
     // --- RENDU DES ÉVÉNEMENTS (Version Ultra-Robuste) ---
     const events = seances.map(s => {
         let bgColor = '#4f46e5'; // Bleu/indigo par défaut (séance individuelle)
@@ -448,14 +485,14 @@ const CoachCalendar = () => {
                     eventAllow={isDateAllowed}
                     selectable={true} selectMirror={true} select={handleDateSelect}
                     editable={true} eventDrop={handleEventDropOrResize} eventResize={handleEventDropOrResize} eventClick={handleEventClick}
-                    height="100%" slotMinTime="06:00:00" slotMaxTime="22:00:00" allDaySlot={false} nowIndicator={true}
+                    height="100%" slotMinTime="06:00:00" slotMaxTime="24:00:00" allDaySlot={false} nowIndicator={true}
                 />
             </div>
 
             {/* MODALE AJOUT */}
             <div className={`fixed inset-0 z-[200] flex items-center justify-center p-4 transition-all duration-300 ${isAddModalOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}`}>
                 <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setIsAddModalOpen(false)}></div>
-                <div className={`relative bg-white rounded-2xl shadow-2xl sm:max-w-md w-full transition-all duration-300 ${isAddModalOpen ? 'scale-100' : 'scale-95'}`}>
+                <div className={`relative bg-white rounded-2xl shadow-2xl sm:max-w-md w-full max-h-[90vh] overflow-y-auto transition-all duration-300 ${isAddModalOpen ? 'scale-100' : 'scale-95'}`}>
                     <div className="flex justify-between items-center p-6 border-b border-slate-100"><h3 className="text-xl font-black text-slate-900 flex items-center gap-2"><PlusCircle className="text-orange-500" size={24} /> Nouvelle Séance</h3><button className="cursor-pointer" onClick={() => setIsAddModalOpen(false)}><X size={24} className="text-slate-400 hover:text-slate-600" /></button></div>
                     <form onSubmit={handleCreateSubmit} className="p-6 space-y-4">
                         <select value={addFormData.type} onChange={(e) => setAddFormData({ ...addFormData, type: e.target.value })} className="w-full border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none transition-all cursor-pointer">
@@ -491,7 +528,7 @@ const CoachCalendar = () => {
             {/* MODALE ÉDITION AVEC ONGLETS */}
             <div className={`fixed inset-0 z-[200] flex items-center justify-center p-4 transition-all duration-300 ${isEditModalOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}`}>
                 <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setIsEditModalOpen(false)}></div>
-                <div className={`relative bg-white rounded-3xl shadow-2xl sm:max-w-lg w-full transition-all duration-300 overflow-hidden ${isEditModalOpen ? 'scale-100' : 'scale-95'}`}>
+                <div className={`relative bg-white rounded-3xl shadow-2xl sm:max-w-lg w-full max-h-[90vh] overflow-y-auto transition-all duration-300 overflow-hidden ${isEditModalOpen ? 'scale-100' : 'scale-95'}`}>
 
                     <div className="flex justify-between items-center p-6 bg-slate-50 border-b border-slate-100">
                         <h3 className="text-xl font-black text-slate-900 flex items-center gap-2">
@@ -513,7 +550,7 @@ const CoachCalendar = () => {
                         </div>
                     )}
 
-                    <div className="p-6">
+                    <div className="p-6 overflow-y-auto">
                         {activeTab === 'details' ? (
                             <form onSubmit={handleUpdateEvent} className="space-y-4">
                                 <div>
@@ -548,6 +585,13 @@ const CoachCalendar = () => {
                                 )}
                                 {editFormData.type === 'collective' && (
                                     <div><label className="block text-xs font-black text-slate-400 uppercase tracking-wider mb-1">Capacité maximale</label><input type="number" min="2" value={editFormData.capacite_max} onChange={(e) => setEditFormData({ ...editFormData, capacite_max: parseInt(e.target.value) })} className="w-full border-slate-200 rounded-xl p-3" /></div>
+                                )}
+
+                                {selectedEvent && !(editFormData.type === 'indisponibilite' || editFormData.type === 'conge') && (
+                                    <div className="grid grid-cols-2 gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100 text-sm">
+                                        <div><span className="block text-xs font-black text-slate-400 uppercase">Athlète(s)</span><span className="font-bold text-slate-800">{selectedEvent.client_name || 'En attente'}</span></div>
+                                        <div><span className="block text-xs font-black text-slate-400 uppercase">Salle associée</span><span className="font-bold text-slate-800">{selectedEvent.salle_nom || 'Non associée'}</span></div>
+                                    </div>
                                 )}
 
                                 {!(editFormData.type === 'indisponibilite' || editFormData.type === 'conge') && (
@@ -587,6 +631,35 @@ const CoachCalendar = () => {
                         ) : (
                             // ... Le reste du contenu (Participants) ne change pas, j'ai juste ajouté des cursor-pointer ci-dessous
                             <div className="space-y-6">
+                                {!editFormData.est_completee && (
+                                    <div className="bg-indigo-50/60 p-4 rounded-2xl border border-indigo-100">
+                                        <label className="block text-xs font-black text-indigo-500 uppercase tracking-widest mb-2">Ajouter un athlète</label>
+                                        <div className="flex gap-2">
+                                            <select
+                                                value={selectedClientId}
+                                                onChange={(e) => setSelectedClientId(e.target.value)}
+                                                className="min-w-0 flex-1 border border-indigo-100 rounded-xl p-3 bg-white outline-none focus:ring-2 focus:ring-indigo-500"
+                                            >
+                                                <option value="">Sélectionner un client...</option>
+                                                {clients
+                                                    .filter(c => !selectedEvent?.participants?.some(p => p.client_id === c.id))
+                                                    .map(c => (
+                                                        <option key={c.id} value={c.id}>
+                                                            {`${c.prenom || ''} ${c.nom || ''}`.trim() || c.email} ({c.seances_restantes || 0} séance(s))
+                                                        </option>
+                                                    ))}
+                                            </select>
+                                            <button
+                                                type="button"
+                                                onClick={handleAddParticipant}
+                                                disabled={!selectedClientId}
+                                                className="px-4 py-3 rounded-xl bg-indigo-600 text-white font-black disabled:opacity-50 cursor-pointer"
+                                            >
+                                                Ajouter
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
                                 {/* Jauge de capacité modifiée pour utiliser le vrai compte */}
                                 {selectedEvent?.est_collective && !editFormData.est_completee && (
                                     <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">

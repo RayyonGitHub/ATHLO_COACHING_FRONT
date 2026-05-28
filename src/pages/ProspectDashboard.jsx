@@ -15,6 +15,12 @@ const specialites = [
   'Crossfit', 'Nutrition', 'HIIT', 'Pilates', 'Boxe', 
   'Méditation', 'Yoga', 'Force Athlétique',
 ];
+const getCoachDisplayName = (coach) =>
+  coach?.full_name ||
+  `${coach?.first_name || coach?.prenom || ''} ${coach?.last_name || ''}`.trim() ||
+  coach?.nom ||
+  coach?.email ||
+  'Coach';
 
 const ProspectDashboard = () => {
   const navigate = useNavigate();
@@ -305,10 +311,10 @@ const ProspectDashboard = () => {
                   <div className="p-6 flex-grow">
                     <div className="flex items-start gap-4 mb-5">
                       <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[#FF6B00] to-[#FF9E00] flex items-center justify-center text-white font-bold text-2xl shrink-0">
-                        {coach.nom?.charAt(0) || 'C'}
+                        {getCoachDisplayName(coach).charAt(0) || 'C'}
                       </div>
                       <div className="min-w-0">
-                        <h3 className="font-bold text-white text-lg">{coach.nom}</h3>
+                        <h3 className="font-bold text-white text-lg">{getCoachDisplayName(coach)}</h3>
                         <p className="text-sm text-gray-400">{coach.ville}</p>
                         <p className="text-sm text-gray-400 mt-1">{coach.note} ★ • {coach.avis} avis</p>
                       </div>

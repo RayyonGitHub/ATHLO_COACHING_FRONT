@@ -50,11 +50,15 @@ const ProgrammeList = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!formData.athlete) {
+      setErrorModal({ show: true, message: "Vous devez assigner ce programme à un athlète." });
+      return;
+    }
     try {
       const payload = {
         titre: formData.titre,
         description: formData.description,
-        athlete: formData.athlete ? parseInt(formData.athlete) : null
+                athlete: parseInt(formData.athlete)
       };
       await api.post('/programmes/', payload);
       
@@ -63,7 +67,10 @@ const ProgrammeList = () => {
       setFormData({ titre: '', description: '', athlete: '' });
     } catch (error) {
       console.error("Erreur lors de la création du programme:", error);
-      alert("Erreur lors de la création.");
+      setErrorModal({
+        show: true,
+        message: error.response?.data?.athlete || error.response?.data?.error || "Erreur lors de la création."
+      });
     }
   };
 
@@ -93,9 +100,10 @@ const ProgrammeList = () => {
       console.error("Erreur de planification:", error);
       
       
-      const errorMsg = error.response?.data?.horaire_conflit 
-        ? error.response.data.horaire_conflit 
-        : "Erreur lors de la planification de la séance.";
+      const errorMsg =
+        error.response?.data?.erreur ||
+        error.response?.data?.horaire_conflit ||
+        "Erreur lors de la planification de la séance.";
         
       setErrorModal({ show: true, message: errorMsg });
     }
@@ -213,10 +221,10 @@ const ProgrammeList = () => {
 
             <div>
               <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Assigner à un athlète</label>
-              <select className="w-full bg-slate-50 dark:bg-[#0B0B0F] border border-slate-200 dark:border-[#26262B] rounded-xl px-4 py-3 outline-none focus:border-[#FF6A00] transition-colors dark:text-white cursor-pointer"
+              <select required className="w-full bg-slate-50 dark:bg-[#0B0B0F] border border-slate-200 dark:border-[#26262B] rounded-xl px-4 py-3 outline-none focus:border-[#FF6A00] transition-colors dark:text-white cursor-pointer"
                 value={formData.athlete} onChange={e => setFormData({...formData, athlete: e.target.value})}
               >
-                <option value="">-- Ne pas assigner pour le moment --</option>
+                <option value="">-- Sélectionner un athlète --</option>
                 {clients.map(c => (
                   <option key={c.id} value={c.id}>{c.prenom} {c.nom}</option>
                 ))}
