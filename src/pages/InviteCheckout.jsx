@@ -6,6 +6,12 @@ import prospectService from '../services/prospectService';
 
 // Chargement de la clé publique Stripe depuis le .env
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || 'pk_test_VOTRE_CLE');
+const getCoachDisplayName = (coach) =>
+  coach?.full_name ||
+  `${coach?.first_name || coach?.prenom || ''} ${coach?.last_name || ''}`.trim() ||
+  coach?.nom ||
+  coach?.email ||
+  'votre coach';
 
 // --- 1. SOUS-COMPOSANT : LE FORMULAIRE DE PAIEMENT STRIPE ---
 const StripeInviteForm = ({ token, preview, total }) => {
@@ -180,6 +186,7 @@ const InviteCheckout = () => {
   }, [token]);
 
   const total = useMemo(() => Number(preview?.offer?.price || 0), [preview]);
+  const coachDisplayName = getCoachDisplayName(preview?.coach);
 
   if (loadingPreview) {
     return (
@@ -221,7 +228,7 @@ const InviteCheckout = () => {
                 Finaliser l'accès à votre espace
               </h1>
               <p className="text-gray-400 uppercase tracking-widest text-sm">
-                Invitation envoyée par {preview?.coach?.full_name || 'votre coach'}
+                Invitation envoyée par {coachDisplayName}
               </p>
             </section>
 
@@ -244,7 +251,7 @@ const InviteCheckout = () => {
                 <div className="flex gap-4 group">
                   <div className="flex-grow flex flex-col justify-center">
                     <div className="flex justify-between">
-                      <h4 className="font-bold">{preview?.coach?.full_name || '-'}</h4>
+                      <h4 className="font-bold">{coachDisplayName}</h4>
                       <span className="font-bold">{total.toFixed(2)} €</span>
                     </div>
                     <p className="text-sm text-gray-400">{preview?.offer?.label || '-'}</p>

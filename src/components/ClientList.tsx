@@ -13,7 +13,7 @@ const ClientList = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const clientsPerPage = 3;
-
+  const [isStripeConfigured, setIsStripeConfigured] = useState(true); // true par défaut pour éviter les clignotements
   const [formData, setFormData] = useState({
     nom: '', prenom: '', email: '', date_naissance: '', telephone: '',
     poids: '', taille: '', objectifs_sportifs: '', pathologies_blessures: '',
@@ -24,6 +24,18 @@ const ClientList = () => {
   // Utilisation de useEffect pour charger les données au montage du composant
   useEffect(() => {
     fetchClients();
+    
+    // Vérifier si le coach a configuré ses paiements
+   const checkStripe = async () => {
+      try {
+        const response = await api.get('/coach/me/');
+        // On se base sur le statut final de complétion
+        setIsStripeConfigured(!!response.data.stripe_onboarding_complete);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    checkStripe();
   }, []);
 
   // --- RÉCUPÉRATION DES CLIENTS (GET) ---
@@ -392,14 +404,36 @@ const ClientList = () => {
                 <input placeholder="Tags" className="border-2 border-gray-100 p-3.5 rounded-2xl w-full outline-none" value={formData.abonnement_type} onChange={e => setFormData({ ...formData, abonnement_type: e.target.value })} />
               </div>
             </div>
-            <div className="flex justify-between items-center pt-4 border-t border-gray-50">
-              <div className="space-y-2">
-                <label className="flex items-center space-x-3 cursor-pointer"><input type="checkbox" checked={formData.consentement_rgpd} onChange={e => setFormData({ ...formData, consentement_rgpd: e.target.checked })} className="w-5 h-5 accent-green-600" /><span className="text-xs font-bold text-gray-500 uppercase">RGPD</span></label>
-                <label className="flex items-center space-x-3 cursor-pointer"><input type="checkbox" checked={formData.est_archive} onChange={e => setFormData({ ...formData, est_archive: e.target.checked })} className="w-5 h-5 accent-red-600" /><span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Archiver</span></label>
-              </div>
-              <div className="flex space-x-4">
-                <button type="button" onClick={closeModal} className="text-sm font-bold text-gray-400">Annuler</button>
-                <button type="submit" className="bg-orange-500 text-white px-10 py-4 rounded-2xl font-black shadow-xl hover:bg-orange-700 transition-all transform hover:-translate-y-1">Enregistrer</button>
+            {/* AVERTISSEMENT STRIPE & BOUTONS */}
+            <div className="flex flex-col gap-4 pt-4 border-t border-gray-50">
+              
+              {!editingClient && !isStripeConfigured && (
+                <div className="p-4 bg-orange-50 border border-orange-200 rounded-2xl flex items-start gap-3">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-orange-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <div>
+                    <p className="text-sm text-orange-800 font-bold">Paiements désactivés</p>
+                    <p className="text-xs text-orange-700 mt-1">Vous devez configurer votre compte de versement dans vos <a href="/parametres" className="underline font-bold">paramètres</a> pour pouvoir inviter un client et lui envoyer un lien de paiement.</p>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex justify-between items-center w-full">
+                <div className="space-y-2">
+                  <label className="flex items-center space-x-3 cursor-pointer"><input type="checkbox" checked={formData.consentement_rgpd} onChange={e => setFormData({ ...formData, consentement_rgpd: e.target.checked })} className="w-5 h-5 accent-green-600" /><span className="text-xs font-bold text-gray-500 uppercase">RGPD</span></label>
+                  <label className="flex items-center space-x-3 cursor-pointer"><input type="checkbox" checked={formData.est_archive} onChange={e => setFormData({ ...formData, est_archive: e.target.checked })} className="w-5 h-5 accent-red-600" /><span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Archiver</span></label>
+                </div>
+                <div className="flex space-x-4">
+                  <button type="button" onClick={closeModal} className="text-sm font-bold text-gray-400">Annuler</button>
+                  <button 
+                    type="submit" 
+                    disabled={!editingClient && !isStripeConfigured}
+                    className={`px-10 py-4 rounded-2xl font-black shadow-xl transition-all transform ${(!editingClient && !isStripeConfigured) ? 'bg-gray-300 text-gray-500 cursor-not-allowed shadow-none' : 'bg-orange-500 text-white hover:bg-orange-700 hover:-translate-y-1'}`}
+                  >
+                    Enregistrer
+                  </button>
+                </div>
               </div>
             </div>
           </form>

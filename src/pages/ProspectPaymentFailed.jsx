@@ -2,6 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import prospectService from '../services/prospectService';
 
+const getCoachDisplayName = (coach) =>
+  coach?.full_name ||
+  `${coach?.first_name || coach?.prenom || ''} ${coach?.last_name || ''}`.trim() ||
+  coach?.nom ||
+  coach?.email ||
+  '-';
+
 const ProspectPaymentFailed = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -9,6 +16,7 @@ const ProspectPaymentFailed = () => {
 
   const [checkout, setCheckout] = useState(null);
   const [loading, setLoading] = useState(true);
+  const coachDisplayName = getCoachDisplayName(checkout?.coach);
 
   useEffect(() => {
     const fetchPreview = async () => {
@@ -96,7 +104,7 @@ const ProspectPaymentFailed = () => {
                   <div className="bg-[#0B0B0F] p-4 rounded-lg space-y-3">
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-400">Coach</span>
-                      <span className="text-white font-medium">{loading ? '...' : checkout?.coach?.full_name || '-'}</span>
+                      <span className="text-white font-medium">{loading ? '...' : coachDisplayName}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-400">Offre</span>

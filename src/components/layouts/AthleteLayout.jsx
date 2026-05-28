@@ -4,7 +4,7 @@ import AthleteNotificationBell from "../AthleteNotificationBell";
 
 const AthleteLayout = ({ user }) => {
   const location = useLocation();
-  const userName = user?.prenom || user?.name || "Athlète";
+  const userName = user?.first_name || user?.prenom || user?.name || "Athlète";
 
   const isActive = (path) => location.pathname.includes(path);
 

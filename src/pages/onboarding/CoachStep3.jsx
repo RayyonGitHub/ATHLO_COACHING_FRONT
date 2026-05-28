@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import googleCalendarService from '../../services/googleCalendarService';
 
+const ONBOARDING_GOOGLE_OAUTH_KEY = 'onboarding_google_oauth_state';
+
 const CoachStep3 = () => {
   const navigate = useNavigate();
   // On ne garde que Google
@@ -23,7 +25,21 @@ const CoachStep3 = () => {
 
   const handleConnectGoogle = async () => {
     setConnecting('google');
-    window.location.href = googleCalendarService.getAuthUrl();
+
+    const nonce = `${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    const oauthState = btoa(JSON.stringify({ flow: 'onboarding_coach', nonce }));
+
+    localStorage.setItem(
+      ONBOARDING_GOOGLE_OAUTH_KEY,
+      JSON.stringify({
+        flow: 'onboarding_coach',
+        nonce,
+        nextRoute: '/onboarding/coach/step3',
+        savedAt: Date.now(),
+      })
+    );
+
+    window.location.href = googleCalendarService.getAuthUrl(oauthState);
   };
 
   const handleDisconnectGoogle = async () => {

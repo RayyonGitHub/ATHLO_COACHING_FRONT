@@ -164,10 +164,10 @@ const Login = () => {
         navigate('/dashboard');
       } else if (role === 'athlete') {
         navigate('/athlete/dashboard');
-      } else if (role === 'prospect') {
-        navigate('/prospect/dashboard');
+      } else if (role === 'responsable') { // AJOUTEZ CECI
+        navigate('/responsable/dashboard');
       } else {
-        navigate('/login');
+        navigate('/prospect/dashboard');
       }
     } catch (err) {
       console.error("ERREUR DE CONNEXION :", err);

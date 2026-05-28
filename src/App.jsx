@@ -31,6 +31,7 @@ import CoachStep3 from './pages/onboarding/CoachStep3';
 import ProspectLayout from './components/layouts/ProspectLayout';
 import ProspectSalles from './pages/ProspectSalles';
 import ProspectDevis from './pages/ProspectDevis';
+import CoachDevis from './pages/CoachDevis';
 import AdminRoute from './components/AdminRoute';
 import AdminLogin from './pages/admin/AdminLogin';
 import AdminLayout from './components/layouts/AdminLayout';
@@ -51,12 +52,20 @@ import AdminSettings from './pages/admin/AdminSettings';
 import Checkout from './pages/Checkout';
 import ProductManager from './pages/ProductManager';
 import StravaCallback from './pages/StravaCallback';
+import GoogleCalendarCallback from './pages/GoogleCalendarCallback';
 import AthleteShop from './pages/AthleteShop';
 import CartPage from './pages/CartPage';
 import RecipeManager from './pages/RecipeManager';
 import MealPlanBuilder from './pages/MealPlanBuilder'; // Import en haut
 import AthleteNutrition from './pages/AthleteNutrition';
 import AthleteInvoices from './pages/AthleteInvoices';
+import ResponsableDashboard from './pages/responsable/ResponsableDashboard';
+import ResponsableLayout from './components/layouts/ResponsableLayout';
+import ResponsablePlanning from './pages/responsable/ResponsablePlanning';
+import ResponsableCoachs from './pages/responsable/ResponsableCoachs';
+import ResponsableStats from './pages/responsable/ResponsableStats';
+import AdminResponsableList from './pages/admin/AdminResponsableList';
+import ResponsableSettings from './pages/responsable/ResponsableSettings';
 
 function App() {
   const currentUser = JSON.parse(localStorage.getItem('user')) || {};
@@ -79,6 +88,10 @@ function App() {
                   path="/auth/strava/callback" 
                   element={<StravaCallback />} 
                 />
+                <Route
+                  path="/auth/google/callback"
+                  element={<GoogleCalendarCallback />}
+                />
 
           {/* ONBOARDING */}
           <Route path="/onboarding/coach/step2" element={<ProtectedRoute><CoachStep2 /></ProtectedRoute>} />
@@ -91,6 +104,7 @@ function App() {
           <Route path="/programmes" element={<ProtectedRoute><MainLayout activePageLabel="Programmes" headerSection="Coach" headerSubSection="Gestion des Programmes"><ProgrammeList /></MainLayout></ProtectedRoute>} />
           <Route path="/calendar" element={<ProtectedRoute><MainLayout activePageLabel="Calendrier" headerSection="Coach" headerSubSection="Agenda & Planification"><CoachCalendar /></MainLayout></ProtectedRoute>} />
           <Route path="/messages" element={<ProtectedRoute><MainLayout activePageLabel="Messagerie" headerSection="Coach" headerSubSection="Conversations"><Messages /></MainLayout></ProtectedRoute>} />
+          <Route path="/devis" element={<ProtectedRoute><MainLayout activePageLabel="Devis" headerSection="Coach" headerSubSection="Demandes & Offres"><CoachDevis /></MainLayout></ProtectedRoute>} />
           <Route path="/builder" element={<ProtectedRoute><MainLayout activePageLabel="Créateur de Séance" headerSection="Programmes" headerSubSection="Builder"><SessionBuilder /></MainLayout></ProtectedRoute>} />
           <Route path="/boutique" element={<ProtectedRoute><MainLayout activePageLabel="Boutique"><ProductManager /></MainLayout></ProtectedRoute>} />
           <Route path="/parametres" element={<ProtectedRoute><MainLayout activePageLabel="Paramètres" headerSection="Coach" headerSubSection="Mon Compte"><CoachSettings /></MainLayout></ProtectedRoute>} />
@@ -124,6 +138,7 @@ function App() {
             <Route path="devis" element={<ProspectDevis />} />
           </Route>
           <Route path="/prospect/checkout" element={<ProtectedRoute><ProspectCheckout /></ProtectedRoute>} />
+          <Route path="/prospect/invite-checkout" element={<InviteCheckout />} />
           <Route path="/prospect/payment/success" element={<ProtectedRoute><ProspectPaymentSuccess /></ProtectedRoute>} />
           <Route path="/prospect/payment/failed" element={<ProtectedRoute><ProspectPaymentFailed /></ProtectedRoute>} />
 
@@ -132,6 +147,7 @@ function App() {
           <Route path="/admin/dashboard" element={<AdminRoute><AdminLayout><AdminDashboard /></AdminLayout></AdminRoute>} />
           <Route path="/admin/coachs" element={<AdminRoute><AdminLayout><AdminCoachList /></AdminLayout></AdminRoute>} />
           <Route path="/admin/salles" element={<AdminRoute><AdminLayout><AdminGymList /></AdminLayout></AdminRoute>} />
+          <Route path="/admin/responsables" element={<AdminRoute><AdminLayout><AdminResponsableList /></AdminLayout></AdminRoute>} />
           <Route path="/admin/athletes" element={<AdminRoute><AdminLayout><AdminAthleteList /></AdminLayout></AdminRoute>} />
           <Route path="/admin/finance" element={<AdminRoute><AdminLayout><AdminFinance /></AdminLayout></AdminRoute>} />
           <Route path="/admin/catalogue" element={<AdminRoute><AdminLayout><AdminCatalog /></AdminLayout></AdminRoute>} />
@@ -157,6 +173,14 @@ function App() {
               </ProtectedRoute>
             } 
           />
+         {/* ESPACE RESPONSABLE DE SALLE */}
+          <Route path="/responsable" element={<ProtectedRoute><ResponsableLayout /></ProtectedRoute>}>
+            <Route path="dashboard" element={<ResponsableDashboard />} />
+            <Route path="planning" element={<ResponsablePlanning />} />
+            <Route path="coachs" element={<ResponsableCoachs />} />
+            <Route path="statistiques" element={<ResponsableStats />} /> 
+            <Route path="parametres" element={<ResponsableSettings />} />
+          </Route>
         
         </Routes>
       </Router>

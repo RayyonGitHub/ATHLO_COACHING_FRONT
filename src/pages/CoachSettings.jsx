@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { 
   Save, User, Briefcase, MapPin, Tag, Phone, 
-  Loader2, AlertCircle, Settings, Lock, CheckCircle2, X, DollarSign, Dumbbell
+  Loader2, AlertCircle, Settings, Lock, CheckCircle2, X, DollarSign, Dumbbell, Zap
 } from 'lucide-react';
 import api from '../services/api';
 
@@ -11,13 +11,15 @@ const CoachSettings = () => {
     prenom: '', nom: '', email: '',
     telephone: '', specialite: '', ville: '',
     specialites_tags: '', offres_tarifs: '',
-    salles: [] // Nouvel état pour les salles
+    salles: [], // Nouvel état pour les salles
+    stripe_onboarding_complete: false
   });
 
   const [sallesDisponibles, setSallesDisponibles] = useState([]);
+  const [villeSearch, setVilleSearch] = useState('');
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isSaveSuccessModalOpen, setIsSaveSuccessModalOpen] = useState(false);
-
+  const [isSubLoading, setIsSubLoading] = useState(false);
   const [passwordData, setPasswordData] = useState({ old_password: '', new_password: '', confirm_password: '' });
   const [passwordError, setPasswordError] = useState('');
   const [passwordSuccess, setPasswordSuccess] = useState(false);
@@ -27,16 +29,59 @@ const CoachSettings = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
+  const fetchSallesDisponibles = async (ville = '') => {
+    const params = {};
+    if (ville && ville.trim()) {
+      params.ville = ville.trim();
+    }
+
+    const res = await api.get('/coach/salles-disponibles/', { params });
+    setSallesDisponibles(res.data || []);
+  };
+
+
+  const handleUpgradePremium = async () => {
+    setIsSubLoading(true);
+    try {
+      const token = localStorage.getItem('authToken') || localStorage.getItem('access_token');
+      const res = await axios.post('http://127.0.0.1:8000/api/stripe/create-subscription/', {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.data.checkout_url) {
+        window.location.href = res.data.checkout_url;
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Erreur lors de la redirection vers le paiement.");
+    } finally {
+      setIsSubLoading(false);
+    }
+  };
+const handleStripeConnect = async () => {
+    setIsSubLoading(true);
+    try {
+      const token = localStorage.getItem('authToken') || localStorage.getItem('access_token');
+      const res = await axios.post('http://127.0.0.1:8000/api/stripe/connect-onboarding/', {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.data.checkout_url) {
+        window.location.href = res.data.checkout_url;
+      }
+    } catch (err) {
+      // Affichage du VRAI message d'erreur du backend dans la console
+      console.error("Erreur détaillée Stripe :", err.response?.data || err.message);
+      setError(err.response?.data?.error || "Erreur lors de la redirection vers Stripe Connect.");
+    } finally {
+      setIsSubLoading(false);
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem('authToken') || localStorage.getItem('access_token');
-        
-        // On récupère en parallèle le profil et les salles
-        const [profileRes, sallesRes] = await Promise.all([
-          axios.get('http://127.0.0.1:8000/api/coach/me/', { headers: { Authorization: `Bearer ${token}` } }),
-          api.get('/prospects/salles/')
-        ]);
+
+        const profileRes = await axios.get('http://127.0.0.1:8000/api/coach/me/', { headers: { Authorization: `Bearer ${token}` } });
 
         let data = profileRes.data;
         let offres = data.offres_tarifs;
@@ -49,14 +94,14 @@ const CoachSettings = () => {
           }
         }
 
-        setFormData({ 
-          ...formData, 
+        setFormData(prev => ({
+          ...prev,
           ...data,
           offres_tarifs: offres || '',
           salles: data.salles || [] // On charge les IDs des salles du coach
-        });
+        }));
 
-        setSallesDisponibles(sallesRes.data);
+        await fetchSallesDisponibles(data.ville || '');
 
       } catch (err) {
         setError("Impossible de charger vos informations.");
@@ -66,6 +111,18 @@ const CoachSettings = () => {
     };
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (!loading && !formData.ville) {
+      const timeoutId = setTimeout(() => {
+        fetchSallesDisponibles(villeSearch).catch(() => {
+          setError("Impossible de charger les salles.");
+        });
+      }, 250);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [villeSearch, formData.ville, loading]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -203,6 +260,18 @@ const CoachSettings = () => {
             <div className="pt-4 border-t border-gray-200">
               <label className="flex items-center gap-1.5 text-sm font-bold text-gray-900 mb-3"><Dumbbell size={16} className="text-[#FF6B00]"/> Salles Partenaires</label>
               <p className="text-sm text-gray-500 mb-4">Sélectionnez les salles dans lesquelles vous donnez vos coachings.</p>
+              {!formData.ville && (
+                <div className="mb-4">
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">Filtrer par ville</label>
+                  <input
+                    type="text"
+                    value={villeSearch}
+                    onChange={(e) => setVilleSearch(e.target.value)}
+                    placeholder="Ex: Amiens"
+                    className="w-full bg-white border border-gray-200 text-gray-900 px-4 py-2.5 rounded-xl focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 outline-none transition-all"
+                  />
+                </div>
+              )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-60 overflow-y-auto p-1">
                 {sallesDisponibles.length === 0 ? (
                   <p className="text-sm text-gray-400 italic">Aucune salle disponible.</p>
@@ -227,7 +296,84 @@ const CoachSettings = () => {
 
           </div>
         </section>
+    {/* SECTION : ABONNEMENT PLATEFORME */}
+        <section className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
+          <div className="p-5 border-b border-gray-100 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-yellow-50 text-yellow-600 rounded-xl"><Zap size={20} /></div>
+              <h3 className="font-semibold text-gray-900 text-lg">Abonnement Plateforme</h3>
+            </div>
+            <div>
+              {formData.platform_plan === 'premium' ? (
+                <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold border border-green-200">PREMIUM ACTIF</span>
+              ) : (
+                <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-bold border border-gray-200">PREEMIUM</span>
+              )}
+            </div>
+          </div>
+          <div className="p-6 md:p-8 bg-gray-50/30">
+            {formData.platform_plan === 'premium' ? (
+               <div className="flex flex-col gap-2">
+                 <p className="text-sm text-gray-700 font-medium">Vous bénéficiez du plan Premium. 🎉</p>
+                 <p className="text-sm text-gray-500">Aucune commission n'est prélevée sur vos ventes (0%). Vous gardez 100% de vos revenus.</p>
+               </div>
+            ) : (
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div className="flex flex-col gap-2">
+                  <p className="text-sm text-gray-700 font-medium">Passez au niveau supérieur pour maximiser vos revenus.</p>
+                  <p className="text-sm text-gray-500">Vous êtes actuellement sur le plan gratuit. Une commission de 10% est appliquée sur chaque paiement de vos athlètes. Passez Premium pour annuler ces frais.</p>
+                </div>
+                <button 
+                  type="button" 
+                  onClick={handleUpgradePremium} 
+                  disabled={isSubLoading}
+                  className="shrink-0 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-white px-6 py-3 rounded-xl font-bold shadow-md shadow-yellow-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-70 cursor-pointer"
+                >
+                  {isSubLoading ? <Loader2 className="animate-spin" size={18}/> : <Zap size={18} className="fill-white"/>}
+                  Passer Premium (29€/mois)
+                </button>
+              </div>
+            )}
+          </div>
+        </section>
 
+{/* NOUVELLE SECTION : CONFIGURATION DES VERSEMENTS */}
+        <section className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
+          <div className="p-5 border-b border-gray-100 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-50 text-blue-600 rounded-xl"><DollarSign size={20} /></div>
+              <h3 className="font-semibold text-gray-900 text-lg">Configuration des versements</h3>
+            </div>
+            <div>
+              {formData.stripe_onboarding_complete ? (
+                <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold border border-green-200">COMPTE BANCAIRE LIÉ</span>
+              ) : (
+                <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold border border-red-200">À CONFIGURER</span>
+              )}
+            </div>
+          </div>
+          <div className="p-6 md:p-8 bg-gray-50/30">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div className="flex flex-col gap-2">
+                <p className="text-sm text-gray-700 font-medium">Où doit être envoyé votre argent ?</p>
+                <p className="text-sm text-gray-500">Pour recevoir automatiquement les paiements de vos athlètes (abonnements, packs, boutique) directement sur votre compte bancaire, vous devez configurer votre compte Stripe Connect.</p>
+              </div>
+              <button 
+                type="button" 
+                onClick={handleStripeConnect} 
+                disabled={isSubLoading}
+                className={`shrink-0 text-white px-6 py-3 rounded-xl font-bold shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-70 cursor-pointer ${
+                  formData.stripe_onboarding_complete 
+                    ? "bg-gray-800 hover:bg-gray-900 shadow-gray-800/20" 
+                    : "bg-blue-600 hover:bg-blue-700 shadow-blue-500/20"
+                }`}
+              >
+                {isSubLoading ? <Loader2 className="animate-spin" size={18}/> : <DollarSign size={18}/>}
+                {formData.stripe_onboarding_complete ? "Mettre à jour mon compte bancaire" : "Connecter mon compte bancaire"}
+              </button>
+            </div>
+          </div>
+        </section>
         {/* SECTION 3 : COMPTE */}
         <section className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
           <div className="p-5 border-b border-gray-100 flex items-center gap-3">

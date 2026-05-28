@@ -189,6 +189,25 @@ useEffect(() => {
         </div>
       </div>
 
+      <div className="bg-[#1E1E1E] border border-[#2D2D2D] rounded-2xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <p className="text-[10px] font-black uppercase tracking-widest text-gray-500">Contrat actuel</p>
+          <h3 className="text-xl font-black text-white italic uppercase mt-1">{data?.contrat?.label || 'Aucun contrat actif'}</h3>
+          <p className="text-sm text-gray-400 mt-1">
+            {data?.contrat?.type === 'ABONNEMENT'
+              ? `Valide jusqu'au ${data?.contrat?.date_expiration ? new Date(data.contrat.date_expiration).toLocaleDateString('fr-FR') : '-'}`
+              : `${data?.contrat?.seances_restantes ?? 0} seance(s) restante(s)`}
+          </p>
+        </div>
+        <button
+          onClick={() => navigate('/athlete/parametres#abonnement-seances')}
+          className="w-12 h-12 rounded-xl bg-[#FF6B00] hover:bg-orange-600 text-white flex items-center justify-center transition-colors"
+          title="Voir abonnement et seances"
+        >
+          <span className="material-icons-round">arrow_forward</span>
+        </button>
+      </div>
+
       {/* GRILLE PRINCIPALE */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
 

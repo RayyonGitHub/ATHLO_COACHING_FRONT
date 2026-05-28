@@ -9,6 +9,7 @@ const WorkoutTrackingModal = ({ isOpen, onClose, seanceId, onComplete }) => {
   const [isSaving, setIsSaving] = useState(false); // Pour le bouton de sauvegarde
   const [currentExoIndex, setCurrentExoIndex] = useState(0);
   const [currentSetIndex, setCurrentSetIndex] = useState(0);
+  const [completedSets, setCompletedSets] = useState({});
   
   // NOUVEAU : État pour stocker les poids saisis par exercice
   const [weights, setWeights] = useState({});
@@ -33,14 +34,18 @@ const WorkoutTrackingModal = ({ isOpen, onClose, seanceId, onComplete }) => {
           
           const exosData = response.data.exercices_details || response.data.exercices || [];
           
-          const formattedExos = exosData.map((exo) => ({
+          const formattedExos = exosData.map((exo) => {
+            const exercice = exo.exercice_details || exo.exercice || {};
+            return {
             id: exo.id,
-            nom: exo.exercice?.nom || "Exercice",
-            categorie: exo.exercice?.categorie || "Général",
-            series: exo.series || 3,
+            exerciceId: exercice.id || exo.exercice,
+            nom: exercice.nom || exo.nom || "Exercice inconnu",
+            categorie: exercice.categorie || exercice.muscle_principal || "Général",
+            series: Number(exo.series) || 3,
             reps: exo.repetitions || "10",
             repos: parseInt(exo.repos) || 60,
-          }));
+          };
+          });
 
           setExercices(formattedExos);
         } catch (error) {
@@ -60,6 +65,7 @@ const WorkoutTrackingModal = ({ isOpen, onClose, seanceId, onComplete }) => {
       setTimerMode('WORK');
       setExercices([]);
       setWeights({});
+      setCompletedSets({});
       setIsSessionFinished(false);
     }
   }, [isOpen, seanceId]);
@@ -82,6 +88,12 @@ const WorkoutTrackingModal = ({ isOpen, onClose, seanceId, onComplete }) => {
     return `${m}:${s}`;
   };
 
+  const parseWeight = (value) => {
+    const normalized = String(value ?? '').replace(',', '.');
+    const parsed = Number.parseFloat(normalized);
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+
   // --- 3. GESTION DE LA SÉANCE ---
   const currentExo = exercices[currentExoIndex];
 
@@ -92,15 +104,18 @@ const WorkoutTrackingModal = ({ isOpen, onClose, seanceId, onComplete }) => {
   };
 
   const handleCompleteSet = () => {
-    if (currentSetIndex < currentExo.series - 1) {
-      setCurrentSetIndex(prev => prev + 1);
-      // Lancer le timer de repos
-      setTimeLeft(currentExo.repos);
-      setTimerMode('REST');
-      setIsTimerRunning(true);
-    } else {
+    const nextCompleted = Math.min((completedSets[currentExo.id] || 0) + 1, currentExo.series);
+    setCompletedSets(prev => ({ ...prev, [currentExo.id]: nextCompleted }));
+
+    if (nextCompleted >= currentExo.series) {
       handleNextExercise();
+      return;
     }
+
+    setCurrentSetIndex(nextCompleted);
+    setTimeLeft(currentExo.repos);
+    setTimerMode('REST');
+    setIsTimerRunning(true);
   };
 
   const handleNextExercise = () => {
@@ -120,21 +135,21 @@ const WorkoutTrackingModal = ({ isOpen, onClose, seanceId, onComplete }) => {
       setIsSaving(true);
       const token = localStorage.getItem('authToken') || localStorage.getItem('access_token');
       
-      // 1. On enregistre les perfs AVEC LE VRAI POIDS
-      await Promise.all(exercices.map(async (exo) => {
-        await axios.post('http://127.0.0.1:8000/api/athlete/performance/record/', {
-          seance_exercice: exo.id,
-          series_realisees: exo.series,
-          reps_realisees: parseInt(exo.reps) || 10,
-          poids_utilise: parseFloat(weights[exo.id]) || 0 // <-- ICI, LE POIDS EST ENVOYÉ !
-        }, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-      }));
+      await axios.post('http://127.0.0.1:8000/api/athlete/performance/record/', {
+        seance_id: seanceId,
+        exercices: exercices.map((exo) => {
+          const weight = parseWeight(weights[exo.id]);
 
-      // 2. On clôture la séance
-      await axios.patch(`http://127.0.0.1:8000/api/seances/${seanceId}/`, {
-        est_completee: true
+          return {
+            seance_exercice: exo.id,
+            exercice_id: exo.exerciceId,
+            series_realisees: completedSets[exo.id] || exo.series,
+            reps_realisees: parseInt(exo.reps, 10) || 10,
+            poids_moyen: weight,
+            poids: weight,
+            poids_utilise: weight
+          };
+        })
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -232,7 +247,7 @@ const WorkoutTrackingModal = ({ isOpen, onClose, seanceId, onComplete }) => {
                     <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3">
                       {[...Array(currentExo.series)].map((_, i) => {
                         let stateClass = "bg-[#2D2D2D] border-transparent text-gray-500"; 
-                        if (i < currentSetIndex) stateClass = "bg-green-500/10 border-green-500 text-green-500"; 
+                        if (i < (completedSets[currentExo.id] || 0)) stateClass = "bg-green-500/10 border-green-500 text-green-500"; 
                         if (i === currentSetIndex) stateClass = "bg-[#FF6B00]/10 border-[#FF6B00] text-[#FF6B00] shadow-[0_0_15px_rgba(255,107,0,0.2)]"; 
 
                         return (
@@ -240,7 +255,7 @@ const WorkoutTrackingModal = ({ isOpen, onClose, seanceId, onComplete }) => {
                             <div className="text-[10px] font-bold uppercase tracking-wider mb-1 opacity-80">Série {i + 1}</div>
                             <div className="font-black text-lg flex items-center justify-center gap-1">
                               {currentExo.reps} 
-                              {i < currentSetIndex && <CheckCircle2 size={16} />}
+                              {i < (completedSets[currentExo.id] || 0) && <CheckCircle2 size={16} />}
                             </div>
                           </div>
                         );

@@ -19,11 +19,15 @@ export const CartProvider = ({ children }) => {
   const addToCart = (product) => {
     setCart((prevCart) => {
       const existingItem = prevCart.find(item => item.id === product.id);
+      const stock = Number(product.stock ?? existingItem?.stock ?? 0);
+      const isPhysical = (product.type_produit || existingItem?.type_produit) === 'PHYSIQUE';
       if (existingItem) {
+        if (isPhysical && existingItem.quantite >= stock) return prevCart;
         return prevCart.map(item => 
           item.id === product.id ? { ...item, quantite: item.quantite + 1 } : item
         );
       }
+      if (isPhysical && stock <= 0) return prevCart;
       return [...prevCart, { ...product, quantite: 1 }];
     });
   };

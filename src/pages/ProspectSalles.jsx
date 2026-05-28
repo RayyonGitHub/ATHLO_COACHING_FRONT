@@ -7,17 +7,29 @@ const ProspectSalles = () => {
   const [userLocation, setUserLocation] = useState(null);
   const [locationLoading, setLocationLoading] = useState(true);
   const [locationError, setLocationError] = useState(null);
+  const [villeRecherche, setVilleRecherche] = useState('');
   const [salles, setSalles] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const chargerSallesProches = async (location) => {
+  const chargerSallesProches = async ({ location = null, ville = '' } = {}) => {
     setLoading(true);
-    setLocationError(null);
 
     try {
-      const response = await fetch(
-        `http://127.0.0.1:8000/api/prospects/salles/?lat=${location.lat}&lng=${location.lng}&rayon=10`
-      );
+      const params = new URLSearchParams();
+      const villeValue = (ville || '').trim();
+
+      if (villeValue) {
+        params.set('ville', villeValue);
+      }
+
+      if (location && location.lat && location.lng) {
+        params.set('lat', location.lat);
+        params.set('lng', location.lng);
+        params.set('rayon', '10');
+      }
+
+      const queryString = params.toString();
+      const response = await fetch(`http://127.0.0.1:8000/api/prospects/salles/${queryString ? `?${queryString}` : ''}`);
 
       if (!response.ok) {
         throw new Error('Erreur lors du chargement des salles');
@@ -31,14 +43,14 @@ const ProspectSalles = () => {
       setLocationError("Impossible de charger les salles.");
     } finally {
       setLoading(false);
-      setLocationLoading(false);
     }
   };
 
   useEffect(() => {
     if (!navigator.geolocation) {
-      setLocationError("La géolocalisation n'est pas supportée par votre navigateur.");
+      setLocationError("La géolocalisation n'est pas supportée par votre navigateur. Utilisez la recherche par ville.");
       setLocationLoading(false);
+      chargerSallesProches();
       return;
     }
 
@@ -53,15 +65,21 @@ const ProspectSalles = () => {
 
         setUserLocation(location);
         setLocationError(null);
-        chargerSallesProches(location);
+        chargerSallesProches({ location });
+        setLocationLoading(false);
       },
       (error) => {
         console.error('Erreur géolocalisation :', error);
-        setLocationError("Impossible d'obtenir votre position. Vérifiez les permissions.");
+        setLocationError("Localisation refusée ou indisponible. Utilisez la recherche manuelle par ville.");
         setLocationLoading(false);
+        chargerSallesProches();
       }
     );
   }, []);
+
+  const handleSearchByVille = () => {
+    chargerSallesProches({ location: userLocation, ville: villeRecherche });
+  };
 
   const formatDistance = (km) => {
     if (km == null) return 'Distance inconnue';
@@ -91,7 +109,7 @@ const ProspectSalles = () => {
           <p className="text-gray-400 mt-1">
             {userLocation
               ? '📍 Salles trouvées autour de votre position'
-              : '📍 Activez la localisation pour voir les salles proches'}
+              : '📍 Recherchez des salles par ville'}
           </p>
         </div>
       </header>
@@ -110,9 +128,31 @@ const ProspectSalles = () => {
               <p className="text-gray-400">
                 {userLocation
                   ? `${salles.length} salle(s) trouvée(s) près de vous`
-                  : 'Votre position permet de trier les salles par proximité'}
+                  : `${salles.length} salle(s) trouvée(s)`}
               </p>
             </div>
+          </div>
+
+          <div className="mt-6 flex flex-col sm:flex-row gap-3">
+            <input
+              type="text"
+              value={villeRecherche}
+              onChange={(e) => setVilleRecherche(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleSearchByVille();
+                }
+              }}
+              placeholder="Rechercher par ville..."
+              className="flex-1 px-4 py-3 rounded-xl bg-[#181818] border border-[#2D2D2D] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/40"
+            />
+            <button
+              onClick={handleSearchByVille}
+              className="px-5 py-3 rounded-xl bg-gradient-to-r from-[#FF6B00] to-[#FF9E00] text-white font-semibold hover:shadow-lg transition-all"
+            >
+              Rechercher
+            </button>
           </div>
         </section>
 
@@ -124,19 +164,14 @@ const ProspectSalles = () => {
         )}
 
         {locationError && !locationLoading && (
-          <div className="bg-red-500/10 border border-red-500/20 rounded-3xl p-8 text-center">
-            <span className="material-icons-round text-4xl text-red-400 mb-3">location_off</span>
-            <p className="text-red-300 font-medium">{locationError}</p>
-            <button
-              onClick={() => window.location.reload()}
-              className="mt-4 px-6 py-2 rounded-xl bg-red-500/20 text-red-300 hover:bg-red-500/30 transition-all"
-            >
-              Réessayer
-            </button>
+          <div className="bg-amber-500/10 border border-amber-500/20 rounded-3xl p-6 text-center">
+            <span className="material-icons-round text-4xl text-amber-300 mb-3">location_off</span>
+            <p className="text-amber-200 font-medium">{locationError}</p>
+            <p className="text-amber-100/70 text-sm mt-2">Vous pouvez continuer en utilisant la barre de recherche par ville ci-dessus.</p>
           </div>
         )}
 
-        {!locationLoading && !locationError && (
+        {!locationLoading && (
           <>
             {loading ? (
               <div className="bg-[#1E1E1E] rounded-3xl p-10 text-center">

@@ -223,10 +223,10 @@ const AthleteProgrammes = () => {
                 <div key={idx} className="flex justify-between items-center p-5 bg-[#252525] rounded-2xl border border-[#2D2D2D] group hover:border-[#FF6B00]/50 transition-colors">
                   <div className="flex flex-col">
                     <span className="font-black text-white text-lg uppercase italic group-hover:text-[#FF6B00] transition-colors">{exo.exercice}</span>
-                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{exo.series} séries • {exo.reps} reps</span>
+                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{exo.series} séries • {exo.reps} reps • {exo.volume_exercice || 0} kg</span>
                   </div>
                   <div className="text-right">
-                    <span className="text-xl font-black text-white italic">{exo.poids || "-"}</span>
+                    <span className="text-xl font-black text-white italic">{Number(exo.poids || 0).toFixed(1)}</span>
                     <span className="text-[10px] font-black text-[#FF6B00] ml-1 uppercase">kg</span>
                   </div>
                 </div>

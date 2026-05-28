@@ -295,18 +295,21 @@ const AthleteCalendar = () => {
             </div>
 
             <div className="space-y-3 mb-8 max-h-[40vh] overflow-y-auto pr-2 custom-scrollbar">
-              {selectedResume.exercices.map((exo, idx) => (
+              {(selectedResume.exercices || []).map((exo, idx) => (
                 <div key={idx} className="flex justify-between items-center p-5 bg-[#252525] rounded-2xl border border-[#2D2D2D] group hover:border-[#FF6B00]/50">
                   <div className="flex flex-col">
                     <span className="font-black text-white text-lg uppercase italic group-hover:text-[#FF6B00] transition-colors">{exo.exercice}</span>
-                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{exo.series} séries • {exo.reps} reps</span>
+                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{exo.series} séries • {exo.reps} reps • {exo.volume_exercice || 0} kg</span>
                   </div>
                   <div className="text-right">
-                    <span className="text-xl font-black text-white italic">{exo.poids}</span>
+                    <span className="text-xl font-black text-white italic">{Number(exo.poids || 0).toFixed(1)}</span>
                     <span className="text-[10px] font-black text-[#FF6B00] ml-1 uppercase">kg</span>
                   </div>
                 </div>
               ))}
+              {(!selectedResume.exercices || selectedResume.exercices.length === 0) && (
+                <p className="text-center text-gray-500 italic py-4">Aucune donnée de performance enregistrée.</p>
+              )}
             </div>
 
             <div className="bg-[#FF6B00] p-6 rounded-[1.5rem] flex justify-between items-center shadow-lg">

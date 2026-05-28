@@ -3,10 +3,18 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import prospectService from '../services/prospectService';
 import api from '../services/api';
 
+const getCoachDisplayName = (coach) =>
+  coach?.full_name ||
+  `${coach?.first_name || coach?.prenom || ''} ${coach?.last_name || ''}`.trim() ||
+  coach?.nom ||
+  coach?.email ||
+  'votre coach';
+
 const ProspectPaymentSuccess = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token') || '';
+  const paymentIntentId = searchParams.get('payment_intent') || '';
 
   const [checkout, setCheckout] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -29,6 +37,7 @@ const ProspectPaymentSuccess = () => {
     pathologies_blessures: '',
     consentement_rgpd: true,
   });
+  const coachDisplayName = getCoachDisplayName(checkout?.coach);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -57,13 +66,16 @@ const ProspectPaymentSuccess = () => {
       }
     };
 
-    if (token) {
+    if (!paymentIntentId) {
+      setError('Preuve de paiement manquante. Merci de reprendre le paiement.');
+      setLoading(false);
+    } else if (token) {
       fetchData();
     } else {
       setError('Token de paiement manquant.');
       setLoading(false);
     }
-  }, [token]);
+  }, [token, paymentIntentId]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -81,6 +93,7 @@ const ProspectPaymentSuccess = () => {
     try {
       const response = await prospectService.activateAthleteProfile({
         checkout_token: token,
+        payment_intent_id: paymentIntentId,
         prenom: profileForm.prenom,
         nom: profileForm.nom,
         telephone: profileForm.telephone,
@@ -149,7 +162,7 @@ const ProspectPaymentSuccess = () => {
               <div className="flex justify-between items-center mb-8">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Coach</p>
-                  <p className="text-xl text-[#FF915A] font-bold">{checkout?.coach?.full_name}</p>
+                  <p className="text-xl text-[#FF915A] font-bold">{coachDisplayName}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Offre</p>
@@ -161,7 +174,7 @@ const ProspectPaymentSuccess = () => {
                 <div className="flex items-center gap-4 group">
                  
                   <div className="flex-grow">
-                    <p className="font-bold text-white">{checkout?.coach?.full_name}</p>
+                    <p className="font-bold text-white">{coachDisplayName}</p>
                     <p className="text-sm text-gray-400">{checkout?.offer?.label}</p>
                   </div>
                   <div className="text-right">

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Utensils, Search, Loader2, X, Save, FileText, ClipboardList, CheckCircle, ChevronRight, ArrowLeft, Flame } from 'lucide-react';
+import { Plus, Utensils, Search, Loader2, X, Save, FileText, ClipboardList, CheckCircle, ChevronRight, ArrowLeft, Flame, Pencil, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import nutritionService from '../services/nutritionService';
 
@@ -19,6 +19,7 @@ const RecipeManager = () => {
   const [showForm, setShowForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [editingRecipe, setEditingRecipe] = useState(null);
   const [formData, setFormData] = useState({
     nom: '', type: 'Petit-déjeuner', calories: '', proteines: '', glucides: '', lipides: ''
   });
@@ -60,19 +61,48 @@ const RecipeManager = () => {
     };
 
     try {
-      const savedRecipe = await nutritionService.saveRecipe(newRecipe);
+      const savedRecipe = editingRecipe
+        ? await nutritionService.updateRecipe(editingRecipe.id, newRecipe)
+        : await nutritionService.saveRecipe(newRecipe);
       setIsSuccess(true);
-      setRecipes([savedRecipe, ...recipes]);
+      setRecipes(editingRecipe ? recipes.map(r => r.id === savedRecipe.id ? savedRecipe : r) : [savedRecipe, ...recipes]);
       setTimeout(() => {
         setIsSuccess(false);
         setShowForm(false);
         setIsSubmitting(false);
+        setEditingRecipe(null);
         setFormData({ nom: '', type: 'Petit-déjeuner', calories: '', proteines: '', glucides: '', lipides: '' });
       }, 1500);
     } catch (error) {
       setIsSubmitting(false);
       alert("Erreur lors de l'enregistrement.");
     }
+  };
+
+  const openRecipeForm = (recipe = null) => {
+    setEditingRecipe(recipe);
+    setFormData(recipe ? {
+      nom: recipe.nom || '',
+      type: recipe.type || 'Petit-déjeuner',
+      calories: recipe.calories || '',
+      proteines: recipe.proteines || '',
+      glucides: recipe.glucides || '',
+      lipides: recipe.lipides || ''
+    } : { nom: '', type: 'Petit-déjeuner', calories: '', proteines: '', glucides: '', lipides: '' });
+    setShowForm(true);
+  };
+
+  const handleDeleteRecipe = async (recipeId) => {
+    if (!window.confirm("Supprimer cette recette ?")) return;
+    await nutritionService.deleteRecipe(recipeId);
+    setRecipes(recipes.filter(r => r.id !== recipeId));
+  };
+
+  const handleDeletePlan = async (planId) => {
+    if (!window.confirm("Supprimer ce plan alimentaire ?")) return;
+    await nutritionService.deletePlan(planId);
+    setPlans(plans.filter(p => p.id !== planId));
+    setSelectedPlan(null);
   };
 
   const filteredRecipes = recipes.filter(recipe => {
@@ -111,7 +141,7 @@ const RecipeManager = () => {
             <button onClick={() => navigate('/nutrition/builder')} className="w-full sm:w-auto bg-slate-800 text-white px-6 py-4 rounded-2xl font-bold uppercase text-sm flex items-center justify-center gap-2 hover:bg-slate-900 transition-all shadow-md shadow-slate-200">
               <ClipboardList size={18} /> Nouveau Plan
             </button>
-            <button onClick={() => setShowForm(true)} className="w-full sm:w-auto bg-[#FF6B00] text-white px-6 py-4 rounded-2xl font-bold uppercase text-sm flex items-center justify-center gap-2 hover:bg-[#e65a00] transition-all shadow-md shadow-orange-100">
+            <button onClick={() => openRecipeForm()} className="w-full sm:w-auto bg-[#FF6B00] text-white px-6 py-4 rounded-2xl font-bold uppercase text-sm flex items-center justify-center gap-2 hover:bg-[#e65a00] transition-all shadow-md shadow-orange-100">
               <Plus size={18} /> Nouvelle Recette
             </button>
           </div>
@@ -144,6 +174,10 @@ const RecipeManager = () => {
                   <span className="text-[10px] font-bold uppercase bg-slate-50 px-3 py-1.5 rounded-lg text-slate-500 border border-slate-100">{recipe.type}</span>
                 </div>
                 <h3 className="text-slate-800 font-bold text-lg mb-6 line-clamp-1">{recipe.nom}</h3>
+                <div className="flex gap-2 mb-4">
+                  <button onClick={() => openRecipeForm(recipe)} className="flex-1 bg-slate-50 text-slate-600 px-3 py-2 rounded-xl text-xs font-black uppercase hover:bg-slate-100 flex items-center justify-center gap-2"><Pencil size={14} /> Modifier</button>
+                  <button onClick={() => handleDeleteRecipe(recipe.id)} className="flex-1 bg-red-50 text-red-600 px-3 py-2 rounded-xl text-xs font-black uppercase hover:bg-red-100 flex items-center justify-center gap-2"><Trash2 size={14} /> Supprimer</button>
+                </div>
                 <div className="grid grid-cols-4 gap-1 bg-slate-50 p-4 rounded-2xl border border-slate-100">
                   <div className="text-center"><p className="text-[#FF6B00] font-bold text-base">{recipe.calories}</p><p className="text-[8px] text-slate-400 uppercase font-bold">Kcal</p></div>
                   <div className="text-center border-l border-slate-200"><p className="text-slate-700 font-bold text-base">{recipe.proteines}g</p><p className="text-[8px] text-slate-400 uppercase font-bold">Prot</p></div>
@@ -173,6 +207,10 @@ const RecipeManager = () => {
               <div className="bg-slate-50 p-8 rounded-[32px] border border-slate-100 text-center min-w-[180px] h-fit">
                 <p className="text-slate-400 text-[10px] font-black uppercase mb-2">Prix Boutique</p>
                 <p className="text-4xl font-black text-[#FF6B00] italic">{selectedPlan.prix}€</p>
+                <div className="grid grid-cols-2 gap-2 mt-6">
+                  <button onClick={() => navigate(`/nutrition/builder?planId=${selectedPlan.id}`)} className="bg-white text-slate-600 px-3 py-2 rounded-xl text-[10px] font-black uppercase hover:bg-slate-100 flex items-center justify-center gap-1"><Pencil size={12} /> Modifier</button>
+                  <button onClick={() => handleDeletePlan(selectedPlan.id)} className="bg-red-50 text-red-600 px-3 py-2 rounded-xl text-[10px] font-black uppercase hover:bg-red-100 flex items-center justify-center gap-1"><Trash2 size={12} /> Supprimer</button>
+                </div>
               </div>
             </div>
 
@@ -232,7 +270,11 @@ const RecipeManager = () => {
                     </div>
                   </div>
                 </div>
-                <div className="bg-slate-50 p-4 rounded-xl text-slate-400 group-hover:bg-white group-hover:text-[#FF6B00] group-hover:shadow-sm border border-transparent group-hover:border-gray-100 transition-all"><ChevronRight size={20} /></div>
+                <div className="flex items-center gap-2">
+                  <button onClick={(e) => { e.stopPropagation(); navigate(`/nutrition/builder?planId=${plan.id}`); }} className="bg-slate-50 p-3 rounded-xl text-slate-400 hover:text-[#FF6B00] hover:bg-white border border-transparent hover:border-gray-100 transition-all"><Pencil size={18} /></button>
+                  <button onClick={(e) => { e.stopPropagation(); handleDeletePlan(plan.id); }} className="bg-red-50 p-3 rounded-xl text-red-400 hover:text-red-600 hover:bg-red-100 transition-all"><Trash2 size={18} /></button>
+                  <div className="bg-slate-50 p-4 rounded-xl text-slate-400 group-hover:bg-white group-hover:text-[#FF6B00] group-hover:shadow-sm border border-transparent group-hover:border-gray-100 transition-all"><ChevronRight size={20} /></div>
+                </div>
               </div>
             ))
           )}
@@ -247,7 +289,7 @@ const RecipeManager = () => {
               <div className="py-12 flex flex-col items-center text-center"><div className="w-20 h-20 bg-green-50 text-green-500 rounded-full flex items-center justify-center mb-6"><CheckCircle size={40} /></div><h3 className="text-xl font-black text-slate-800 uppercase">Recette Ajoutée !</h3></div>
             ) : (
               <>
-                <div className="flex justify-between items-center mb-8"><h3 className="text-2xl font-black text-slate-800 italic uppercase">Nouvelle <span className="text-[#FF6B00]">Recette</span></h3><button onClick={() => setShowForm(false)} className="text-slate-300 hover:text-slate-600 transition-colors"><X size={24} /></button></div>
+                <div className="flex justify-between items-center mb-8"><h3 className="text-2xl font-black text-slate-800 italic uppercase">{editingRecipe ? 'Modifier' : 'Nouvelle'} <span className="text-[#FF6B00]">Recette</span></h3><button onClick={() => { setShowForm(false); setEditingRecipe(null); }} className="text-slate-300 hover:text-slate-600 transition-colors"><X size={24} /></button></div>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Nom de la recette</label>

@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Save, Plus, Utensils, Trash2, ArrowLeft, Euro, Flame, Loader2, CheckCircle, Image as ImageIcon, X } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import nutritionService from '../services/nutritionService';
 
 const MealPlanBuilder = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const planId = searchParams.get('planId');
   const [availableRecipes, setAvailableRecipes] = useState([]);
   const [planRecipes, setPlanRecipes] = useState([]);
   
@@ -22,11 +24,27 @@ const MealPlanBuilder = () => {
 
   useEffect(() => {
     const loadRecipes = async () => {
-      const data = await nutritionService.getRecipes();
-      setAvailableRecipes(data);
+      const [recipesData, plansData] = await Promise.all([
+        nutritionService.getRecipes(),
+        nutritionService.getPlans()
+      ]);
+      setAvailableRecipes(recipesData);
+      if (planId) {
+        const plan = plansData.find(p => String(p.id) === String(planId));
+        if (plan) {
+          setPlanDetails({
+            titre: plan.titre || '',
+            description: plan.description || '',
+            prix: plan.prix || ''
+          });
+          setPlanRecipes((plan.recettes_details || recipesData.filter(r => (plan.recettes || []).includes(r.id)))
+            .map(r => ({ ...r, uniqueId: Date.now() + Math.random() })));
+          setImagePreview(plan.image || null);
+        }
+      }
     };
     loadRecipes();
-  }, []);
+  }, [planId]);
 
   // Gestion du changement d'image
   const handleImageChange = (e) => {
@@ -77,7 +95,11 @@ const MealPlanBuilder = () => {
     };
 
     try {
-      await nutritionService.savePlan(newPlan);
+      if (planId) {
+        await nutritionService.updatePlan(planId, newPlan);
+      } else {
+        await nutritionService.savePlan(newPlan);
+      }
       setIsSuccess(true);
       
       setTimeout(() => {
@@ -102,7 +124,7 @@ const MealPlanBuilder = () => {
             <div className="w-24 h-24 bg-green-50 text-green-500 rounded-full flex items-center justify-center mb-8 mx-auto">
               <CheckCircle size={56} />
             </div>
-            <h3 className="text-2xl font-black text-slate-800 uppercase italic mb-3">Plan Créé !</h3>
+            <h3 className="text-2xl font-black text-slate-800 uppercase italic mb-3">Plan {planId ? 'Modifié' : 'Créé'} !</h3>
             <p className="text-slate-500 text-sm font-medium">Votre programme est prêt pour la vente.</p>
           </div>
         </div>
@@ -117,7 +139,7 @@ const MealPlanBuilder = () => {
         {/* COLONNE GAUCHE */}
         <div className="xl:col-span-2 space-y-6">
           <div className="bg-white border border-gray-100 rounded-[32px] p-8 shadow-sm">
-            <h2 className="text-xl font-black text-slate-800 italic uppercase mb-6">Configuration du <span className="text-[#FF6B00]">Plan</span></h2>
+            <h2 className="text-xl font-black text-slate-800 italic uppercase mb-6">{planId ? 'Modification' : 'Configuration'} du <span className="text-[#FF6B00]">Plan</span></h2>
             
             <div className="space-y-6">
               {/* ZONE D'UPLOAD IMAGE */}
@@ -223,7 +245,7 @@ const MealPlanBuilder = () => {
             disabled={isSubmitting}
             className="w-full bg-[#FF6B00] text-white font-black py-5 rounded-[24px] hover:bg-[#e65a00] transition-all flex items-center justify-center gap-3 uppercase italic text-lg shadow-lg shadow-orange-100 disabled:opacity-50"
           >
-            {isSubmitting ? <Loader2 className="animate-spin" /> : <><Save size={22} /> Mettre en vente le plan</>}
+            {isSubmitting ? <Loader2 className="animate-spin" /> : <><Save size={22} /> {planId ? 'Enregistrer les modifications' : 'Mettre en vente le plan'}</>}
           </button>
         </div>
 

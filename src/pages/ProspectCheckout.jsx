@@ -7,6 +7,12 @@ import { authService } from '../services/authService';
 
 // Chargement sécurisé de la clé Stripe depuis les variables d'environnement
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || 'pk_test_VOTRE_CLE');
+const getCoachDisplayName = (coach) =>
+  coach?.full_name ||
+  `${coach?.first_name || coach?.prenom || ''} ${coach?.last_name || ''}`.trim() ||
+  coach?.nom ||
+  coach?.email ||
+  'votre coach';
 
 // --- 1. SOUS-COMPOSANT : LE FORMULAIRE DE PAIEMENT STRIPE ---
 const StripePaymentForm = ({ checkoutToken, total }) => {
@@ -66,7 +72,9 @@ const StripePaymentForm = ({ checkoutToken, total }) => {
       setLoading(false);
     } else if (paymentIntent && paymentIntent.status === 'succeeded') {
       // Le paiement est réussi chez Stripe, on redirige vers TON flux normal avec le token d'activation
-      navigate(`/prospect/payment/success?token=${encodeURIComponent(checkoutToken)}`);
+      navigate(
+        `/prospect/payment/success?token=${encodeURIComponent(checkoutToken)}&payment_intent=${encodeURIComponent(paymentIntent.id)}`
+      );
     } else {
       setLoading(false);
     }
@@ -170,20 +178,22 @@ const ProspectCheckout = () => {
   const total = useMemo(() => {
     return Number(selectedOffre?.prix || 0);
   }, [selectedOffre]);
+  const coachDisplayName = getCoachDisplayName(coach);
 
   // On demande la création de l'intention de paiement au backend dès le chargement de la page
   useEffect(() => {
     if (coach && selectedOffre) {
       prospectService.payCheckout({
         coach_id: coach.id,
-        offer_type: selectedOffre.type
+        offer_type: selectedOffre.type,
+        devis_id: selectedOffre.devisId
       })
       .then(res => {
         setClientSecret(res.client_secret);
         setCheckoutToken(res.checkout_token);
       })
       .catch(err => {
-        setInitError("Impossible d'initialiser le paiement sécurisé avec le serveur.");
+        setInitError(err?.response?.data?.message || "Impossible d'initialiser le paiement sécurisé avec le serveur.");
       });
     }
   }, [coach, selectedOffre]);
@@ -225,7 +235,7 @@ const ProspectCheckout = () => {
                 Finaliser le paiement
               </h1>
               <p className="text-gray-400 uppercase tracking-widest text-sm">
-                Offre sélectionnée avec {coach.full_name}
+                Offre sélectionnée avec {coachDisplayName}
               </p>
             </section>
 
@@ -255,7 +265,7 @@ const ProspectCheckout = () => {
                 <div className="flex gap-4 group">
                   <div className="flex-grow flex flex-col justify-center">
                     <div className="flex justify-between">
-                      <h4 className="font-bold">{coach.full_name}</h4>
+                      <h4 className="font-bold">{coachDisplayName}</h4>
                       <span className="font-bold">{total.toFixed(2)} €</span>
                     </div>
                     <p className="text-sm text-gray-400">{selectedOffre.description}</p>
@@ -288,7 +298,7 @@ const ProspectCheckout = () => {
               </div>
               <div className="mt-8 pt-6 border-t border-white/10 space-y-2">
                 <div className="text-sm text-gray-300 font-medium">Coach choisi</div>
-                <div className="text-gray-400 text-sm">{coach.full_name}</div>
+                <div className="text-gray-400 text-sm">{coachDisplayName}</div>
                 <div className="text-gray-400 text-sm">
                   {(coach.specialites || []).join(' • ') || 'Spécialités non renseignées'}
                 </div>

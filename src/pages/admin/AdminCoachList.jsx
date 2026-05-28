@@ -18,7 +18,7 @@ const AdminCoachList = () => {
   const fetchCoaches = async () => {
     try {
       const response = await adminAPI.getCoaches();
-      setCoaches(response.data);
+      setCoaches((response.data || []).filter((user) => user.role === 'coach'));
     } catch (error) {
       console.error("Erreur lors de la récupération des coachs", error);
     } finally {
