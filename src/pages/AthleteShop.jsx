@@ -14,7 +14,7 @@ const AthleteShop = () => {
   const [showToast, setShowToast] = useState(false);
   const [addedProduct, setAddedProduct] = useState(null);
 
-  const { addToCart, cartCount } = useCart();
+  const { addToCart, cart, cartCount } = useCart();
 
   useEffect(() => {
     fetchData();
@@ -47,6 +47,14 @@ const AthleteShop = () => {
 
   // --- MODIFICATION ICI : Gestion du Toast au lieu de l'alert ---
   const handleBuyClick = (product) => {
+    const quantitePanier = cart.find(item => item.id === product.id)?.quantite || 0;
+    if (product.type_produit === 'PHYSIQUE' && quantitePanier >= Number(product.stock || 0)) {
+      setAddedProduct({ ...product, nom: `Stock insuffisant pour ${product.nom}` });
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 4000);
+      return;
+    }
+
     addToCart(product);
     setAddedProduct(product);
     setShowToast(true);

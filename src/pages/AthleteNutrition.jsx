@@ -5,6 +5,7 @@ import nutritionService from '../services/nutritionService';
 const AthleteNutrition = () => {
   const [plans, setPlans] = useState([]);
   const [selectedPlan, setSelectedPlan] = useState(null);
+  const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -99,8 +100,8 @@ const AthleteNutrition = () => {
             <div className="space-y-4">
               <h4 className="text-white font-black uppercase text-xs tracking-widest mb-6 border-b border-[#2D2D2D] pb-4">Planning des repas</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {selectedPlan.recettes_details?.map((recipe, idx) => (
-                  <div key={idx} className="bg-[#121212] border border-[#2D2D2D] p-5 rounded-2xl flex justify-between items-center hover:border-[#FF6B00]/30 transition-colors">
+                {(selectedPlan.recettes_details || []).map((recipe, idx) => (
+                  <button key={recipe.id || idx} onClick={() => setSelectedRecipe(recipe)} className="bg-[#121212] border border-[#2D2D2D] p-5 rounded-2xl flex justify-between items-center hover:border-[#FF6B00]/30 transition-colors text-left">
                     <div className="flex items-center gap-4">
                       <div className="w-9 h-9 bg-[#FF6B00] text-black rounded-xl flex items-center justify-center font-black italic">{idx + 1}</div>
                       <div>
@@ -111,9 +112,28 @@ const AthleteNutrition = () => {
                     <div className="text-right">
                       <p className="text-[#FF6B00] font-black text-sm">{recipe.calories} kcal</p>
                     </div>
-                  </div>
+                  </button>
                 ))}
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {selectedRecipe && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div className="bg-[#1E1E1E] border border-[#2D2D2D] rounded-[32px] p-8 w-full max-w-md shadow-2xl">
+            <div className="flex items-start justify-between gap-4 mb-6">
+              <div>
+                <p className="text-[#FF6B00] text-[10px] font-black uppercase tracking-widest">{selectedRecipe.type}</p>
+                <h3 className="text-2xl font-black text-white italic uppercase mt-2">{selectedRecipe.nom}</h3>
+              </div>
+              <button onClick={() => setSelectedRecipe(null)} className="text-gray-500 hover:text-white text-2xl leading-none">×</button>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-[#121212] rounded-2xl p-4 border border-[#2D2D2D]"><p className="text-[#FF6B00] text-2xl font-black">{selectedRecipe.calories}</p><p className="text-gray-500 text-[10px] font-black uppercase">Kcal</p></div>
+              <div className="bg-[#121212] rounded-2xl p-4 border border-[#2D2D2D]"><p className="text-white text-2xl font-black">{selectedRecipe.proteines}g</p><p className="text-gray-500 text-[10px] font-black uppercase">Protéines</p></div>
+              <div className="bg-[#121212] rounded-2xl p-4 border border-[#2D2D2D]"><p className="text-white text-2xl font-black">{selectedRecipe.glucides}g</p><p className="text-gray-500 text-[10px] font-black uppercase">Glucides</p></div>
+              <div className="bg-[#121212] rounded-2xl p-4 border border-[#2D2D2D]"><p className="text-white text-2xl font-black">{selectedRecipe.lipides}g</p><p className="text-gray-500 text-[10px] font-black uppercase">Lipides</p></div>
             </div>
           </div>
         </div>

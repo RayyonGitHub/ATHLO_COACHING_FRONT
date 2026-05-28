@@ -17,9 +17,23 @@ const AthleteTopUpPaymentForm = ({ offer, onSuccess, onCancel }) => {
   const elements = useElements();
   const [isPaying, setIsPaying] = useState(false);
   const [paymentError, setPaymentError] = useState('');
+  const [confirmedPaymentIntentId, setConfirmedPaymentIntentId] = useState('');
 
   const handlePay = async (e) => {
     e.preventDefault();
+    if (confirmedPaymentIntentId) {
+      setIsPaying(true);
+      setPaymentError('');
+      try {
+        const res = await api.post('/athlete/topup/confirm/', { payment_intent_id: confirmedPaymentIntentId });
+        onSuccess(res.data);
+      } catch (err) {
+        setPaymentError(err.response?.data?.message || "Paiement confirme, mais mise a jour du solde impossible.");
+        setIsPaying(false);
+      }
+      return;
+    }
+
     if (!stripe || !elements) return;
 
     setIsPaying(true);
@@ -37,6 +51,7 @@ const AthleteTopUpPaymentForm = ({ offer, onSuccess, onCancel }) => {
     }
 
     if (paymentIntent?.status === 'succeeded') {
+      setConfirmedPaymentIntentId(paymentIntent.id);
       try {
         const res = await api.post('/athlete/topup/confirm/', { payment_intent_id: paymentIntent.id });
         onSuccess(res.data);
@@ -61,8 +76,8 @@ const AthleteTopUpPaymentForm = ({ offer, onSuccess, onCancel }) => {
         <button type="button" onClick={onCancel} className="flex-1 bg-[#2D2D2D] text-white font-bold py-3 rounded-xl hover:bg-[#3D3D3D] transition-colors">
           Annuler
         </button>
-        <button type="submit" disabled={!stripe || !elements || isPaying} className="flex-1 bg-[#FF6B00] text-white font-black py-3 rounded-xl hover:bg-[#FF8533] disabled:opacity-50 transition-colors">
-          {isPaying ? "Paiement..." : `Payer ${Number(offer?.price || 0).toFixed(2)} EUR`}
+        <button type="submit" disabled={(!confirmedPaymentIntentId && (!stripe || !elements)) || isPaying} className="flex-1 bg-[#FF6B00] text-white font-black py-3 rounded-xl hover:bg-[#FF8533] disabled:opacity-50 transition-colors">
+          {isPaying ? "Paiement..." : confirmedPaymentIntentId ? "Finaliser" : `Payer ${Number(offer?.price || 0).toFixed(2)} EUR`}
         </button>
       </div>
     </form>
@@ -129,6 +144,14 @@ const [syncMessage, setSyncMessage] = useState('');
     };
     fetchProfile();
   }, []);
+
+  useEffect(() => {
+    if (!loading && window.location.hash === '#abonnement-seances') {
+      setTimeout(() => {
+        document.getElementById('abonnement-seances')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 50);
+    }
+  }, [loading]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -213,10 +236,23 @@ const [syncMessage, setSyncMessage] = useState('');
 };
 
   const topUpOptions = [
-    { type: 'abonnement', title: 'Renouveler abonnement', description: '+30 jours' },
+    { type: 'abonnement', title: 'Renouveler abonnement', description: '+30 jours cumules' },
     { type: 'pack', title: 'Racheter un pack', description: '+10 seances' },
     { type: 'seance', title: 'Seance a l unite', description: '+1 seance' },
   ];
+  const activeContract = formData.contrat?.valide ? formData.contrat : null;
+  const activeContractType = activeContract?.type;
+  const contractLockMessage = activeContractType === 'ABONNEMENT'
+    ? `Abonnement actif jusqu'au ${activeContract.date_expiration ? new Date(activeContract.date_expiration).toLocaleDateString('fr-FR') : '-'}. Les achats par seance seront disponibles apres cette date.`
+    : activeContractType
+      ? "Vous avez des seances actives. L'abonnement sera disponible quand elles seront terminees."
+      : '';
+
+  const isTopUpOptionBlocked = (offerType) => {
+    if (!activeContractType) return false;
+    if (activeContractType === 'ABONNEMENT') return offerType !== 'abonnement';
+    return offerType === 'abonnement';
+  };
 
   const handleStartTopUp = async (offerType) => {
     setTopUpLoading(offerType);
@@ -235,8 +271,10 @@ const [syncMessage, setSyncMessage] = useState('');
   const handleTopUpSuccess = (payload) => {
     setTopUpClientSecret('');
     setTopUpOffer(null);
-    setFormData(prev => ({ ...prev, seances_restantes: payload.seances_restantes }));
-    setTopUpMessage(`Paiement confirme. Solde : ${payload.seances_restantes} seance(s).`);
+    setFormData(prev => ({ ...prev, seances_restantes: payload.seances_restantes, contrat: payload.contrat }));
+    setTopUpMessage(payload.contrat?.type === 'ABONNEMENT'
+      ? `Paiement confirme. Abonnement valide jusqu'au ${payload.contrat.date_expiration ? new Date(payload.contrat.date_expiration).toLocaleDateString('fr-FR') : '-'}.`
+      : `Paiement confirme. Solde : ${payload.seances_restantes} seance(s).`);
   };
 
   if (loading) return <div className="flex justify-center p-20"><Loader2 className="animate-spin text-[#FF6B00]" size={48} /></div>;
@@ -427,7 +465,7 @@ const [syncMessage, setSyncMessage] = useState('');
         </button>
       </form>
 
-      <section className="bg-[#1E1E1E] border border-[#2D2D2D] rounded-3xl overflow-hidden shadow-xl">
+      <section id="abonnement-seances" className="bg-[#1E1E1E] border border-[#2D2D2D] rounded-3xl overflow-hidden shadow-xl scroll-mt-8">
         <div className="p-6 border-b border-[#2D2D2D] bg-[#252525] flex items-center gap-3">
           <div className="p-2 bg-[#FF6B00]/10 text-[#FF6B00] rounded-lg"><CreditCard size={20} /></div>
           <h3 className="font-bold text-white tracking-wide">Abonnement & seances</h3>
@@ -436,7 +474,11 @@ const [syncMessage, setSyncMessage] = useState('');
           <div className="flex items-center justify-between gap-4 bg-black/30 border border-[#2D2D2D] rounded-2xl p-5">
             <div>
               <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Solde actuel</p>
-              <p className="text-3xl font-black text-white italic">{formData.seances_restantes || 0} <span className="text-sm text-[#FF6B00] not-italic">seance(s)</span></p>
+              <p className="text-3xl font-black text-white italic">
+                {activeContractType === 'ABONNEMENT'
+                  ? `Jusqu'au ${activeContract?.date_expiration ? new Date(activeContract.date_expiration).toLocaleDateString('fr-FR') : '-'}`
+                  : `${formData.seances_restantes || 0} seance(s)`}
+              </p>
             </div>
             {!formData.coach_stripe_onboarding_complete && (
               <div className="text-xs font-bold text-red-400 bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3">
@@ -446,22 +488,24 @@ const [syncMessage, setSyncMessage] = useState('');
           </div>
 
           {topUpMessage && <div className="p-3 rounded-xl bg-[#FF6B00]/10 border border-[#FF6B00]/30 text-[#FFB27A] text-sm font-bold">{topUpMessage}</div>}
+          {contractLockMessage && <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/30 text-blue-300 text-sm font-bold">{contractLockMessage}</div>}
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {topUpOptions.map((option) => {
               const price = Number(formData.coach_offres_tarifs?.[option.type] || 0);
+              const blockedByContract = isTopUpOptionBlocked(option.type);
               return (
                 <button
                   key={option.type}
                   type="button"
-                  disabled={!formData.coach_stripe_onboarding_complete || !price || topUpLoading === option.type}
+                  disabled={!formData.coach_stripe_onboarding_complete || !price || topUpLoading === option.type || blockedByContract}
                   onClick={() => handleStartTopUp(option.type)}
                   className="text-left bg-black/30 border border-[#2D2D2D] rounded-2xl p-5 hover:border-[#FF6B00] disabled:opacity-50 disabled:hover:border-[#2D2D2D] transition-colors"
                 >
                   <p className="text-white font-black uppercase italic">{option.title}</p>
                   <p className="text-xs text-gray-500 font-bold mt-1">{option.description}</p>
                   <p className="text-2xl font-black text-[#FF6B00] mt-4">{price.toFixed(2)} EUR</p>
-                  <p className="text-[10px] text-gray-500 font-bold uppercase mt-2">{topUpLoading === option.type ? 'Initialisation...' : 'Payer maintenant'}</p>
+                  <p className="text-[10px] text-gray-500 font-bold uppercase mt-2">{blockedByContract ? 'Bloque par contrat actif' : topUpLoading === option.type ? 'Initialisation...' : 'Payer maintenant'}</p>
                 </button>
               );
             })}
@@ -475,7 +519,7 @@ const [syncMessage, setSyncMessage] = useState('');
             <div className="flex items-start justify-between gap-4 mb-6">
               <div>
                 <h3 className="text-2xl font-black text-white uppercase italic">{topUpOffer?.label}</h3>
-                <p className="text-sm text-gray-500 font-bold mt-1">{topUpOffer?.credits} seance(s) - {Number(topUpOffer?.price || 0).toFixed(2)} EUR</p>
+                <p className="text-sm text-gray-500 font-bold mt-1">{topUpOffer?.type === 'abonnement' ? '+30 jours' : `${topUpOffer?.credits} seance(s)`} - {Number(topUpOffer?.price || 0).toFixed(2)} EUR</p>
               </div>
               <button type="button" onClick={() => { setTopUpClientSecret(''); setTopUpOffer(null); }} className="text-gray-500 hover:text-white">
                 <X />

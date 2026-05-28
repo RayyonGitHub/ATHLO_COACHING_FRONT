@@ -62,6 +62,7 @@ const CartPage = () => {
               
               <button 
                 onClick={() => addToCart(item)} 
+                disabled={item.type_produit === 'PHYSIQUE' && item.quantite >= Number(item.stock || 0)}
                 className="p-2 text-gray-400 hover:text-white hover:bg-[#1E1E1E] rounded-lg transition-all"
               >
                 <Plus size={18} />

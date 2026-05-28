@@ -10,7 +10,7 @@ import api from '../services/api';
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || '');
 
 // --- 1. SOUS-COMPOSANT : FORMULAIRE DE PAIEMENT STRIPE ---
-const StripeShopForm = ({ cartTotal }) => {
+const StripeShopForm = ({ cartTotal, clearCart }) => {
   const stripe = useStripe();
   const elements = useElements();
   const navigate = useNavigate();
@@ -58,6 +58,7 @@ const StripeShopForm = ({ cartTotal }) => {
       setError(stripeError.message);
       setLoading(false);
     } else if (paymentIntent && paymentIntent.status === 'succeeded') {
+      clearCart();
       try {
         await api.post('/shop/confirm-order/', { payment_intent_id: paymentIntent.id });
       } catch (err) {
@@ -127,7 +128,7 @@ const StripeShopForm = ({ cartTotal }) => {
 
 // --- 2. COMPOSANT PRINCIPAL ---
 const Checkout = () => {
-  const { cart, subTotal, shippingFee, cartTotal } = useCart();
+  const { cart, subTotal, shippingFee, cartTotal, clearCart } = useCart();
   const [clientSecret, setClientSecret] = useState('');
   const [initError, setInitError] = useState('');
 
@@ -140,7 +141,7 @@ const Checkout = () => {
         .then(res => setClientSecret(res.data.client_secret))
         .catch(err => {
           console.error(err);
-          setInitError("Erreur lors de l'initialisation du paiement sécurisé.");
+          setInitError(err.response?.data?.error || "Erreur lors de l'initialisation du paiement sécurisé.");
         });
     }
   }, [cart]);
@@ -170,7 +171,7 @@ const Checkout = () => {
             </div>
           ) : clientSecret ? (
             <Elements stripe={stripePromise} options={{ clientSecret, appearance: { theme: 'night' } }}>
-              <StripeShopForm cartTotal={cartTotal} />
+              <StripeShopForm cartTotal={cartTotal} clearCart={clearCart} />
             </Elements>
           ) : (
             <div className="flex items-center gap-3 text-[#FF6B00] font-bold">

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, X, Activity, PlaySquare } from 'lucide-react';
+import { Plus, Search, X, Activity, PlaySquare, Pencil, Trash2 } from 'lucide-react';
 import api from '../services/api';
 
 const ExerciceManager = () => {
@@ -7,6 +7,7 @@ const ExerciceManager = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [editingExercice, setEditingExercice] = useState(null);
 
   const [formData, setFormData] = useState({
     nom: '',
@@ -43,14 +44,37 @@ const ExerciceManager = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await api.post('/exercices/', formData);
+      if (editingExercice) {
+        await api.patch(`/exercices/${editingExercice.id}/`, formData);
+      } else {
+        await api.post('/exercices/', formData);
+      }
       fetchExercices();
       setIsModalOpen(false);
+      setEditingExercice(null);
       setFormData({ nom: '', description: '', categorie: 'FORCE', muscle_principal: '', video_url: '' });
     } catch (error) {
       console.error("Erreur lors de la création de l'exercice:", error);
       alert("Erreur lors de la création. Cet exercice existe peut-être déjà ?");
     }
+  };
+
+  const openExerciceModal = (exercice = null) => {
+    setEditingExercice(exercice);
+    setFormData(exercice ? {
+      nom: exercice.nom || '',
+      description: exercice.description || '',
+      categorie: exercice.categorie || 'FORCE',
+      muscle_principal: exercice.muscle_principal || '',
+      video_url: exercice.video_url || ''
+    } : { nom: '', description: '', categorie: 'FORCE', muscle_principal: '', video_url: '' });
+    setIsModalOpen(true);
+  };
+
+  const handleDeleteExercice = async (exerciceId) => {
+    if (!window.confirm("Supprimer cet exercice ?")) return;
+    await api.delete(`/exercices/${exerciceId}/`);
+    setExercices(exercices.filter(exo => exo.id !== exerciceId));
   };
 
   const filteredExercices = exercices.filter(exo => 
@@ -68,7 +92,7 @@ const ExerciceManager = () => {
           <p className="text-slate-500 text-sm mt-1">Gérez votre base de données d'exercices personnalisés.</p>
         </div>
         <button 
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => openExerciceModal()}
           className="bg-[#FF6A00] hover:bg-orange-600 text-white px-5 py-3 rounded-xl font-bold shadow-lg shadow-orange-500/20 transition-all flex items-center gap-2 active:scale-95"
         >
           <Plus size={18} />
@@ -118,6 +142,10 @@ const ExerciceManager = () => {
                 <h3 className="font-bold text-slate-900 dark:text-white mb-1">{exo.nom}</h3>
                 <p className="text-xs font-semibold text-slate-500 mb-3">{exo.muscle_principal || "Général"}</p>
                 <p className="text-xs text-slate-400 line-clamp-3 mt-auto">{exo.description || "Aucune description."}</p>
+                <div className="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-slate-100 dark:border-[#26262B]">
+                  <button onClick={() => openExerciceModal(exo)} className="flex items-center justify-center gap-1 bg-slate-50 dark:bg-white/5 text-slate-600 dark:text-slate-300 py-2 rounded-lg text-xs font-bold hover:bg-slate-100"><Pencil size={14} /> Modifier</button>
+                  <button onClick={() => handleDeleteExercice(exo.id)} className="flex items-center justify-center gap-1 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 py-2 rounded-lg text-xs font-bold hover:bg-red-100"><Trash2 size={14} /> Supprimer</button>
+                </div>
               </div>
             ))}
           </div>
@@ -129,8 +157,8 @@ const ExerciceManager = () => {
         <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
         <div className="relative bg-white dark:bg-[#16161A] border border-slate-200 dark:border-[#26262B] rounded-3xl shadow-2xl w-full max-w-lg p-8">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-black text-slate-900 dark:text-white">Créer un Exercice</h2>
-            <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-red-500 transition-colors p-2 bg-slate-50 dark:bg-white/5 rounded-full"><X size={20}/></button>
+            <h2 className="text-2xl font-black text-slate-900 dark:text-white">{editingExercice ? 'Modifier un Exercice' : 'Créer un Exercice'}</h2>
+            <button onClick={() => { setIsModalOpen(false); setEditingExercice(null); }} className="text-slate-400 hover:text-red-500 transition-colors p-2 bg-slate-50 dark:bg-white/5 rounded-full"><X size={20}/></button>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -173,7 +201,7 @@ const ExerciceManager = () => {
             </div>
 
             <button type="submit" className="w-full bg-[#FF6A00] hover:bg-orange-600 text-white font-black py-4 rounded-xl shadow-lg mt-2 transition-transform active:scale-95">
-              Enregistrer l'exercice
+              {editingExercice ? "Enregistrer les modifications" : "Enregistrer l'exercice"}
             </button>
           </form>
         </div>

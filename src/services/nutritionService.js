@@ -69,6 +69,24 @@ getAthletePlans: async () => {
     }
   },
 
+  updateRecipe: async (id, recipeData) => {
+    const response = await fetch(`${API_URL}/recipes/${id}/`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify(recipeData)
+    });
+    if (!response.ok) throw new Error("Erreur lors de la modification");
+    return await response.json();
+  },
+
+  deleteRecipe: async (id) => {
+    const response = await fetch(`${API_URL}/recipes/${id}/`, {
+      method: 'DELETE',
+      headers: getHeaders()
+    });
+    if (!response.ok) throw new Error("Erreur lors de la suppression");
+  },
+
   getPlans: async () => {
     try {
       const response = await fetch(`${API_URL}/plans/`, {
@@ -115,6 +133,33 @@ getAthletePlans: async () => {
       console.error(error);
       throw error;
     }
+  },
+
+  updatePlan: async (id, planData) => {
+    const formData = new FormData();
+    Object.keys(planData).forEach(key => {
+      if (key === 'recettes' && Array.isArray(planData.recettes)) {
+        planData.recettes.forEach(id => formData.append('recettes', id));
+      } else if (planData[key] !== null && planData[key] !== undefined) {
+        formData.append(key, planData[key]);
+      }
+    });
+
+    const response = await fetch(`${API_URL}/plans/${id}/`, {
+      method: 'PATCH',
+      headers: getHeaders(true),
+      body: formData
+    });
+    if (!response.ok) throw new Error("Erreur lors de la modification du plan");
+    return await response.json();
+  },
+
+  deletePlan: async (id) => {
+    const response = await fetch(`${API_URL}/plans/${id}/`, {
+      method: 'DELETE',
+      headers: getHeaders()
+    });
+    if (!response.ok) throw new Error("Erreur lors de la suppression du plan");
   }
 };
 

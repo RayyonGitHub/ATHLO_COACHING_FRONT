@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Dumbbell, Plus, User, ArrowRight, X, Calendar, Clock, CheckCircle, ListTodo, AlertTriangle } from 'lucide-react';
+import { Dumbbell, Plus, User, ArrowRight, X, Calendar, Clock, CheckCircle, ListTodo, AlertTriangle, Pencil, Trash2 } from 'lucide-react';
 import api from '../services/api';
 
 const ProgrammeList = () => {
@@ -9,6 +9,7 @@ const ProgrammeList = () => {
   const [clients, setClients] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [editingProgramme, setEditingProgramme] = useState(null);
 
   // --- NOUVEAUX ÉTATS POUR LA PLANIFICATION ---
   const [selectedProg, setSelectedProg] = useState(null); // Gère la modale "Détails du programme"
@@ -60,10 +61,15 @@ const ProgrammeList = () => {
         description: formData.description,
                 athlete: parseInt(formData.athlete)
       };
-      await api.post('/programmes/', payload);
+      if (editingProgramme) {
+        await api.patch(`/programmes/${editingProgramme.id}/`, payload);
+      } else {
+        await api.post('/programmes/', payload);
+      }
       
       fetchData();
       setIsModalOpen(false);
+      setEditingProgramme(null);
       setFormData({ titre: '', description: '', athlete: '' });
     } catch (error) {
       console.error("Erreur lors de la création du programme:", error);
@@ -112,6 +118,23 @@ const ProgrammeList = () => {
   const goToBuilder = (programmeId) => {
     navigate(`/builder?progId=${programmeId}`);
   };
+
+  const openProgrammeModal = (programme = null) => {
+    setEditingProgramme(programme);
+    setFormData(programme ? {
+      titre: programme.titre || '',
+      description: programme.description || '',
+      athlete: programme.athlete ? String(programme.athlete) : ''
+    } : { titre: '', description: '', athlete: '' });
+    setIsModalOpen(true);
+  };
+
+  const handleDeleteProgramme = async (programmeId) => {
+    if (!window.confirm("Supprimer ce programme ?")) return;
+    await api.delete(`/programmes/${programmeId}/`);
+    if (selectedProg?.id === programmeId) setSelectedProg(null);
+    fetchData();
+  };
 // --- VARIABLES POUR BLOQUER LES DATES PASSÉES ---
   const todayDate = new Date();
   const todayStr = todayDate.getFullYear() + '-' + String(todayDate.getMonth() + 1).padStart(2, '0') + '-' + String(todayDate.getDate()).padStart(2, '0');
@@ -127,7 +150,7 @@ const ProgrammeList = () => {
           <p className="text-slate-500 text-sm mt-1">Créez et assignez des programmes d'entraînement à vos athlètes.</p>
         </div>
         <button 
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => openProgrammeModal()}
           className="bg-[#FF6A00] hover:bg-orange-600 text-white px-5 py-3 rounded-xl font-bold shadow-lg shadow-orange-500/20 transition-all flex items-center gap-2 active:scale-95 cursor-pointer"
         >
           <Plus size={18} />
@@ -182,6 +205,18 @@ const ProgrammeList = () => {
                       <ListTodo size={16} /> Consulter & Planifier
                     </button>
                     <button 
+                      onClick={() => openProgrammeModal(prog)}
+                      className="w-full flex items-center justify-center gap-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 text-slate-700 dark:text-slate-300 py-3 rounded-xl font-bold transition-colors cursor-pointer"
+                    >
+                      <Pencil size={16} /> Modifier
+                    </button>
+                    <button 
+                      onClick={() => handleDeleteProgramme(prog.id)}
+                      className="w-full flex items-center justify-center gap-2 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 text-red-600 dark:text-red-400 py-3 rounded-xl font-bold transition-colors cursor-pointer"
+                    >
+                      <Trash2 size={16} /> Supprimer
+                    </button>
+                    <button 
                       onClick={() => goToBuilder(prog.id)}
                       className="w-full flex items-center justify-center gap-2 bg-slate-100 dark:bg-white/5 hover:bg-[#FF6A00] hover:text-white text-slate-700 dark:text-slate-300 py-3 rounded-xl font-bold transition-colors cursor-pointer"
                     >
@@ -200,8 +235,8 @@ const ProgrammeList = () => {
         <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
         <div className="relative bg-white dark:bg-[#16161A] border border-slate-200 dark:border-[#26262B] rounded-3xl shadow-2xl w-full max-w-lg p-8 transform transition-all">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-black text-slate-900 dark:text-white">Nouveau Programme</h2>
-            <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-red-500 transition-colors p-2 bg-slate-50 dark:bg-white/5 rounded-full"><X size={20}/></button>
+            <h2 className="text-2xl font-black text-slate-900 dark:text-white">{editingProgramme ? 'Modifier le programme' : 'Nouveau Programme'}</h2>
+            <button onClick={() => { setIsModalOpen(false); setEditingProgramme(null); }} className="text-slate-400 hover:text-red-500 transition-colors p-2 bg-slate-50 dark:bg-white/5 rounded-full"><X size={20}/></button>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -232,7 +267,7 @@ const ProgrammeList = () => {
             </div>
 
             <button type="submit" className="w-full bg-[#FF6A00] hover:bg-orange-600 text-white font-black py-4 rounded-xl shadow-lg mt-4 transition-transform active:scale-95 cursor-pointer">
-              Créer le programme
+              {editingProgramme ? 'Enregistrer les modifications' : 'Créer le programme'}
             </button>
           </form>
         </div>

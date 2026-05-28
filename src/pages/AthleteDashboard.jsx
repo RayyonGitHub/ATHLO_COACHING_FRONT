@@ -200,10 +200,11 @@ useEffect(() => {
           </p>
         </div>
         <button
-          onClick={() => navigate('/athlete/parametres')}
-          className="bg-[#FF6B00] hover:bg-orange-600 text-white font-black px-5 py-3 rounded-xl transition-colors"
+          onClick={() => navigate('/athlete/parametres#abonnement-seances')}
+          className="w-12 h-12 rounded-xl bg-[#FF6B00] hover:bg-orange-600 text-white flex items-center justify-center transition-colors"
+          title="Voir abonnement et seances"
         >
-          Renouveler / acheter
+          <span className="material-icons-round">arrow_forward</span>
         </button>
       </div>
 
