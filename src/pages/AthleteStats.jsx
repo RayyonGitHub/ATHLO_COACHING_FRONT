@@ -56,6 +56,14 @@ const AthleteStats = () => {
       }));
   }, [externalActivities]);
 
+  const volumeChartData = useMemo(() => {
+    return (stats?.volume_history || []).map((session) => ({
+      ...session,
+      day: session.day || session.date || session.titre || '',
+      volume: Number(session.volume ?? session.volume_total ?? 0),
+    }));
+  }, [stats]);
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-[60vh] text-gray-400">
@@ -90,8 +98,8 @@ const AthleteStats = () => {
         />
         <StatCard 
             icon={<Zap className="text-yellow-400"/>} 
-            label="Volume Max" 
-            value={stats?.volume_history?.length ? Math.max(...stats.volume_history.map(d => d.volume)) : 0}
+            label="Volume Total"
+            value={stats?.summary?.total_volume || 0}
             unit="kg" 
         />
         <StatCard 
@@ -108,7 +116,7 @@ const AthleteStats = () => {
           <h3 className="text-white font-bold text-lg mb-6 flex items-center gap-2">Évolution Musculation (Tonnage)</h3>
           <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={stats?.volume_history || []}>
+              <AreaChart data={volumeChartData}>
                 <defs>
                   <linearGradient id="colorVol" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#FF6B00" stopOpacity={0.4}/>
@@ -143,10 +151,10 @@ const AthleteStats = () => {
             </ResponsiveContainer>
           </div>
           <div className="mt-4 space-y-2">
-             {stats?.muscle_distribution.slice(0, 3).map((m, i) => (
+             {(stats?.muscle_distribution || []).slice(0, 3).map((m, i) => (
                 <div key={i} className="flex justify-between text-xs text-gray-400">
                   <span>{m.name}</span>
-                  <span className="text-white font-bold">{m.value} reps</span>
+                  <span className="text-white font-bold">{m.value} kg</span>
                 </div>
              ))}
           </div>

@@ -88,6 +88,12 @@ const WorkoutTrackingModal = ({ isOpen, onClose, seanceId, onComplete }) => {
     return `${m}:${s}`;
   };
 
+  const parseWeight = (value) => {
+    const normalized = String(value ?? '').replace(',', '.');
+    const parsed = Number.parseFloat(normalized);
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+
   // --- 3. GESTION DE LA SÉANCE ---
   const currentExo = exercices[currentExoIndex];
 
@@ -131,13 +137,19 @@ const WorkoutTrackingModal = ({ isOpen, onClose, seanceId, onComplete }) => {
       
       await axios.post('http://127.0.0.1:8000/api/athlete/performance/record/', {
         seance_id: seanceId,
-        exercices: exercices.map((exo) => ({
-          seance_exercice: exo.id,
-          exercice_id: exo.exerciceId,
-          series_realisees: completedSets[exo.id] || exo.series,
-          reps_realisees: parseInt(exo.reps, 10) || 10,
-          poids_utilise: parseFloat(weights[exo.id]) || 0
-        }))
+        exercices: exercices.map((exo) => {
+          const weight = parseWeight(weights[exo.id]);
+
+          return {
+            seance_exercice: exo.id,
+            exercice_id: exo.exerciceId,
+            series_realisees: completedSets[exo.id] || exo.series,
+            reps_realisees: parseInt(exo.reps, 10) || 10,
+            poids_moyen: weight,
+            poids: weight,
+            poids_utilise: weight
+          };
+        })
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
