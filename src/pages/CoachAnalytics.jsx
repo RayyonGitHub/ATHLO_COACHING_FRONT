@@ -57,12 +57,18 @@ const CoachAnalytics = () => {
     return (
     <main className="flex-1 flex flex-col p-3 gap-3 overflow-hidden">
         {/* LA LIGNE IMPORTANTE EST ICI : grid-cols-3 au lieu de grid-cols-2 */}
-        <div className="grid grid-cols-3 gap-3 flex-none">
+        <div className="grid grid-cols-4 gap-3 flex-none">
             <KPICard
                 title="Athlètes"
                 value={data?.total_athletes}
                 icon={<Users className="w-4 h-4 text-indigo-900" />}
                 borderColor="border-indigo-900"
+            />
+            <KPICard
+                title="Contrats actifs"
+                value={data?.contrats_actifs || 0}
+                icon={<CalendarDays className="w-4 h-4 text-blue-600" />}
+                borderColor="border-blue-500"
             />
             <KPICard
                 title="Assiduité"
