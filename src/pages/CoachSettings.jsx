@@ -232,61 +232,61 @@ const handleStripeConnect = async () => {
   return (
     <div className="max-w-4xl mx-auto flex flex-col gap-8 pb-32 pt-6 px-4 animate-in fade-in duration-500 overflow-y-auto">
       <div className="flex flex-col gap-1">
-        <h2 className="text-3xl font-bold text-gray-900">Mon <span className="text-[#FF6B00]">Profil</span></h2>
-        <p className="text-gray-500 text-sm">Gérez vos informations personnelles et professionnelles.</p>
+        <h2 className="text-3xl font-bold text-[#FCF8FE]">Mon <span className="text-[#FF6A00]">Profil</span></h2>
+        <p className="text-[#ACAAB0] text-sm">Gérez vos informations personnelles et professionnelles.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* SECTION 1 : INFORMATIONS PERSONNELLES */}
-        <section className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
-          <div className="p-5 border-b border-gray-100 flex items-center gap-3">
-            <div className="p-2 bg-blue-50 text-blue-600 rounded-xl"><User size={20} /></div>
-            <h3 className="font-semibold text-gray-900 text-lg">Informations personnelles</h3>
+        <section className="bg-[#131317] border border-[#2A2A32] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
+          <div className="p-5 border-b border-[#2A2A32] flex items-center gap-3">
+            <div className="p-2 bg-[#3B82F6]/20 text-[#3B82F6] rounded-xl"><User size={20} /></div>
+            <h3 className="font-semibold text-[#FCF8FE] text-lg">Informations personnelles</h3>
           </div>
-          <div className="p-6 md:p-8 space-y-6 bg-gray-50/30">
+          <div className="p-6 md:p-8 space-y-6 bg-[#1F1F25]">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Prénom</label>
-                <input type="text" name="prenom" value={formData.prenom || ''} onChange={handleChange} className="w-full bg-white border border-gray-200 text-gray-900 px-4 py-2.5 rounded-xl focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 outline-none transition-all" />
+                <label className="block text-sm font-medium text-[#ACAAB0] mb-1.5">Prénom</label>
+                <input type="text" name="prenom" value={formData.prenom || ''} onChange={handleChange} className="w-full bg-[#0B0B0E] border border-[#2A2A32] text-[#FCF8FE] px-4 py-2.5 rounded-xl focus:border-[#FF6A00] focus:ring-4 focus:ring-[#FF6A00]/10 outline-none transition-all" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Nom</label>
-                <input type="text" name="nom" value={formData.nom || ''} onChange={handleChange} className="w-full bg-white border border-gray-200 text-gray-900 px-4 py-2.5 rounded-xl focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 outline-none transition-all" />
+                <label className="block text-sm font-medium text-[#ACAAB0] mb-1.5">Nom</label>
+                <input type="text" name="nom" value={formData.nom || ''} onChange={handleChange} className="w-full bg-[#0B0B0E] border border-[#2A2A32] text-[#FCF8FE] px-4 py-2.5 rounded-xl focus:border-[#FF6A00] focus:ring-4 focus:ring-[#FF6A00]/10 outline-none transition-all" />
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1.5"><Phone size={14} className="text-gray-400"/> Téléphone</label>
-                <input type="text" name="telephone" value={formData.telephone || ''} onChange={handleChange} className="w-full bg-white border border-gray-200 text-gray-900 px-4 py-2.5 rounded-xl focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 outline-none transition-all" />
+                <label className="flex items-center gap-1.5 text-sm font-medium text-[#ACAAB0] mb-1.5"><Phone size={14} className="text-[#ACAAB0]"/> Téléphone</label>
+                <input type="text" name="telephone" value={formData.telephone || ''} onChange={handleChange} className="w-full bg-[#0B0B0E] border border-[#2A2A32] text-[#FCF8FE] px-4 py-2.5 rounded-xl focus:border-[#FF6A00] focus:ring-4 focus:ring-[#FF6A00]/10 outline-none transition-all" />
               </div>
               <div>
-                <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1.5"><MapPin size={14} className="text-gray-400"/> Ville principale</label>
-                <input type="text" name="ville" value={formData.ville || ''} onChange={handleChange} className="w-full bg-white border border-gray-200 text-gray-900 px-4 py-2.5 rounded-xl focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 outline-none transition-all" />
+                <label className="flex items-center gap-1.5 text-sm font-medium text-[#ACAAB0] mb-1.5"><MapPin size={14} className="text-[#ACAAB0]"/> Ville principale</label>
+                <input type="text" name="ville" value={formData.ville || ''} onChange={handleChange} className="w-full bg-[#0B0B0E] border border-[#2A2A32] text-[#FCF8FE] px-4 py-2.5 rounded-xl focus:border-[#FF6A00] focus:ring-4 focus:ring-[#FF6A00]/10 outline-none transition-all" />
               </div>
             </div>
           </div>
         </section>
 
         {/* SECTION 2 : ACTIVITÉ & SALLES */}
-        <section className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
-          <div className="p-5 border-b border-gray-100 flex items-center gap-3">
-            <div className="p-2 bg-orange-50 text-[#FF6B00] rounded-xl"><Briefcase size={20} /></div>
-            <h3 className="font-semibold text-gray-900 text-lg">Activité & Lieux</h3>
+        <section className="bg-[#131317] border border-[#2A2A32] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
+          <div className="p-5 border-b border-[#2A2A32] flex items-center gap-3">
+            <div className="p-2 bg-[#FF6A00]/20 text-[#FF6A00] rounded-xl"><Briefcase size={20} /></div>
+            <h3 className="font-semibold text-[#FCF8FE] text-lg">Activité & Lieux</h3>
           </div>
-          <div className="p-6 md:p-8 space-y-6 bg-gray-50/30">
+          <div className="p-6 md:p-8 space-y-6 bg-[#1F1F25]">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Spécialité principale</label>
-              <input type="text" name="specialite" value={formData.specialite || ''} onChange={handleChange} className="w-full bg-white border border-gray-200 text-gray-900 px-4 py-2.5 rounded-xl focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 outline-none transition-all" />
+              <label className="block text-sm font-medium text-[#ACAAB0] mb-1.5">Spécialité principale</label>
+              <input type="text" name="specialite" value={formData.specialite || ''} onChange={handleChange} className="w-full bg-[#0B0B0E] border border-[#2A2A32] text-[#FCF8FE] px-4 py-2.5 rounded-xl focus:border-[#FF6A00] focus:ring-4 focus:ring-[#FF6A00]/10 outline-none transition-all" />
             </div>
             <div>
-              <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1.5"><Tag size={14} className="text-gray-400"/> Mots-clés / Tags</label>
-              <input type="text" name="specialites_tags" value={formData.specialites_tags || ''} onChange={handleChange} className="w-full bg-white border border-gray-200 text-gray-900 px-4 py-2.5 rounded-xl focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 outline-none transition-all" />
+              <label className="flex items-center gap-1.5 text-sm font-medium text-[#ACAAB0] mb-1.5"><Tag size={14} className="text-[#ACAAB0]"/> Mots-clés / Tags</label>
+              <input type="text" name="specialites_tags" value={formData.specialites_tags || ''} onChange={handleChange} className="w-full bg-[#0B0B0E] border border-[#2A2A32] text-[#FCF8FE] px-4 py-2.5 rounded-xl focus:border-[#FF6A00] focus:ring-4 focus:ring-[#FF6A00]/10 outline-none transition-all" />
             </div>
             <div>
-              <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-3"><DollarSign size={14} className="text-gray-400"/> Offres et tarifs (en €)</label>
+              <label className="flex items-center gap-1.5 text-sm font-medium text-[#ACAAB0] mb-3"><DollarSign size={14} className="text-[#ACAAB0]"/> Offres et tarifs (en €)</label>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1.5">Séance unique</label>
+                  <label className="block text-xs font-medium text-[#ACAAB0] mb-1.5">Séance unique</label>
                   <input 
                     type="number" 
                     name="seance_unique" 
@@ -295,11 +295,11 @@ const handleStripeConnect = async () => {
                     placeholder="50"
                     min="0"
                     step="0.01"
-                    className="w-full bg-white border border-gray-200 text-gray-900 px-4 py-2.5 rounded-xl focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 outline-none transition-all" 
+                    className="w-full bg-[#0B0B0E] border border-[#2A2A32] text-[#FCF8FE] px-4 py-2.5 rounded-xl focus:border-[#FF6A00] focus:ring-4 focus:ring-[#FF6A00]/10 outline-none transition-all" 
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1.5">Pack 10 séances</label>
+                  <label className="block text-xs font-medium text-[#ACAAB0] mb-1.5">Pack 10 séances</label>
                   <input 
                     type="number" 
                     name="pack_10" 
@@ -308,11 +308,11 @@ const handleStripeConnect = async () => {
                     placeholder="450"
                     min="0"
                     step="0.01"
-                    className="w-full bg-white border border-gray-200 text-gray-900 px-4 py-2.5 rounded-xl focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 outline-none transition-all" 
+                    className="w-full bg-[#0B0B0E] border border-[#2A2A32] text-[#FCF8FE] px-4 py-2.5 rounded-xl focus:border-[#FF6A00] focus:ring-4 focus:ring-[#FF6A00]/10 outline-none transition-all" 
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1.5">Abonnement mensuel</label>
+                  <label className="block text-xs font-medium text-[#ACAAB0] mb-1.5">Abonnement mensuel</label>
                   <input 
                     type="number" 
                     name="abonnement_mensuel" 
@@ -321,43 +321,43 @@ const handleStripeConnect = async () => {
                     placeholder="200"
                     min="0"
                     step="0.01"
-                    className="w-full bg-white border border-gray-200 text-gray-900 px-4 py-2.5 rounded-xl focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 outline-none transition-all" 
+                    className="w-full bg-[#0B0B0E] border border-[#2A2A32] text-[#FCF8FE] px-4 py-2.5 rounded-xl focus:border-[#FF6A00] focus:ring-4 focus:ring-[#FF6A00]/10 outline-none transition-all" 
                   />
                 </div>
               </div>
             </div>
             
             {/* NOUVEAU BLOC : Salles Partenaires */}
-            <div className="pt-4 border-t border-gray-200">
-              <label className="flex items-center gap-1.5 text-sm font-bold text-gray-900 mb-3"><Dumbbell size={16} className="text-[#FF6B00]"/> Salles Partenaires</label>
-              <p className="text-sm text-gray-500 mb-4">Sélectionnez les salles dans lesquelles vous donnez vos coachings.</p>
+            <div className="pt-4 border-t border-[#2A2A32]">
+              <label className="flex items-center gap-1.5 text-sm font-bold text-[#FCF8FE] mb-3"><Dumbbell size={16} className="text-[#FF6A00]"/> Salles Partenaires</label>
+              <p className="text-sm text-[#ACAAB0] mb-4">Sélectionnez les salles dans lesquelles vous donnez vos coachings.</p>
               {!formData.ville && (
                 <div className="mb-4">
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Filtrer par ville</label>
+                  <label className="block text-xs font-semibold text-[#ACAAB0] mb-1">Filtrer par ville</label>
                   <input
                     type="text"
                     value={villeSearch}
                     onChange={(e) => setVilleSearch(e.target.value)}
                     placeholder="Ex: Amiens"
-                    className="w-full bg-white border border-gray-200 text-gray-900 px-4 py-2.5 rounded-xl focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 outline-none transition-all"
+                    className="w-full bg-[#0B0B0E] border border-[#2A2A32] text-[#FCF8FE] px-4 py-2.5 rounded-xl focus:border-[#FF6A00] focus:ring-4 focus:ring-[#FF6A00]/10 outline-none transition-all"
                   />
                 </div>
               )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-60 overflow-y-auto p-1">
                 {sallesDisponibles.length === 0 ? (
-                  <p className="text-sm text-gray-400 italic">Aucune salle disponible.</p>
+                  <p className="text-sm text-[#ACAAB0] italic">Aucune salle disponible.</p>
                 ) : (
                   sallesDisponibles.map(salle => (
-                    <label key={salle.id} className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${formData.salles.includes(salle.id) ? 'bg-orange-50 border-orange-200 shadow-sm' : 'bg-white border-gray-200 hover:border-orange-300'}`}>
+                    <label key={salle.id} className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${formData.salles.includes(salle.id) ? 'bg-[#FF6A00]/10 border-[#FF6A00]/50 shadow-sm' : 'bg-[#0B0B0E] border-[#2A2A32] hover:border-[#FF6A00]/30'}`}>
                       <input 
                         type="checkbox" 
-                        className="mt-1 w-4 h-4 text-[#FF6B00] rounded border-gray-300 focus:ring-[#FF6B00]"
+                        className="mt-1 w-4 h-4 text-[#FF6A00] rounded border-[#2A2A32] focus:ring-[#FF6A00]"
                         checked={formData.salles.includes(salle.id)}
                         onChange={() => toggleSalle(salle.id)}
                       />
                       <div>
-                        <p className={`text-sm font-bold ${formData.salles.includes(salle.id) ? 'text-[#FF6B00]' : 'text-gray-900'}`}>{salle.nom}</p>
-                        <p className="text-xs text-gray-500">{salle.ville}</p>
+                        <p className={`text-sm font-bold ${formData.salles.includes(salle.id) ? 'text-[#FF6A00]' : 'text-[#FCF8FE]'}`}>{salle.nom}</p>
+                        <p className="text-xs text-[#ACAAB0]">{salle.ville}</p>
                       </div>
                     </label>
                   ))
@@ -368,37 +368,37 @@ const handleStripeConnect = async () => {
           </div>
         </section>
     {/* SECTION : ABONNEMENT PLATEFORME */}
-        <section className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
-          <div className="p-5 border-b border-gray-100 flex items-center justify-between">
+        <section className="bg-[#131317] border border-[#2A2A32] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
+          <div className="p-5 border-b border-[#2A2A32] flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-yellow-50 text-yellow-600 rounded-xl"><Zap size={20} /></div>
-              <h3 className="font-semibold text-gray-900 text-lg">Abonnement Plateforme</h3>
+              <div className="p-2 bg-[#F59E0B]/20 text-[#F59E0B] rounded-xl"><Zap size={20} /></div>
+              <h3 className="font-semibold text-[#FCF8FE] text-lg">Abonnement Plateforme</h3>
             </div>
             <div>
               {formData.platform_plan === 'premium' ? (
-                <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold border border-green-200">PREMIUM ACTIF</span>
+                <span className="px-3 py-1 bg-[#22C55E]/20 text-[#22C55E] rounded-full text-xs font-bold border border-[#22C55E]/30">PREMIUM ACTIF</span>
               ) : (
-                <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-bold border border-gray-200">PREEMIUM</span>
+                <span className="px-3 py-1 bg-[#48474C]/20 text-[#ACAAB0] rounded-full text-xs font-bold border border-[#48474C]/30">PREEMIUM</span>
               )}
             </div>
           </div>
-          <div className="p-6 md:p-8 bg-gray-50/30">
+          <div className="p-6 md:p-8 bg-[#1F1F25]">
             {formData.platform_plan === 'premium' ? (
                <div className="flex flex-col gap-2">
-                 <p className="text-sm text-gray-700 font-medium">Vous bénéficiez du plan Premium. 🎉</p>
-                 <p className="text-sm text-gray-500">Aucune commission n'est prélevée sur vos ventes (0%). Vous gardez 100% de vos revenus.</p>
+                 <p className="text-sm text-[#FCF8FE] font-medium">Vous bénéficiez du plan Premium. 🎉</p>
+                 <p className="text-sm text-[#ACAAB0]">Aucune commission n'est prélevée sur vos ventes (0%). Vous gardez 100% de vos revenus.</p>
                </div>
             ) : (
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="flex flex-col gap-2">
-                  <p className="text-sm text-gray-700 font-medium">Passez au niveau supérieur pour maximiser vos revenus.</p>
-                  <p className="text-sm text-gray-500">Vous êtes actuellement sur le plan gratuit. Une commission de 10% est appliquée sur chaque paiement de vos athlètes. Passez Premium pour annuler ces frais.</p>
+                  <p className="text-sm text-[#FCF8FE] font-medium">Passez au niveau supérieur pour maximiser vos revenus.</p>
+                  <p className="text-sm text-[#ACAAB0]">Vous êtes actuellement sur le plan gratuit. Une commission de 10% est appliquée sur chaque paiement de vos athlètes. Passez Premium pour annuler ces frais.</p>
                 </div>
                 <button 
                   type="button" 
                   onClick={handleUpgradePremium} 
                   disabled={isSubLoading}
-                  className="shrink-0 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-white px-6 py-3 rounded-xl font-bold shadow-md shadow-yellow-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-70 cursor-pointer"
+                  className="shrink-0 bg-gradient-to-r from-[#F59E0B] to-[#F59E0B] hover:from-[#D97706] hover:to-[#D97706] text-white px-6 py-3 rounded-xl font-bold shadow-md shadow-[#F59E0B]/20 transition-all flex items-center justify-center gap-2 disabled:opacity-70 cursor-pointer"
                 >
                   {isSubLoading ? <Loader2 className="animate-spin" size={18}/> : <Zap size={18} className="fill-white"/>}
                   Passer Premium (29€/mois)
@@ -409,25 +409,25 @@ const handleStripeConnect = async () => {
         </section>
 
 {/* NOUVELLE SECTION : CONFIGURATION DES VERSEMENTS */}
-        <section className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
-          <div className="p-5 border-b border-gray-100 flex items-center justify-between">
+        <section className="bg-[#131317] border border-[#2A2A32] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
+          <div className="p-5 border-b border-[#2A2A32] flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-50 text-blue-600 rounded-xl"><DollarSign size={20} /></div>
-              <h3 className="font-semibold text-gray-900 text-lg">Configuration des versements</h3>
+              <div className="p-2 bg-[#3B82F6]/20 text-[#3B82F6] rounded-xl"><DollarSign size={20} /></div>
+              <h3 className="font-semibold text-[#FCF8FE] text-lg">Configuration des versements</h3>
             </div>
             <div>
               {formData.stripe_onboarding_complete ? (
-                <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold border border-green-200">COMPTE BANCAIRE LIÉ</span>
+                <span className="px-3 py-1 bg-[#22C55E]/20 text-[#22C55E] rounded-full text-xs font-bold border border-[#22C55E]/30">COMPTE BANCAIRE LIÉ</span>
               ) : (
-                <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold border border-red-200">À CONFIGURER</span>
+                <span className="px-3 py-1 bg-[#EF4444]/20 text-[#EF4444] rounded-full text-xs font-bold border border-[#EF4444]/30">À CONFIGURER</span>
               )}
             </div>
           </div>
-          <div className="p-6 md:p-8 bg-gray-50/30">
+          <div className="p-6 md:p-8 bg-[#1F1F25]">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div className="flex flex-col gap-2">
-                <p className="text-sm text-gray-700 font-medium">Où doit être envoyé votre argent ?</p>
-                <p className="text-sm text-gray-500">Pour recevoir automatiquement les paiements de vos athlètes (abonnements, packs, boutique) directement sur votre compte bancaire, vous devez configurer votre compte Stripe Connect.</p>
+                <p className="text-sm text-[#FCF8FE] font-medium">Où doit être envoyé votre argent ?</p>
+                <p className="text-sm text-[#ACAAB0]">Pour recevoir automatiquement les paiements de vos athlètes (abonnements, packs, boutique) directement sur votre compte bancaire, vous devez configurer votre compte Stripe Connect.</p>
               </div>
               <button 
                 type="button" 
@@ -435,8 +435,8 @@ const handleStripeConnect = async () => {
                 disabled={isSubLoading}
                 className={`shrink-0 text-white px-6 py-3 rounded-xl font-bold shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-70 cursor-pointer ${
                   formData.stripe_onboarding_complete 
-                    ? "bg-gray-800 hover:bg-gray-900 shadow-gray-800/20" 
-                    : "bg-blue-600 hover:bg-blue-700 shadow-blue-500/20"
+                    ? "bg-[#48474C] hover:bg-[#2A2A32] shadow-[#48474C]/20" 
+                    : "bg-[#3B82F6] hover:bg-[#2563EB] shadow-[#3B82F6]/20"
                 }`}
               >
                 {isSubLoading ? <Loader2 className="animate-spin" size={18}/> : <DollarSign size={18}/>}
@@ -446,26 +446,26 @@ const handleStripeConnect = async () => {
           </div>
         </section>
         {/* SECTION 3 : COMPTE */}
-        <section className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
-          <div className="p-5 border-b border-gray-100 flex items-center gap-3">
-            <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl"><Settings size={20} /></div>
-            <h3 className="font-semibold text-gray-900 text-lg">Paramètres du compte</h3>
+        <section className="bg-[#131317] border border-[#2A2A32] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
+          <div className="p-5 border-b border-[#2A2A32] flex items-center gap-3">
+            <div className="p-2 bg-indigo-900/20 text-indigo-400 rounded-xl"><Settings size={20} /></div>
+            <h3 className="font-semibold text-[#FCF8FE] text-lg">Paramètres du compte</h3>
           </div>
-          <div className="p-6 md:p-8 space-y-6 bg-gray-50/30">
+          <div className="p-6 md:p-8 space-y-6 bg-[#1F1F25]">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Adresse email</label>
-              <input type="email" name="email" value={formData.email || ''} onChange={handleChange} className="w-full bg-white border border-gray-200 text-gray-900 px-4 py-2.5 rounded-xl focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 outline-none transition-all" />
+              <label className="block text-sm font-medium text-[#ACAAB0] mb-1.5">Adresse email</label>
+              <input type="email" name="email" value={formData.email || ''} onChange={handleChange} className="w-full bg-[#0B0B0E] border border-[#2A2A32] text-[#FCF8FE] px-4 py-2.5 rounded-xl focus:border-[#FF6A00] focus:ring-4 focus:ring-[#FF6A00]/10 outline-none transition-all" />
             </div>
             <div className="pt-2">
-              <button type="button" onClick={() => setIsPasswordModalOpen(true)} className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-[#FF6B00] transition-colors group px-4 py-2 rounded-lg bg-white border border-gray-200 hover:border-[#FF6B00]/30 shadow-sm cursor-pointer">
-                <Lock size={16} className="text-gray-400 group-hover:text-[#FF6B00] transition-colors" /> Modifier mon mot de passe
+              <button type="button" onClick={() => setIsPasswordModalOpen(true)} className="flex items-center gap-2 text-sm font-medium text-[#ACAAB0] hover:text-[#FF6A00] transition-colors group px-4 py-2 rounded-lg bg-[#0B0B0E] border border-[#2A2A32] hover:border-[#FF6A00]/30 shadow-sm cursor-pointer">
+                <Lock size={16} className="text-[#ACAAB0] group-hover:text-[#FF6A00] transition-colors" /> Modifier mon mot de passe
               </button>
             </div>
           </div>
         </section>
 
         <div className="pt-4 flex justify-end">
-          <button type="submit" disabled={saving} className="w-full md:w-auto bg-[#FF6B00] hover:bg-[#e66000] text-white px-8 py-3 rounded-xl font-semibold shadow-md shadow-orange-500/20 flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer disabled:opacity-70">
+          <button type="submit" disabled={saving} className="w-full md:w-auto bg-[#FF6A00] hover:bg-[#e66000] text-white px-8 py-3 rounded-xl font-semibold shadow-md shadow-[#FF6A00]/20 flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer disabled:opacity-70">
             {saving ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />} Enregistrer les modifications
           </button>
         </div>
@@ -473,42 +473,42 @@ const handleStripeConnect = async () => {
 
       {/* MODALES */}
       {isSaveSuccessModalOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm">
-          <div className="bg-white border border-gray-100 rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="w-16 h-16 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-5">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-[#0B0B0E]/80 backdrop-blur-sm">
+          <div className="bg-[#131317] border border-[#2A2A32] rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="w-16 h-16 bg-[#22C55E]/20 text-[#22C55E] rounded-full flex items-center justify-center mx-auto mb-5">
               <CheckCircle2 size={32} />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Profil mis à jour</h3>
-            <p className="text-gray-500 text-sm mb-6">Vos informations professionnelles ont été enregistrées avec succès.</p>
-            <button onClick={() => { setIsSaveSuccessModalOpen(false); window.location.reload(); }} className="w-full bg-gray-900 hover:bg-gray-800 text-white font-medium py-2.5 rounded-xl transition-colors cursor-pointer">Fermer</button>
+            <h3 className="text-xl font-bold text-[#FCF8FE] mb-2">Profil mis à jour</h3>
+            <p className="text-[#ACAAB0] text-sm mb-6">Vos informations professionnelles ont été enregistrées avec succès.</p>
+            <button onClick={() => { setIsSaveSuccessModalOpen(false); window.location.reload(); }} className="w-full bg-[#FF6A00] hover:bg-[#e66000] text-white font-medium py-2.5 rounded-xl transition-colors cursor-pointer">Fermer</button>
           </div>
         </div>
       )}
 
       {isPasswordModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm">
-          <div className="bg-white border border-gray-100 rounded-3xl p-8 max-w-md w-full relative shadow-2xl animate-in zoom-in-95 duration-200">
-            <button onClick={() => setIsPasswordModalOpen(false)} className="absolute top-5 right-5 text-gray-400 hover:text-gray-700 transition-colors cursor-pointer"><X size={20}/></button>
-            <h3 className="text-xl font-bold text-gray-900 mb-6">Modifier le mot de passe</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0B0B0E]/80 backdrop-blur-sm">
+          <div className="bg-[#131317] border border-[#2A2A32] rounded-3xl p-8 max-w-md w-full relative shadow-2xl animate-in zoom-in-95 duration-200">
+            <button onClick={() => setIsPasswordModalOpen(false)} className="absolute top-5 right-5 text-[#ACAAB0] hover:text-[#FCF8FE] transition-colors cursor-pointer"><X size={20}/></button>
+            <h3 className="text-xl font-bold text-[#FCF8FE] mb-6">Modifier le mot de passe</h3>
             
-            {passwordError && <div className="mb-5 p-3.5 bg-red-50 border border-red-100 rounded-xl text-red-600 text-sm flex gap-2.5"><AlertCircle size={18} className="shrink-0"/>{passwordError}</div>}
-            {passwordSuccess && <div className="mb-5 p-3.5 bg-green-50 border border-green-100 rounded-xl text-green-600 text-sm flex gap-2.5"><CheckCircle2 size={18} className="shrink-0"/>Mot de passe modifié avec succès.</div>}
+            {passwordError && <div className="mb-5 p-3.5 bg-[#EF4444]/20 border border-[#EF4444]/30 rounded-xl text-[#EF4444] text-sm flex gap-2.5"><AlertCircle size={18} className="shrink-0"/>{passwordError}</div>}
+            {passwordSuccess && <div className="mb-5 p-3.5 bg-[#22C55E]/20 border border-[#22C55E]/30 rounded-xl text-[#22C55E] text-sm flex gap-2.5"><CheckCircle2 size={18} className="shrink-0"/>Mot de passe modifié avec succès.</div>}
 
             <form onSubmit={handlePasswordChange} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Ancien mot de passe</label>
-                <input type="password" placeholder="••••••••" className="w-full bg-white border border-gray-200 text-gray-900 px-4 py-2.5 rounded-xl outline-none focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 transition-all" value={passwordData.old_password} onChange={(e) => setPasswordData({...passwordData, old_password: e.target.value})} required />
+                <label className="block text-sm font-medium text-[#ACAAB0] mb-1.5">Ancien mot de passe</label>
+                <input type="password" placeholder="••••••••" className="w-full bg-[#0B0B0E] border border-[#2A2A32] text-[#FCF8FE] px-4 py-2.5 rounded-xl outline-none focus:border-[#FF6A00] focus:ring-4 focus:ring-[#FF6A00]/10 transition-all" value={passwordData.old_password} onChange={(e) => setPasswordData({...passwordData, old_password: e.target.value})} required />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Nouveau mot de passe</label>
-                <input type="password" placeholder="••••••••" className="w-full bg-white border border-gray-200 text-gray-900 px-4 py-2.5 rounded-xl outline-none focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 transition-all" value={passwordData.new_password} onChange={(e) => setPasswordData({...passwordData, new_password: e.target.value})} required />
+                <label className="block text-sm font-medium text-[#ACAAB0] mb-1.5">Nouveau mot de passe</label>
+                <input type="password" placeholder="••••••••" className="w-full bg-[#0B0B0E] border border-[#2A2A32] text-[#FCF8FE] px-4 py-2.5 rounded-xl outline-none focus:border-[#FF6A00] focus:ring-4 focus:ring-[#FF6A00]/10 transition-all" value={passwordData.new_password} onChange={(e) => setPasswordData({...passwordData, new_password: e.target.value})} required />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Confirmer le nouveau mot de passe</label>
-                <input type="password" placeholder="••••••••" className="w-full bg-white border border-gray-200 text-gray-900 px-4 py-2.5 rounded-xl outline-none focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 transition-all" value={passwordData.confirm_password} onChange={(e) => setPasswordData({...passwordData, confirm_password: e.target.value})} required />
+                <label className="block text-sm font-medium text-[#ACAAB0] mb-1.5">Confirmer le nouveau mot de passe</label>
+                <input type="password" placeholder="••••••••" className="w-full bg-[#0B0B0E] border border-[#2A2A32] text-[#FCF8FE] px-4 py-2.5 rounded-xl outline-none focus:border-[#FF6A00] focus:ring-4 focus:ring-[#FF6A00]/10 transition-all" value={passwordData.confirm_password} onChange={(e) => setPasswordData({...passwordData, confirm_password: e.target.value})} required />
               </div>
               <div className="pt-2">
-                <button type="submit" disabled={isPasswordLoading} className="w-full bg-[#FF6B00] hover:bg-[#e66000] text-white p-3 rounded-xl font-semibold flex justify-center items-center gap-2 cursor-pointer transition-colors disabled:opacity-70 shadow-md shadow-orange-500/20">
+                <button type="submit" disabled={isPasswordLoading} className="w-full bg-[#FF6A00] hover:bg-[#e66000] text-white p-3 rounded-xl font-semibold flex justify-center items-center gap-2 cursor-pointer transition-colors disabled:opacity-70 shadow-md shadow-[#FF6A00]/20">
                   {isPasswordLoading ? <Loader2 className="animate-spin" size={18}/> : <Lock size={18}/>} Mettre à jour le mot de passe
                 </button>
               </div>

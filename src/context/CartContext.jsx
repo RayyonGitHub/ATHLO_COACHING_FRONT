@@ -57,11 +57,16 @@ export const CartProvider = ({ children }) => {
   // 1. Le prix total des articles uniquement
   const subTotal = cart.reduce((total, item) => total + (parseFloat(item.prix) * item.quantite), 0);
   
-  // 2. Le prix total final (Articles + Livraison)
-  // On n'ajoute les 4€ que si le panier n'est pas vide !
-  const cartTotal = subTotal > 0 ? subTotal + SHIPPING_FEE : 0;
+  // 2. Vérifier si le panier contient au moins un produit physique
+  const hasPhysicalProduct = cart.some(item => item.type_produit === 'PHYSIQUE');
   
-  // 3. Le nombre d'articles
+  // 3. Les frais de port : 4€ si produit physique, 0€ sinon
+  const actualShippingFee = hasPhysicalProduct ? SHIPPING_FEE : 0;
+  
+  // 4. Le prix total final (Articles + Livraison si nécessaire)
+  const cartTotal = subTotal > 0 ? subTotal + actualShippingFee : 0;
+  
+  // 5. Le nombre d'articles
   const cartCount = cart.reduce((count, item) => count + item.quantite, 0);
 
   return (
@@ -71,10 +76,11 @@ export const CartProvider = ({ children }) => {
       decrementQuantity,
       removeItemCompletely,
       clearCart, 
-      subTotal,      // Nouveau : On expose le sous-total
-      cartTotal,     // Total avec livraison
+      subTotal,      // Sous-total des articles
+      cartTotal,     // Total avec livraison (si applicable)
       cartCount,
-      shippingFee: SHIPPING_FEE // Nouveau : On expose la valeur des frais
+      shippingFee: actualShippingFee, // Frais calculés dynamiquement
+      hasPhysicalProduct // Pour savoir si livraison nécessaire
     }}>
       {children}
     </CartContext.Provider>

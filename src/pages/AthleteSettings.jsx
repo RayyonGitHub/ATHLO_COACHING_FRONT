@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { 
   Save, User, Scale, Ruler, Calendar, CheckCircle2, 
   Loader2, AlertCircle, Target, Settings, Lock, Bell, Activity, X, PartyPopper, Link as LinkIcon, CreditCard
@@ -117,10 +116,7 @@ const [syncMessage, setSyncMessage] = useState('');
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const token = localStorage.getItem('authToken') || localStorage.getItem('access_token');
-        const response = await axios.get('http://127.0.0.1:8000/api/athlete/me/', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const response = await api.get('/athlete/me/');
         setFormData(prev => ({
           ...prev,
           ...Object.fromEntries(
@@ -162,13 +158,21 @@ const [syncMessage, setSyncMessage] = useState('');
     e.preventDefault();
     setSaving(true);
     try {
-      const token = localStorage.getItem('authToken') || localStorage.getItem('access_token');
-      await axios.patch('http://127.0.0.1:8000/api/athlete/me/', formData, {
-        headers: { Authorization: `Bearer ${token}` }
+      // Filtrer seulement les champs modifiables acceptés par l'API
+      const allowedFields = ['prenom', 'nom', 'poids', 'taille', 'age', 'genre', 
+                              'niveau_activite', 'poids_cible', 'type_entrainement', 
+                              'email', 'notifications_activees'];
+      const dataToSend = {};
+      allowedFields.forEach(field => {
+        if (formData[field] !== undefined && formData[field] !== null && formData[field] !== '') {
+          dataToSend[field] = formData[field];
+        }
       });
+      
+      await api.patch('/athlete/me/', dataToSend);
       setIsSaveSuccessModalOpen(true);
     } catch (err) {
-      setError("Erreur lors de la sauvegarde.");
+      setError(err.response?.data?.error || err.response?.data?.detail || "Erreur lors de la sauvegarde.");
     } finally {
       setSaving(false);
     }
@@ -184,11 +188,10 @@ const [syncMessage, setSyncMessage] = useState('');
     }
     setIsPasswordLoading(true);
     try {
-      const token = localStorage.getItem('authToken') || localStorage.getItem('access_token');
-      await axios.post('http://127.0.0.1:8000/api/auth/change-password/', {
+      await api.post('/auth/change-password/', {
         old_password: passwordData.old_password,
         new_password: passwordData.new_password
-      }, { headers: { Authorization: `Bearer ${token}` } });
+      });
       
       setPasswordSuccess(true);
       setTimeout(() => {

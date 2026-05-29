@@ -101,34 +101,33 @@ const NotificationBell = () => {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-3 w-80 bg-white rounded-2xl shadow-2xl overflow-hidden z-50 border border-slate-100">
-          <div className="px-4 py-3 bg-slate-50 flex justify-between items-center border-b border-slate-100">
-            <h3 className="text-sm font-black text-slate-800 tracking-tighter">Notifications</h3>
+        <div className="absolute right-0 mt-3 w-96 bg-[#131317] rounded-2xl shadow-2xl overflow-hidden z-50 border border-[#2A2A32]">
+          <div className="px-4 py-3 bg-[#0B0B0E] flex justify-between items-center border-b border-[#2A2A32]">
+            <h3 className="text-sm font-black text-[#FCF8FE] tracking-tighter uppercase">Notifications</h3>
             {unreadCount > 0 && (
               <button 
                 onClick={marquerToutCommeLu}
-                className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors cursor-pointer"
+                className="text-xs font-bold text-[#FF6A00] hover:text-[#e66000] transition-colors cursor-pointer"
               >
                 Tout marquer lu
               </button>
             )}
           </div>
           
-<div className="max-h-[250px] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">            {notifications.length === 0 ? (
-              <div className="px-4 py-8 text-sm font-medium text-center text-slate-400">
+          <div className="max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-[#2A2A32] scrollbar-track-transparent">
+            {notifications.length === 0 ? (
+              <div className="px-4 py-8 text-sm font-medium text-center text-[#ACAAB0]">
                 Aucune nouvelle notification
               </div>
             ) : (
               [...notifications].sort((a, b) => new Date(b.date_creation) - new Date(a.date_creation)).map((notif) => (
                 <div 
                   key={notif.id} 
-                  // On déclenche la fonction uniquement si elle n'est pas déjà lue
                   onClick={() => !notif.est_lu && marquerCommeLu(notif.id)}
-                  // Le style change drastiquement si c'est lu (opacité + effet grisé)
-                  className={`px-4 py-3 border-b border-slate-50 flex gap-3 items-start transition-all duration-300 ${
+                  className={`px-4 py-3 border-b border-[#2A2A32] flex gap-3 items-start transition-all duration-300 ${
                     notif.est_lu 
-                      ? 'bg-white opacity-50 grayscale cursor-default' 
-                      : 'bg-indigo-50/30 hover:bg-indigo-50/60 cursor-pointer'
+                      ? 'bg-[#131317] opacity-60 cursor-default' 
+                      : 'bg-[#1F1F25] hover:bg-[#2A2A32] cursor-pointer'
                   }`}
                 >
                   <div className="flex-shrink-0 mt-0.5">
@@ -136,16 +135,16 @@ const NotificationBell = () => {
                   </div>
                   
                   <div className="flex-1">
-                    <p className={`text-sm leading-snug ${notif.est_lu ? 'text-slate-500' : 'text-slate-800 font-semibold'}`}>
+                    <p className={`text-sm leading-snug ${notif.est_lu ? 'text-[#ACAAB0]' : 'text-[#FCF8FE] font-semibold'}`}>
                       {notif.message}
                     </p>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1.5 block">
+                    <span className="text-[10px] font-bold text-[#ACAAB0] uppercase tracking-widest mt-1.5 block">
                       {new Date(notif.date_creation).toLocaleDateString('fr-FR', { weekday: 'short', hour: '2-digit', minute:'2-digit' })}
                     </span>
                   </div>
                   
                   {!notif.est_lu && (
-                    <div className="w-2 h-2 bg-indigo-600 rounded-full flex-shrink-0 mt-2 shadow-[0_0_8px_rgba(79,70,229,0.6)]"></div>
+                    <div className="w-2 h-2 bg-[#FF6A00] rounded-full flex-shrink-0 mt-2 shadow-[0_0_8px_rgba(255,106,0,0.6)]"></div>
                   )}
                 </div>
               ))

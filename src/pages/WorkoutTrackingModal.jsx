@@ -291,12 +291,31 @@ const WorkoutTrackingModal = ({ isOpen, onClose, seanceId, onComplete }) => {
                     </div>
                   </div>
 
+                  {/* NOUVEAU: Bouton Clôturer la séance */}
+                  <button
+                    onClick={handleFinishSession}
+                    className="w-full bg-yellow-600 hover:bg-yellow-700 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all cursor-pointer mb-2"
+                    disabled={isSaving}
+                  >
+                    {isSaving ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Enregistrement...
+                      </>
+                    ) : (
+                      <>
+                        <Square size={20} />
+                        Clôturer la séance maintenant
+                      </>
+                    )}
+                  </button>
+
                   <div className="flex flex-col sm:flex-row gap-3 mt-4">
                     {timerMode === 'REST' ? (
                       <>
                         <button 
                           onClick={() => setIsTimerRunning(!isTimerRunning)} 
-                          className="flex-1 bg-[#2D2D2D] hover:bg-[#3D3D3D] text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors"
+                          className="flex-1 bg-[#2D2D2D] hover:bg-[#3D3D3D] text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer"
                         >
                           {isTimerRunning ? <Pause size={20} /> : <Play size={20} />}
                           {isTimerRunning ? 'Mettre en pause' : 'Reprendre le timer'}
@@ -328,17 +347,6 @@ const WorkoutTrackingModal = ({ isOpen, onClose, seanceId, onComplete }) => {
                       </>
                     )}
                   </div>
-                </div>
-                
-                <div className="mt-4 flex justify-end">
-                  <button 
-                    onClick={handleFinishSession} 
-                    disabled={isSaving}
-                    className="text-red-500 hover:text-red-400 font-bold flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-red-500/10 transition-colors disabled:opacity-50"
-                  >
-                    {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Square size={16} fill="currentColor" />}
-                    {isSaving ? "Clôture..." : "Clôturer la séance"}
-                  </button>
                 </div>
               </div>
 

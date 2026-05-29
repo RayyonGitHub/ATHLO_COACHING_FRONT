@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
-import { MapPin, Phone, User, ArrowLeft, Truck, Package } from 'lucide-react';
+import { MapPin, Phone, User, ArrowLeft, Truck, Package, CheckCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
@@ -10,7 +10,7 @@ import api from '../services/api';
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || '');
 
 // --- 1. SOUS-COMPOSANT : FORMULAIRE DE PAIEMENT STRIPE ---
-const StripeShopForm = ({ cartTotal, clearCart }) => {
+const StripeShopForm = ({ cartTotal, clearCart, cart, hasPhysicalProduct }) => {
   const stripe = useStripe();
   const elements = useElements();
   const navigate = useNavigate();
@@ -58,13 +58,31 @@ const StripeShopForm = ({ cartTotal, clearCart }) => {
       setError(stripeError.message);
       setLoading(false);
     } else if (paymentIntent && paymentIntent.status === 'succeeded') {
-      clearCart();
       try {
-        await api.post('/shop/confirm-order/', { payment_intent_id: paymentIntent.id });
+        // Préparer les données de commande
+        const orderData = {
+          payment_intent_id: paymentIntent.id,
+          items: cart.map(item => ({ produit_id: item.id, quantite: item.quantite }))
+        };
+        
+        // Ajouter l'adresse seulement si produit physique
+        if (hasPhysicalProduct) {
+          orderData.adresse_livraison = {
+            nom: formData.nom,
+            adresse: formData.adresse,
+            ville: formData.ville,
+            code_postal: formData.codePostal,
+            telephone: formData.telephone
+          };
+        }
+        
+        await api.post('/shop/confirm-order/', orderData);
+        clearCart();
+        navigate('/athlete/factures'); 
       } catch (err) {
-        console.error('Erreur confirmation commande:', err);
+        setError(err.response?.data?.error || err.response?.data?.detail || 'Erreur lors de la confirmation de la commande');
+        setLoading(false);
       }
-      navigate('/athlete/factures'); 
     } else {
       setLoading(false);
     }
@@ -78,32 +96,40 @@ const StripeShopForm = ({ cartTotal, clearCart }) => {
         </div>
       )}
       <form onSubmit={handleSubmit} className="space-y-8">
-        {/* INFOS DE LIVRAISON */}
-        <div>
-          <h1 className="text-4xl font-black text-white italic uppercase tracking-tighter mb-2">
-            Livrai<span className="text-[#FF6B00]">son</span>
-          </h1>
-          <p className="text-gray-400 font-medium mb-6">Où devons-nous envoyer votre commande ?</p>
-          
-          <div className="space-y-4">
-            <div className="relative group">
-              <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
-              <input type="text" name="nom" placeholder="Nom complet" required className="w-full bg-[#1E1E1E] border border-[#2D2D2D] rounded-2xl py-4 pl-12 pr-4 text-white focus:border-[#FF6B00] outline-none" onChange={handleChange} />
-            </div>
-            <div className="relative group">
-              <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
-              <input type="text" name="adresse" placeholder="Adresse de livraison" required className="w-full bg-[#1E1E1E] border border-[#2D2D2D] rounded-2xl py-4 pl-12 pr-4 text-white focus:border-[#FF6B00] outline-none" onChange={handleChange} />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <input type="text" name="codePostal" placeholder="Code Postal" required className="w-full bg-[#1E1E1E] border border-[#2D2D2D] rounded-2xl py-4 px-6 text-white focus:border-[#FF6B00] outline-none" onChange={handleChange} />
-              <input type="text" name="ville" placeholder="Ville" required className="w-full bg-[#1E1E1E] border border-[#2D2D2D] rounded-2xl py-4 px-6 text-white focus:border-[#FF6B00] outline-none" onChange={handleChange} />
-            </div>
-            <div className="relative group">
-              <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
-              <input type="tel" name="telephone" placeholder="Numéro de téléphone" required className="w-full bg-[#1E1E1E] border border-[#2D2D2D] rounded-2xl py-4 pl-12 pr-4 text-white focus:border-[#FF6B00] outline-none" onChange={handleChange} />
+        {/* INFOS DE LIVRAISON - Conditionnel selon type de produit */}
+        {hasPhysicalProduct ? (
+          <div>
+            <h1 className="text-4xl font-black text-white italic uppercase tracking-tighter mb-2">
+              Livrai<span className="text-[#FF6B00]">son</span>
+            </h1>
+            <p className="text-gray-400 font-medium mb-6">Où devons-nous envoyer votre commande ?</p>
+            
+            <div className="space-y-4">
+              <div className="relative group">
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
+                <input type="text" name="nom" placeholder="Nom complet" required className="w-full bg-[#1E1E1E] border border-[#2D2D2D] rounded-2xl py-4 pl-12 pr-4 text-white focus:border-[#FF6B00] outline-none" onChange={handleChange} />
+              </div>
+              <div className="relative group">
+                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
+                <input type="text" name="adresse" placeholder="Adresse de livraison" required className="w-full bg-[#1E1E1E] border border-[#2D2D2D] rounded-2xl py-4 pl-12 pr-4 text-white focus:border-[#FF6B00] outline-none" onChange={handleChange} />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <input type="text" name="codePostal" placeholder="Code Postal" required className="w-full bg-[#1E1E1E] border border-[#2D2D2D] rounded-2xl py-4 px-6 text-white focus:border-[#FF6B00] outline-none" onChange={handleChange} />
+                <input type="text" name="ville" placeholder="Ville" required className="w-full bg-[#1E1E1E] border border-[#2D2D2D] rounded-2xl py-4 px-6 text-white focus:border-[#FF6B00] outline-none" onChange={handleChange} />
+              </div>
+              <div className="relative group">
+                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
+                <input type="tel" name="telephone" placeholder="Numéro de téléphone" required className="w-full bg-[#1E1E1E] border border-[#2D2D2D] rounded-2xl py-4 pl-12 pr-4 text-white focus:border-[#FF6B00] outline-none" onChange={handleChange} />
+              </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="bg-green-500/10 border-2 border-green-500/30 rounded-2xl p-6 text-center">
+            <CheckCircle className="w-12 h-12 text-green-400 mx-auto mb-3" />
+            <h2 className="text-2xl font-black text-white mb-2">Produits Numériques</h2>
+            <p className="text-gray-400">Aucune livraison nécessaire. Vos produits seront disponibles immédiatement après paiement.</p>
+          </div>
+        )}
 
         {/* PAIEMENT STRIPE */}
         <div>
@@ -128,7 +154,7 @@ const StripeShopForm = ({ cartTotal, clearCart }) => {
 
 // --- 2. COMPOSANT PRINCIPAL ---
 const Checkout = () => {
-  const { cart, subTotal, shippingFee, cartTotal, clearCart } = useCart();
+  const { cart, subTotal, shippingFee, cartTotal, clearCart, hasPhysicalProduct } = useCart();
   const [clientSecret, setClientSecret] = useState('');
   const [initError, setInitError] = useState('');
 
@@ -140,7 +166,6 @@ const Checkout = () => {
       api.post('/shop/create-intent/', { items: itemsPayload })
         .then(res => setClientSecret(res.data.client_secret))
         .catch(err => {
-          console.error(err);
           setInitError(err.response?.data?.error || "Erreur lors de l'initialisation du paiement sécurisé.");
         });
     }
@@ -171,7 +196,7 @@ const Checkout = () => {
             </div>
           ) : clientSecret ? (
             <Elements stripe={stripePromise} options={{ clientSecret, appearance: { theme: 'night' } }}>
-              <StripeShopForm cartTotal={cartTotal} clearCart={clearCart} />
+              <StripeShopForm cartTotal={cartTotal} clearCart={clearCart} cart={cart} hasPhysicalProduct={hasPhysicalProduct} />
             </Elements>
           ) : (
             <div className="flex items-center gap-3 text-[#FF6B00] font-bold">

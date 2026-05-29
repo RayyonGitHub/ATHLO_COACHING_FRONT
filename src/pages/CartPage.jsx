@@ -12,7 +12,8 @@ const CartPage = () => {
     addToCart, 
     subTotal, 
     shippingFee, 
-    cartTotal 
+    cartTotal,
+    hasPhysicalProduct 
   } = useCart();
 
   if (cart.length === 0) {
@@ -91,8 +92,13 @@ const CartPage = () => {
         <div className="flex justify-between text-gray-400 font-medium pb-4 border-b border-[#2D2D2D]">
           <div className="flex items-center gap-2">
             <span>Frais de livraison</span>
+            {!hasPhysicalProduct && (
+              <span className="text-xs bg-green-500/10 text-green-400 px-2 py-0.5 rounded-full font-bold">Numérique</span>
+            )}
           </div>
-          <span>{shippingFee.toFixed(2)} €</span>
+          <span className={hasPhysicalProduct ? "" : "text-green-400 font-bold"}>
+            {hasPhysicalProduct ? `${shippingFee.toFixed(2)} €` : 'Gratuit'}
+          </span>
         </div>
 
         <div className="pt-4 flex flex-col md:flex-row justify-between items-center gap-6">

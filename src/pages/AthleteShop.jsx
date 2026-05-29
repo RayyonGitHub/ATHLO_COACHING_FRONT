@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShoppingCart, Package, Search, Tag, Loader2, CreditCard, X, CheckCircle, ArrowRight } from 'lucide-react';
+import { ShoppingCart, Package, Search, Tag, Loader2, CreditCard, X, CheckCircle, ArrowRight, ZoomIn } from 'lucide-react';
 import productService from '../services/productService';
 import { useCart } from '../context/CartContext';
 import { Link } from 'react-router-dom';
@@ -13,6 +13,9 @@ const AthleteShop = () => {
   // États pour le Toast
   const [showToast, setShowToast] = useState(false);
   const [addedProduct, setAddedProduct] = useState(null);
+  
+  // État pour la lightbox
+  const [selectedImage, setSelectedImage] = useState(null);
 
   const { addToCart, cart, cartCount } = useCart();
 
@@ -26,11 +29,6 @@ const AthleteShop = () => {
         productService.getProducts(),
         productService.getCategories()
       ]);
-      
-      // --- AJOUTE CES DEUX LIGNES POUR DEBUGGER ---
-      console.log("📦 PRODUITS REÇUS :", productsData);
-      console.log("🏷️ CATÉGORIES REÇUES :", categoriesData);
-      // ------------------------------------------
 
       setProducts(productsData);
       setCategories(categoriesData);
@@ -117,9 +115,14 @@ const AthleteShop = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredProducts.map(product => (
           <div key={product.id} className="bg-[#1E1E1E] border border-[#2D2D2D] rounded-3xl overflow-hidden group hover:border-[#FF6B00]/50 transition-all hover:shadow-xl hover:shadow-[#FF6B00]/10 flex flex-col">
-            <div className="h-56 bg-[#252525] relative overflow-hidden flex items-center justify-center">
+            <div className="h-56 bg-[#252525] relative overflow-hidden flex items-center justify-center cursor-pointer" onClick={() => product.image && setSelectedImage(product.image)}>
               {product.image ? (
-                <img src={product.image} alt={product.nom} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                <>
+                  <img src={product.image} alt={product.nom} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                    <ZoomIn className="text-white opacity-0 group-hover:opacity-100 transition-opacity" size={32} />
+                  </div>
+                </>
               ) : (
                 <Package size={64} className="text-gray-600" />
               )}
@@ -171,6 +174,30 @@ const AthleteShop = () => {
             <button onClick={() => setShowToast(false)} className="text-gray-500 hover:text-white p-1">
               <X size={20} />
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* --- LIGHTBOX POUR AGRANDIR L'IMAGE --- */}
+      {selectedImage && (
+        <div 
+          className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/95 backdrop-blur-sm animate-in fade-in duration-300"
+          onClick={() => setSelectedImage(null)}
+        >
+          <button 
+            onClick={() => setSelectedImage(null)}
+            className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 text-white rounded-full transition-all z-10"
+          >
+            <X size={24} />
+          </button>
+          
+          <div className="relative max-w-6xl max-h-[90vh] w-full animate-in zoom-in-95 duration-300">
+            <img 
+              src={selectedImage} 
+              alt="Agrandissement" 
+              className="w-full h-full object-contain rounded-2xl shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            />
           </div>
         </div>
       )}

@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-// --- NOUVEAU : Ajout de l'icône Utensils dans les imports ---
 import { LayoutDashboard, Users, Dumbbell, Calendar, Settings, ChevronRight, LogOut, Menu, Activity, MessageCircle, ShoppingBag, Utensils, FileText } from 'lucide-react'; 
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../../services/authService';
@@ -35,7 +34,7 @@ const Sidebar = ({ activePage = "Dashboard" }: SidebarProps) => {
 
   return (
     <aside
-      className={`bg-indigo-900 h-screen flex flex-col text-white shadow-2xl z-50 transition-all duration-300 ease-in-out relative ${
+      className={`bg-[#131317] h-screen flex flex-col text-white shadow-2xl z-50 transition-all duration-300 ease-in-out relative border-r border-[#2A2A32] ${
         isCollapsed ? 'w-20' : 'w-64'
       }`}
     >
@@ -48,9 +47,9 @@ const Sidebar = ({ activePage = "Dashboard" }: SidebarProps) => {
 
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="p-3.5 rounded-xl bg-indigo-800/50 hover:bg-indigo-700/50 text-indigo-300 hover:text-white transition-all shadow-sm group"
+          className="p-3.5 rounded-xl bg-[#1F1F25] hover:bg-[#2A2A32] text-[#ACAAB0] hover:text-[#FCF8FE] transition-all shadow-sm group"
         >
-          <Menu size={20} className="group-hover:text-orange-400 transition-colors" />
+          <Menu size={20} className="group-hover:text-[#FF6A00] transition-colors" />
         </button>
       </div>
 
@@ -64,26 +63,26 @@ const Sidebar = ({ activePage = "Dashboard" }: SidebarProps) => {
               onClick={() => item.path && navigate(item.path)}
               className={`w-full flex items-center p-3.5 rounded-xl transition-all duration-200 group relative ${
                 isActive
-                  ? 'bg-orange-500 text-white shadow-lg shadow-orange-600/20'
-                  : 'hover:bg-indigo-800/50 text-indigo-300 hover:text-white'
+                  ? 'bg-[#FF6A00] text-white shadow-lg shadow-[#FF6A00]/20'
+                  : 'hover:bg-[#1F1F25] text-[#ACAAB0] hover:text-[#FCF8FE]'
               } ${isCollapsed ? 'justify-center' : 'justify-between'}`}
             >
               <div className="flex items-center space-x-3">
-                <span className={`${isActive ? 'text-white' : 'group-hover:text-orange-400'} transition-colors shrink-0`}>
+                <span className={`${isActive ? 'text-white' : 'group-hover:text-[#FF6A00]'} transition-colors shrink-0`}>
                   {item.icon}
                 </span>
                 {!isCollapsed && <span className="font-bold text-sm tracking-wide">{item.label}</span>}
               </div>
-              {!isCollapsed && isActive && <ChevronRight size={16} className="text-orange-200" />}
+              {!isCollapsed && isActive && <ChevronRight size={16} className="text-white/80" />}
             </button>
           );
         })}
       </nav>
 
-      <div className="p-4 border-t border-indigo-800/50">
+      <div className="p-4 border-t border-[#2A2A32]">
         <button
           onClick={handleLogout}
-          className={`w-full flex items-center p-3 hover:bg-red-500/10 rounded-xl transition-colors text-red-400 group ${
+          className={`w-full flex items-center p-3 hover:bg-[#EF4444]/10 rounded-xl transition-colors text-[#EF4444] group ${
             isCollapsed ? 'justify-center' : 'space-x-3'
           }`}
         >

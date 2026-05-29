@@ -22,14 +22,14 @@ const ResponsablePlanning = () => {
     fetchPlanning();
   }, [currentDate]);
 
-  // Fonction pour calculer la position et la largeur d'une séance sur la timeline (De 06:00 à 22:00 = 16h)
+  // Fonction pour calculer la position et la largeur d'une séance sur la timeline (De 06:00 à 00:00 = 18h)
   const getStyleForTime = (debut, fin) => {
     const startHour = parseInt(debut.split(':')[0]) + parseInt(debut.split(':')[1]) / 60;
     const endHour = parseInt(fin.split(':')[0]) + parseInt(fin.split(':')[1]) / 60;
     
-    // Contrainte de la vue entre 6h et 22h
+    // Contrainte de la vue entre 6h et minuit (00:00)
     const timelineStart = 6;
-    const timelineDuration = 16; 
+    const timelineDuration = 18; 
     
     const leftPercent = ((startHour - timelineStart) / timelineDuration) * 100;
     const widthPercent = ((endHour - startHour) / timelineDuration) * 100;
@@ -53,8 +53,8 @@ const ResponsablePlanning = () => {
     });
   }
 
-  // Les heures affichées en haut
-  const hoursGrid = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
+  // Les heures affichées en haut (6h à minuit = 18 intervalles, 19 points)
+  const hoursGrid = Array.from({ length: 19 }, (_, i) => i + 6); // [6, 7, 8, 9, ..., 23, 24]
 
   return (
     <div className="p-8 space-y-8 text-[#fcf8fe]">
@@ -82,10 +82,21 @@ const ResponsablePlanning = () => {
           <div className="w-[200px] shrink-0 p-6 font-bold text-xs uppercase tracking-widest text-[#acaab0] border-r border-[#48474c]/20">
             Coach
           </div>
-          <div className="flex-1 flex">
-            {hoursGrid.map(h => (
-              <div key={h} className="flex-1 p-4 text-center text-xs font-bold text-[#acaab0] border-r border-[#48474c]/5 last:border-0">
-                {h < 10 ? `0${h}:00` : `${h}:00`}
+          <div className="flex-1 relative h-[60px]">
+            {/* Grille de fond avec 18 divisions */}
+            <div className="absolute inset-0 flex">
+              {Array.from({ length: 18 }).map((_, i) => (
+                <div key={i} className="flex-1 border-r border-[#48474c]/10"></div>
+              ))}
+            </div>
+            {/* Labels d'heures positionnés */}
+            {hoursGrid.map((h, idx) => (
+              <div 
+                key={h} 
+                className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 text-xs font-bold text-[#acaab0]"
+                style={{ left: `${(idx / 18) * 100}%` }}
+              >
+                {h === 24 ? '00:00' : (h < 10 ? `0${h}:00` : `${h}:00`)}
               </div>
             ))}
           </div>
@@ -95,14 +106,24 @@ const ResponsablePlanning = () => {
         <div className="relative">
           
           {/* Ligne rouge "Heure actuelle" (Optionnelle, animable plus tard) */}
-          {currentDate === new Date().toISOString().split('T')[0] && (
-            <div 
-              className="absolute top-0 bottom-0 w-0.5 bg-[#ff915a] z-20 shadow-[0_0_15px_rgba(255,145,90,0.5)] pointer-events-none"
-              style={{ left: `calc(200px + ${( (new Date().getHours() + new Date().getMinutes() / 60 - 6) / 16 ) * 100}%)` }}
-            >
-              <div className="absolute -top-1 -left-1 w-2.5 h-2.5 rounded-full bg-[#ff915a]"></div>
-            </div>
-          )}
+          {(() => {
+            const now = new Date();
+            const todayLocal = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            const currentHour = now.getHours() + now.getMinutes() / 60;
+            
+            if (currentDate === todayLocal) {
+              const position = (currentHour - 6) / 18;
+              return (
+                <div 
+                  className="absolute top-0 bottom-0 w-0.5 bg-[#ff915a] z-20 shadow-[0_0_15px_rgba(255,145,90,0.5)] pointer-events-none"
+                  style={{ left: `calc(200px + (100% - 200px) * ${position})` }}
+                >
+                  <div className="absolute -top-1 -left-1 w-2.5 h-2.5 rounded-full bg-[#ff915a]"></div>
+                </div>
+              );
+            }
+            return null;
+          })()}
 
           {Object.keys(groupedSeances).length === 0 ? (
              <div className="p-8 text-center text-[#acaab0]">Aucune séance planifiée pour cette date.</div>
@@ -122,7 +143,7 @@ const ResponsablePlanning = () => {
                 <div className="flex-1 relative p-2">
                   {/* Grille de fond subtile */}
                   <div className="absolute inset-0 flex pointer-events-none opacity-20">
-                    {hoursGrid.map(h => (
+                    {hoursGrid.slice(0, -1).map(h => (
                        <div key={h} className="flex-1 border-r border-[#48474c]/50"></div>
                     ))}
                   </div>

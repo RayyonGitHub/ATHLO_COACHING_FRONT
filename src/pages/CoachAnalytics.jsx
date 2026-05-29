@@ -10,11 +10,11 @@ import coachService from '../services/coachService';
 const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
         return (
-            <div className="bg-indigo-900 border border-indigo-800 p-3 shadow-2xl rounded-xl">
-                <p className="text-indigo-200 text-[10px] font-bold uppercase tracking-wider mb-1">{label}</p>
+            <div className="bg-[#131317] border border-[#2A2A32] p-3 shadow-2xl rounded-xl">
+                <p className="text-[#ACAAB0] text-[10px] font-bold uppercase tracking-wider mb-1">{label}</p>
                 <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-orange-500"></div>
-                    <p className="text-white font-black text-xs">
+                    <div className="w-2 h-2 rounded-full bg-[#FF6A00]"></div>
+                    <p className="text-[#FCF8FE] font-black text-xs">
                         {payload[0].value} {payload[0].value > 1 ? 'Séances' : 'Séance'}
                     </p>
                 </div>
@@ -48,8 +48,8 @@ const CoachAnalytics = () => {
     if (loading) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[400px]">
-                <Loader2 className="w-10 h-10 text-orange-500 animate-spin" />
-                <p className="mt-4 text-slate-500 font-medium">Analyse des performances en cours...</p>
+                <Loader2 className="w-10 h-10 text-[#FF6A00] animate-spin" />
+                <p className="mt-4 text-[#ACAAB0] font-medium">Analyse des performances en cours...</p>
             </div>
         );
     }
@@ -84,12 +84,12 @@ const CoachAnalytics = () => {
             />
         </div>
 
-            <div className="bg-white p-4 rounded-2xl shadow-lg border border-slate-100 flex flex-col flex-1 min-h-0">
-                <div className="flex items-center gap-2 mb-2 border-b border-slate-50 pb-2">
-                    <div className="p-1.5 bg-slate-50 rounded-lg">
-                        <TrendingUp className="w-4 h-4 text-slate-700" />
+            <div className="bg-[#131317] p-4 rounded-2xl shadow-lg border border-[#2A2A32] flex flex-col flex-1 min-h-0">
+                <div className="flex items-center gap-2 mb-2 border-b border-[#2A2A32] pb-2">
+                    <div className="p-1.5 bg-[#1F1F25] rounded-lg">
+                        <TrendingUp className="w-4 h-4 text-[#FCF8FE]" />
                     </div>
-                    <h2 className="text-sm font-black text-slate-800  tracking-tighter">Historique de complétion</h2>
+                    <h2 className="text-sm font-black text-[#FCF8FE]  tracking-tighter">Historique de complétion</h2>
                 </div>
 
                 {/* Zone de rendu du graphique */}
@@ -103,26 +103,26 @@ const CoachAnalytics = () => {
                                     <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
                                 </linearGradient>
                             </defs>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#2A2A32" />
                             <XAxis
                                 dataKey="day"
                                 axisLine={false}
                                 tickLine={false}
-                                tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 600 }}
+                                tick={{ fill: '#ACAAB0', fontSize: 10, fontWeight: 600 }}
                             />
                             <YAxis
                                 axisLine={false}
                                 tickLine={false}
-                                tick={{ fill: '#94a3b8', fontSize: 10 }}
+                                tick={{ fill: '#ACAAB0', fontSize: 10 }}
                             />
                             <Tooltip
                                 content={<CustomTooltip />}
-                                cursor={{ stroke: '#f97316', strokeWidth: 2, strokeDasharray: '5 5' }}
+                                cursor={{ stroke: '#FF6A00', strokeWidth: 2, strokeDasharray: '5 5' }}
                             />
                             <Area
                                 type="monotone"
                                 dataKey="sessions"
-                                stroke="#f97316"
+                                stroke="#FF6A00"
                                 strokeWidth={3}
                                 fillOpacity={1}
                                 fill="url(#colorSessions)"
@@ -136,13 +136,13 @@ const CoachAnalytics = () => {
 };
 
 const KPICard = ({ title, value, icon, borderColor }) => (
-    <div className={`bg-white p-4 rounded-xl shadow-sm border-l-4 ${borderColor} flex items-center gap-4 transition-transform hover:scale-[1.02]`}>
-        <div className="p-3 bg-slate-50 rounded-lg">
+    <div className={`bg-[#131317] p-4 rounded-xl shadow-sm border-l-4 ${borderColor} flex items-center gap-4 transition-transform hover:scale-[1.02]`}>
+        <div className="p-3 bg-[#1F1F25] rounded-lg">
             {icon}
         </div>
         <div>
-            <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">{title}</p>
-            <p className="text-xl font-black text-slate-800 leading-none mt-1">{value}</p>
+            <p className="text-[#ACAAB0] text-[10px] font-bold uppercase tracking-widest">{title}</p>
+            <p className="text-xl font-black text-[#FCF8FE] leading-none mt-1">{value}</p>
         </div>
     </div>
 );
