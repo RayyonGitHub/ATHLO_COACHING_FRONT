@@ -45,7 +45,7 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config || {};
 
-    if (error.response?.status === 401 && !originalRequest._retry && !String(originalRequest.url || '').includes('/auth/token/refresh/')) {
+    if (error.response?.status === 401 && !originalRequest._retry && !String(originalRequest.url || '').includes('/auth/token/refresh/') && !String(originalRequest.url || '').includes('/auth/login/')) {
       const refreshToken = authService.getRefreshToken();
       if (!refreshToken) {
         authService.logout();

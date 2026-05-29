@@ -15,6 +15,12 @@ const CoachSettings = () => {
     stripe_onboarding_complete: false
   });
 
+  const [tarifs, setTarifs] = useState({
+    seance_unique: '',
+    pack_10: '',
+    abonnement_mensuel: ''
+  });
+
   const [sallesDisponibles, setSallesDisponibles] = useState([]);
   const [villeSearch, setVilleSearch] = useState('');
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
@@ -86,18 +92,31 @@ const handleStripeConnect = async () => {
         let data = profileRes.data;
         let offres = data.offres_tarifs;
 
-        if (typeof offres === 'object' && offres !== null) {
-          if (Object.keys(offres).length === 0) {
-            offres = '';
-          } else {
-            offres = JSON.stringify(offres, null, 2);
+        // Parser les tarifs pour les inputs individuels
+        let tarifsObj = { seance_unique: '', pack_10: '', abonnement_mensuel: '' };
+        if (typeof offres === 'object' && offres !== null && Object.keys(offres).length > 0) {
+          tarifsObj = {
+            seance_unique: offres.seance_unique || '',
+            pack_10: offres.pack_10 || '',
+            abonnement_mensuel: offres.abonnement_mensuel || ''
+          };
+        } else if (typeof offres === 'string' && offres.trim()) {
+          try {
+            const parsed = JSON.parse(offres);
+            tarifsObj = {
+              seance_unique: parsed.seance_unique || '',
+              pack_10: parsed.pack_10 || '',
+              abonnement_mensuel: parsed.abonnement_mensuel || ''
+            };
+          } catch (e) {
+            // Garder les valeurs vides si le parsing échoue
           }
         }
 
+        setTarifs(tarifsObj);
         setFormData(prev => ({
           ...prev,
           ...data,
-          offres_tarifs: offres || '',
           salles: data.salles || [] // On charge les IDs des salles du coach
         }));
 
@@ -129,6 +148,11 @@ const handleStripeConnect = async () => {
     setFormData({ ...formData, [name]: value });
   };
 
+  const handleTarifChange = (e) => {
+    const { name, value } = e.target;
+    setTarifs({ ...tarifs, [name]: value });
+  };
+
   const toggleSalle = (id) => {
     setFormData(prev => {
       const isSelected = prev.salles.includes(id);
@@ -147,7 +171,14 @@ const handleStripeConnect = async () => {
     try {
       const token = localStorage.getItem('authToken') || localStorage.getItem('access_token');
       
-      await axios.patch('http://127.0.0.1:8000/api/coach/me/', formData, {
+      // Reconstruire l'objet offres_tarifs à partir des champs individuels
+      const offres_tarifs = {
+        seance_unique: tarifs.seance_unique ? parseFloat(tarifs.seance_unique) : 0,
+        pack_10: tarifs.pack_10 ? parseFloat(tarifs.pack_10) : 0,
+        abonnement_mensuel: tarifs.abonnement_mensuel ? parseFloat(tarifs.abonnement_mensuel) : 0
+      };
+      
+      await axios.patch('http://127.0.0.1:8000/api/coach/me/', { ...formData, offres_tarifs }, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -252,8 +283,48 @@ const handleStripeConnect = async () => {
               <input type="text" name="specialites_tags" value={formData.specialites_tags || ''} onChange={handleChange} className="w-full bg-white border border-gray-200 text-gray-900 px-4 py-2.5 rounded-xl focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 outline-none transition-all" />
             </div>
             <div>
-              <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1.5"><DollarSign size={14} className="text-gray-400"/> Offres et tarifs</label>
-              <textarea name="offres_tarifs" value={formData.offres_tarifs || ''} onChange={handleChange} rows="4" className="w-full bg-white border border-gray-200 text-gray-900 px-4 py-3 rounded-xl focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 outline-none transition-all resize-none" />
+              <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-3"><DollarSign size={14} className="text-gray-400"/> Offres et tarifs (en €)</label>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1.5">Séance unique</label>
+                  <input 
+                    type="number" 
+                    name="seance_unique" 
+                    value={tarifs.seance_unique} 
+                    onChange={handleTarifChange}
+                    placeholder="50"
+                    min="0"
+                    step="0.01"
+                    className="w-full bg-white border border-gray-200 text-gray-900 px-4 py-2.5 rounded-xl focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 outline-none transition-all" 
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1.5">Pack 10 séances</label>
+                  <input 
+                    type="number" 
+                    name="pack_10" 
+                    value={tarifs.pack_10} 
+                    onChange={handleTarifChange}
+                    placeholder="450"
+                    min="0"
+                    step="0.01"
+                    className="w-full bg-white border border-gray-200 text-gray-900 px-4 py-2.5 rounded-xl focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 outline-none transition-all" 
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1.5">Abonnement mensuel</label>
+                  <input 
+                    type="number" 
+                    name="abonnement_mensuel" 
+                    value={tarifs.abonnement_mensuel} 
+                    onChange={handleTarifChange}
+                    placeholder="200"
+                    min="0"
+                    step="0.01"
+                    className="w-full bg-white border border-gray-200 text-gray-900 px-4 py-2.5 rounded-xl focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 outline-none transition-all" 
+                  />
+                </div>
+              </div>
             </div>
             
             {/* NOUVEAU BLOC : Salles Partenaires */}

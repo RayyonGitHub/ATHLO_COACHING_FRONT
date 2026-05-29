@@ -171,7 +171,7 @@ const Login = () => {
       }
     } catch (err) {
       console.error("ERREUR DE CONNEXION :", err);
-      setError(err.response?.data?.message || 'Email ou mot de passe incorrect');
+      setError(err.response?.data?.message || 'Email ou mot de passe incorrect.');
     } finally {
       setLoading(false);
     }

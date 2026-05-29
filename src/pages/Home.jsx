@@ -1,11 +1,40 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Zap, Dumbbell, Search, Users, Smartphone, TrendingUp, ArrowRight, Github, Twitter, Instagram } from 'lucide-react';
+import { Zap, Dumbbell, Users, Smartphone, TrendingUp, Facebook, Twitter, Instagram, X } from 'lucide-react';
+
+// --- COMPOSANT MODALE POUR LES MENTIONS LÉGALES ---
+const LegalModal = ({ isOpen, onClose, title, children }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="bg-white dark:bg-[#1E1E1E] rounded-3xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col shadow-2xl animate-in zoom-in-95 duration-200 border border-gray-100 dark:border-white/10">
+        <div className="flex justify-between items-center p-6 border-b border-gray-100 dark:border-white/10">
+          <h3 className="text-2xl font-black text-gray-900 dark:text-white italic uppercase tracking-tight">{title}</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-orange-500 transition-colors cursor-pointer">
+            <X size={24} />
+          </button>
+        </div>
+        <div className="p-6 overflow-y-auto text-gray-600 dark:text-gray-300 text-sm space-y-4 custom-scrollbar">
+          {children}
+        </div>
+        <div className="p-6 border-t border-gray-100 dark:border-white/10 flex justify-end">
+          <button onClick={onClose} className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl transition-all shadow-md active:scale-95 cursor-pointer">
+            Fermer
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const Home = () => {
+  // États pour contrôler l'ouverture des modales
+  const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
+  const [isTermsOpen, setIsTermsOpen] = useState(false);
+
   return (
     <div className="bg-background-light dark:bg-[#0B0B0F] text-gray-900 dark:text-gray-100 antialiased selection:bg-orange-500 selection:text-white transition-colors duration-300 min-h-screen">
-
       {/* NAVIGATION */}
       <nav className="fixed w-full z-50 top-0 left-0 bg-white/80 dark:bg-[#0B0B0F]/80 backdrop-blur-md border-b border-gray-200 dark:border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -16,7 +45,6 @@ const Home = () => {
               </div>
               <span className="font-bold text-xl tracking-tight dark:text-white">ATHLO</span>
             </div>
-
             <div className="hidden md:flex items-center gap-8">
               <a href="#features" className="text-gray-600 dark:text-gray-400 hover:text-orange-500 transition-colors text-sm font-medium">Fonctionnalités</a>
               <Link to="/login" className="text-gray-900 dark:text-white font-medium text-sm hover:text-orange-500 transition-colors">Connexion</Link>
@@ -40,21 +68,17 @@ const Home = () => {
             <span className="w-2 h-2 rounded-full bg-orange-500 mr-2 animate-pulse"></span>
             Nouveau: Intégration Garmin avancée
           </div>
-
           <h1 className="text-5xl sm:text-7xl font-black tracking-tight mb-6 dark:text-white leading-tight">
             Dépassez vos limites avec <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-600">ATHLO</span>
           </h1>
-
           <p className="mt-4 text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-            La plateforme tout-en-un pour coachs sportifs d’élite. Gérez vos athlètes, créez des programmes sur mesure et suivez les progrès en temps réel.
+            La plateforme tout-en-un pour coachs sportifs d'élite. Gérez vos athlètes, créez des programmes sur mesure et suivez les progrès en temps réel.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/register" className="flex items-center justify-center px-10 py-4 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-2xl shadow-xl shadow-orange-500/25 transition-all transform hover:-translate-y-1">
               <Dumbbell className="mr-2 w-5 h-5" /> Devenir coach
             </Link>
-            {/* On le prépare pour l'Issue #F7 (Le mode Démo / Annuaire public) */}
-
             <Link to="/demo" className="flex items-center justify-center px-10 py-4 bg-white dark:bg-white/5 border-2 border-orange-500 text-orange-500 font-bold rounded-2xl hover:bg-orange-50 dark:hover:bg-orange-500/10 transition-all shadow-lg shadow-orange-500/10">
               <TrendingUp className="mr-2 w-5 h-5" /> Essayer la démo
             </Link>
@@ -66,7 +90,7 @@ const Home = () => {
       <section className="py-20 border-y border-gray-200 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.02]">
         <div className="max-w-7xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
           {[
-            { val: "500+", label: "Coachs Élite" },
+            { val: "500+", label: "Coachs élite" },
             { val: "10k+", label: "Athlètes" },
             { val: "98%", label: "Satisfaction" },
             { val: "24/7", label: "Support" }
@@ -101,39 +125,39 @@ const Home = () => {
               Oubliez les feuilles de calcul et les emails dispersés. Centralisez votre coaching.
             </p>
           </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Carte 1 */}
-            <div className="p-8 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/10 hover:border-orange-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-orange-500/5">
+            <div className="p-8 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/10 hover:border-orange-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-orange-500/5 flex flex-col">
               <div className="w-12 h-12 bg-orange-500/10 rounded-xl flex items-center justify-center mb-6 text-orange-500">
                 <Users className="w-6 h-6" />
               </div>
               <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-3">CRM Athlètes</h4>
-              <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-6">
+              <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
                 Gérez les profils, les objectifs et l'historique de chaque athlète. Une vue à 360° pour un suivi ultra-personnalisé.
               </p>
-              <a href="#" className="inline-flex items-center text-orange-500 font-bold hover:text-orange-600">En savoir plus <ArrowRight className="w-4 h-4 ml-1" /></a>
             </div>
+
             {/* Carte 2 */}
-            <div className="p-8 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/10 hover:border-orange-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-orange-500/5">
+            <div className="p-8 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/10 hover:border-orange-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-orange-500/5 flex flex-col">
               <div className="w-12 h-12 bg-orange-500/10 rounded-xl flex items-center justify-center mb-6 text-orange-500">
                 <Dumbbell className="w-6 h-6" />
               </div>
               <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-3">Program Builder</h4>
-              <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-6">
+              <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
                 Créez des programmes d'entraînement complexes en quelques clics. Glissez-déposez, périodisation, et exercices.
               </p>
-              <a href="#" className="inline-flex items-center text-orange-500 font-bold hover:text-orange-600">En savoir plus <ArrowRight className="w-4 h-4 ml-1" /></a>
             </div>
+
             {/* Carte 3 */}
-            <div className="p-8 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/10 hover:border-orange-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-orange-500/5">
+            <div className="p-8 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/10 hover:border-orange-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-orange-500/5 flex flex-col">
               <div className="w-12 h-12 bg-orange-500/10 rounded-xl flex items-center justify-center mb-6 text-orange-500">
                 <Smartphone className="w-6 h-6" />
               </div>
               <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-3">Intégrations Smart</h4>
-              <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-6">
+              <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
                 Synchronisation automatique avec Strava, Garmin, Apple Health. Récupérez les données de performance sans effort.
               </p>
-              <a href="#" className="inline-flex items-center text-orange-500 font-bold hover:text-orange-600">En savoir plus <ArrowRight className="w-4 h-4 ml-1" /></a>
             </div>
           </div>
         </div>
@@ -152,52 +176,94 @@ const Home = () => {
         </div>
       </section>
 
-      {/* FOOTER COMPLET */}
+      {/* FOOTER ÉPURÉ */}
       <footer className="bg-white dark:bg-[#0B0B0F] border-t border-gray-200 dark:border-white/10 pt-16 pb-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
-            <div className="col-span-1 md:col-span-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-12">
+            
+            {/* Colonne Marque */}
+            <div>
               <div className="flex items-center gap-2 mb-4">
                 <Zap className="w-6 h-6 text-orange-500" />
                 <span className="font-black text-xl dark:text-white">ATHLO</span>
               </div>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">La plateforme de référence pour les professionnels du sport.</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 max-w-sm">La plateforme de référence pour les professionnels du sport. Gérez vos coachings avec des outils de pointe.</p>
               <div className="flex gap-4">
-                <Github className="w-5 h-5 text-gray-400 hover:text-orange-500 cursor-pointer" />
-                <Twitter className="w-5 h-5 text-gray-400 hover:text-orange-500 cursor-pointer" />
-                <Instagram className="w-5 h-5 text-gray-400 hover:text-orange-500 cursor-pointer" />
+                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+                  <Facebook className="w-5 h-5 text-gray-400 hover:text-orange-500 cursor-pointer transition-colors" />
+                </a>
+                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
+                  <Twitter className="w-5 h-5 text-gray-400 hover:text-orange-500 cursor-pointer transition-colors" />
+                </a>
+                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                  <Instagram className="w-5 h-5 text-gray-400 hover:text-orange-500 cursor-pointer transition-colors" />
+                </a>
               </div>
             </div>
-            <div>
-              <h5 className="uppercase text-xs font-bold text-gray-900 dark:text-white mb-4 tracking-wider">Produit</h5>
-              <ul className="space-y-3 text-sm text-gray-500 dark:text-gray-400">
-                <li><a href="#" className="hover:text-orange-500">CRM</a></li>
-                <li><a href="#" className="hover:text-orange-500">Programmes</a></li>
-                <li><a href="#" className="hover:text-orange-500">Analytiques</a></li>
-              </ul>
-            </div>
-            <div>
-              <h5 className="uppercase text-xs font-bold text-gray-900 dark:text-white mb-4 tracking-wider">Ressources</h5>
-              <ul className="space-y-3 text-sm text-gray-500 dark:text-gray-400">
-                <li><a href="#" className="hover:text-orange-500">Blog</a></li>
-                <li><a href="#" className="hover:text-orange-500">Guides</a></li>
-                <li><a href="#" className="hover:text-orange-500">Support</a></li>
-              </ul>
-            </div>
-            <div>
+
+            {/* Colonne Légal (Boutons Pop-ups) */}
+            <div className="md:text-right flex flex-col md:items-end">
               <h5 className="uppercase text-xs font-bold text-gray-900 dark:text-white mb-4 tracking-wider">Légal</h5>
               <ul className="space-y-3 text-sm text-gray-500 dark:text-gray-400">
-                <li><a href="#" className="hover:text-orange-500">Confidentialité</a></li>
-                <li><a href="#" className="hover:text-orange-500">CGU</a></li>
+                <li>
+                  <button onClick={() => setIsPrivacyOpen(true)} className="hover:text-orange-500 transition-colors text-left cursor-pointer">
+                    Politique de confidentialité
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => setIsTermsOpen(true)} className="hover:text-orange-500 transition-colors text-left cursor-pointer">
+                    Conditions Générales d'Utilisation
+                  </button>
+                </li>
               </ul>
             </div>
+
           </div>
+
           <div className="border-t border-gray-200 dark:border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
-            <p>© 2026 ATHLO Inc. Tous droits réservés.</p>
-            <p className="mt-4 md:mt-0 cursor-pointer hover:text-orange-500">Français</p>
+            <p>© {new Date().getFullYear()} ATHLO Inc. Tous droits réservés.</p>
+            <p className="mt-4 md:mt-0 cursor-pointer hover:text-orange-500 transition-colors">Français</p>
           </div>
         </div>
       </footer>
+
+      {/* --- MODALES LÉGALES --- */}
+      <LegalModal 
+        isOpen={isPrivacyOpen} 
+        onClose={() => setIsPrivacyOpen(false)} 
+        title="Politique de confidentialité"
+      >
+        <div className="space-y-4">
+          <p><strong>Dernière mise à jour :</strong> {new Date().toLocaleDateString('fr-FR')}</p>
+          <p>Chez ATHLO, nous attachons une grande importance à la protection et au respect de votre vie privée. Cette politique explique comment nous collectons, utilisons, et partageons vos informations personnelles lorsque vous utilisez notre plateforme.</p>
+          <h4 className="font-bold text-gray-800 dark:text-gray-200 pt-2">1. Données collectées</h4>
+          <p>Nous collectons les données que vous nous fournissez directement (nom, email, informations de profil, données d'entraînement) ainsi que les données générées par votre utilisation de la plateforme (statistiques de connexion, appareils utilisés).</p>
+          <h4 className="font-bold text-gray-800 dark:text-gray-200 pt-2">2. Utilisation des données</h4>
+          <p>Vos données sont utilisées pour : fournir, maintenir et améliorer nos services ; traiter les paiements sécurisés via Stripe ; vous envoyer des notifications liées à vos programmes ; assurer le support technique.</p>
+          <h4 className="font-bold text-gray-800 dark:text-gray-200 pt-2">3. Partage des données</h4>
+          <p>Nous ne vendons jamais vos données à des tiers. Nous pouvons partager certaines données strictement nécessaires avec nos prestataires de services sécurisés (hébergement, traitement des paiements).</p>
+        </div>
+      </LegalModal>
+
+      <LegalModal 
+        isOpen={isTermsOpen} 
+        onClose={() => setIsTermsOpen(false)} 
+        title="Conditions Générales (CGU)"
+      >
+        <div className="space-y-4">
+          <p><strong>Dernière mise à jour :</strong> {new Date().toLocaleDateString('fr-FR')}</p>
+          <p>Bienvenue sur ATHLO. En utilisant notre plateforme, vous acceptez les présentes Conditions Générales d'Utilisation.</p>
+          <h4 className="font-bold text-gray-800 dark:text-gray-200 pt-2">1. Description du service</h4>
+          <p>ATHLO fournit une solution logicielle (SaaS) pour les coachs sportifs et leurs clients. Le service permet la création de programmes, le suivi des performances et la gestion des paiements via des partenaires tiers (Stripe).</p>
+          <h4 className="font-bold text-gray-800 dark:text-gray-200 pt-2">2. Responsabilité de l'utilisateur</h4>
+          <p>Vous êtes responsable de l'exactitude des informations fournies et de la sécurité de vos identifiants. Les coachs sont seuls responsables des conseils et programmes sportifs délivrés à leurs athlètes via la plateforme.</p>
+          <h4 className="font-bold text-gray-800 dark:text-gray-200 pt-2">3. Paiements et Abonnements</h4>
+          <p>Certains services d'ATHLO sont soumis à un abonnement payant. Les paiements sont sécurisés et non remboursables, sauf disposition légale contraire ou mention explicite sur la plateforme.</p>
+          <h4 className="font-bold text-gray-800 dark:text-gray-200 pt-2">4. Propriété intellectuelle</h4>
+          <p>Le contenu, le logo et l'architecture logicielle d'ATHLO sont protégés par le droit d'auteur. Toute reproduction non autorisée est strictement interdite.</p>
+        </div>
+      </LegalModal>
+
     </div>
   );
 };

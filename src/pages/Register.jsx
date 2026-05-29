@@ -31,8 +31,19 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
+
+    if (!formData.first_name.trim()) {
+      setError('Le prénom est obligatoire.');
+      return;
+    }
+
+    if (!formData.last_name.trim()) {
+      setError('Le nom est obligatoire.');
+      return;
+    }
+
+    setLoading(true);
 
     try {
       await authService.register({ ...formData, role: selectedRole });
@@ -177,6 +188,7 @@ const Register = () => {
                   value={formData.last_name}
                   onChange={handleInputChange}
                   placeholder="Doe"
+                  required
                   className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff6a00] focus:ring-1 focus:ring-[#ff6a00] transition"
                 />
               </div>
