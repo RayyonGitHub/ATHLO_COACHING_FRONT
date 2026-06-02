@@ -85,6 +85,13 @@ const handleStripeConnect = async () => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem('authToken') || localStorage.getItem('access_token');
+        const params = new URLSearchParams(window.location.search);
+
+        if (params.get('stripe_connect') === 'success') {
+          await api.post('/stripe/connect-status/', {}, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+        }
 
         const profileRes = await api.get('/coach/me/', { headers: { Authorization: `Bearer ${token}` } });
 

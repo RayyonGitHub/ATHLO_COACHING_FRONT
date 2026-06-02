@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import { authService } from '../../services/authService';
@@ -21,6 +21,7 @@ const MainLayout = ({
   headerSection, 
   headerSubSection
 }: MainLayoutProps) => {
+  const location = useLocation();
   const [coachName, setCoachName] = useState("Coach");
   const [coachInitials, setCoachInitials] = useState("CH");
   const [showStripeWarning, setShowStripeWarning] = useState(false);
@@ -45,11 +46,14 @@ const MainLayout = ({
     // Vérification discrète du compte Stripe Connect
       const checkStripeConfig = async () => {
         try {
+          const params = new URLSearchParams(location.search);
+          if (params.get('stripe_connect') === 'success') {
+            await api.post('/stripe/connect-status/');
+          }
+
           const res = await api.get('/coach/me/');
           // On vérifie maintenant si l'onboarding complet a été validé par Stripe
-          if (!res.data.stripe_onboarding_complete) {
-            setShowStripeWarning(true);
-          }
+          setShowStripeWarning(!res.data.stripe_onboarding_complete);
         } catch (error) {
           console.error("Erreur de vérification Stripe", error);
         }
@@ -60,7 +64,7 @@ const MainLayout = ({
     } catch (error) {
       console.error("Erreur lors de la récupération de l'utilisateur :", error);
     }
-  }, []);
+  }, [location.search]);
 
   return (
     <div className="flex h-screen bg-[#0B0B0E] overflow-hidden">
