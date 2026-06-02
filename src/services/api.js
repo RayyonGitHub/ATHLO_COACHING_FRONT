@@ -1,7 +1,8 @@
 import axios from 'axios';
 import { authService } from './authService';
 
-const API_BASE_URL = 'http://localhost:8000/api';
+// On utilise la variable d'environnement, ou localhost par défaut si on est en dev local
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
