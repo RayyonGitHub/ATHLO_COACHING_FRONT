@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import axios from 'axios';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, BarChart, Bar
@@ -7,6 +6,7 @@ import {
 import { TrendingUp, Award, Zap, Activity, Loader2, Info } from 'lucide-react';
 // --- IMPORT DU SERVICE STRAVA ---
 import stravaService from '../services/stravaService';
+import api from '../services/api';
 
 const COLORS = ['#FF6B00', '#FF9E00', '#4F46E5', '#10B981', '#6366f1'];
 const STRAVA_ORANGE = '#FC4C02';
@@ -22,7 +22,7 @@ const AthleteStats = () => {
         const token = localStorage.getItem('authToken') || localStorage.getItem('access_token');
         
         // 1. Récupération des stats Muscu
-        const statsRes = await axios.get('http://127.0.0.1:8000/api/athlete/stats/', {
+        const statsRes = await api.get('/athlete/stats/', {
           headers: { Authorization: `Bearer ${token}` }
         });
         setStats(statsRes.data);

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import WorkoutTrackingModal from './WorkoutTrackingModal';
 import SessionHeroCard from '../components/athlete/SessionHeroCard';
 import DailyGoalsWidget from '../components/athlete/DailyGoalsWidget';
 import HealthStatsWidget from '../components/athlete/HealthStatsWidget';
 import { useNavigate } from 'react-router-dom';
+import api from '../services/api';
 
 const AthleteDashboard = () => {
   const navigate = useNavigate();
@@ -29,7 +29,7 @@ const AthleteDashboard = () => {
         setTimeout(() => window.location.href = '/login', 2000);
         return;
       }
-      const response = await axios.get('http://localhost:8000/api/athlete/dashboard-stats/', {
+      const response = await api.get('/athlete/dashboard-stats/', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setData(response.data);
@@ -89,12 +89,12 @@ useEffect(() => {
       setData(prev => ({ ...prev, prochaine_seance: null }));
 
       // 2. ACTION BACK-END : On prévient Django que c'est raté !
-      axios.post(`http://localhost:8000/api/seances/${seanceId}/ratee/`, {}, {
+      api.post(`/seances/${seanceId}/ratee/`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       })
       .then(() => {
         // 3. Optionnel : on recharge les stats globales (calories, etc.)
-        axios.get('http://localhost:8000/api/athlete/dashboard-stats/', {
+        api.get('/athlete/dashboard-stats/', {
           headers: { Authorization: `Bearer ${token}` }
         })
         .then(res => setData(res.data));

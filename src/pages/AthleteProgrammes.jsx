@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { Target, Calendar, CheckCircle2, Clock, Dumbbell, Flame, Activity, Loader2, X } from 'lucide-react';
+import api from '../services/api';
 
 const AthleteProgrammes = () => {
   const [programmeActuel, setProgrammeActuel] = useState(null);
@@ -20,8 +20,8 @@ const AthleteProgrammes = () => {
         const token = localStorage.getItem('authToken') || localStorage.getItem('access_token');
         const config = { headers: { Authorization: `Bearer ${token}` } };
 
-        const progRes = await axios.get('http://127.0.0.1:8000/api/programmes/', config);
-        const seancesRes = await axios.get('http://127.0.0.1:8000/api/seances/', config);
+        const progRes = await api.get('/programmes/', config);
+        const seancesRes = await api.get('/seances/', config);
 
         if (progRes.data.length > 0) {
           const currentProg = progRes.data[progRes.data.length - 1];
@@ -53,7 +53,7 @@ const AthleteProgrammes = () => {
       const token = localStorage.getItem('authToken') || localStorage.getItem('access_token');
       
       // Appel à la super route de Younes !
-      const res = await axios.get(`http://127.0.0.1:8000/api/seances/${seance.id}/resume/`, {
+      const res = await api.get(`/seances/${seance.id}/resume/`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setSelectedResume(res.data);

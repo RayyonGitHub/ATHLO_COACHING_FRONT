@@ -1,6 +1,4 @@
-import axios from 'axios';
-
-const API_URL = 'http://127.0.0.1:8000/api/';
+import api from './api';
 
 const getAuthHeaders = () => {
     const token = localStorage.getItem('authToken') || localStorage.getItem('access_token');
@@ -16,7 +14,7 @@ export const athleteService = {
     // 1. Réserver une séance
     reserverSeance: async (seanceId) => {
         try {
-            const response = await axios.post(`${API_URL}inscriptions/reserver/${seanceId}/`, {}, getAuthHeaders());
+            const response = await api.post(`/inscriptions/reserver/${seanceId}/`, {}, getAuthHeaders());
             return response.data;
         } catch (error) {
             throw error.response?.data?.erreur || "Erreur lors de la réservation.";
@@ -26,7 +24,7 @@ export const athleteService = {
     // 2. Annuler une réservation
     annulerReservation: async (inscriptionId) => {
         try {
-            const response = await axios.delete(`${API_URL}inscriptions/annuler/${inscriptionId}/`, getAuthHeaders());
+            const response = await api.delete(`/inscriptions/annuler/${inscriptionId}/`, getAuthHeaders());
             return response.data;
         } catch (error) {
             throw error.response?.data?.erreur || "Erreur lors de l'annulation.";

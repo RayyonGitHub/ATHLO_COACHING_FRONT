@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '../services/api';
 
 const ProspectSalles = () => {
   const navigate = useNavigate();
@@ -29,7 +30,7 @@ const ProspectSalles = () => {
       }
 
       const queryString = params.toString();
-      const response = await fetch(`http://127.0.0.1:8000/api/prospects/salles/${queryString ? `?${queryString}` : ''}`);
+      const response = await fetch(`${API_BASE_URL}/prospects/salles/${queryString ? `?${queryString}` : ''}`);
 
       if (!response.ok) {
         throw new Error('Erreur lors du chargement des salles');

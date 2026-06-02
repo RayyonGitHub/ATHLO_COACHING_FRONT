@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { 
   Save, User, Briefcase, MapPin, Tag, Phone, 
   Loader2, AlertCircle, Settings, Lock, CheckCircle2, X, DollarSign, Dumbbell, Zap
@@ -50,7 +49,7 @@ const CoachSettings = () => {
     setIsSubLoading(true);
     try {
       const token = localStorage.getItem('authToken') || localStorage.getItem('access_token');
-      const res = await axios.post('http://127.0.0.1:8000/api/stripe/create-subscription/', {}, {
+      const res = await api.post('/stripe/create-subscription/', {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.data.checkout_url) {
@@ -67,7 +66,7 @@ const handleStripeConnect = async () => {
     setIsSubLoading(true);
     try {
       const token = localStorage.getItem('authToken') || localStorage.getItem('access_token');
-      const res = await axios.post('http://127.0.0.1:8000/api/stripe/connect-onboarding/', {}, {
+      const res = await api.post('/stripe/connect-onboarding/', {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.data.checkout_url) {
@@ -87,7 +86,7 @@ const handleStripeConnect = async () => {
       try {
         const token = localStorage.getItem('authToken') || localStorage.getItem('access_token');
 
-        const profileRes = await axios.get('http://127.0.0.1:8000/api/coach/me/', { headers: { Authorization: `Bearer ${token}` } });
+        const profileRes = await api.get('/coach/me/', { headers: { Authorization: `Bearer ${token}` } });
 
         let data = profileRes.data;
         let offres = data.offres_tarifs;
@@ -178,7 +177,7 @@ const handleStripeConnect = async () => {
         abonnement_mensuel: tarifs.abonnement_mensuel ? parseFloat(tarifs.abonnement_mensuel) : 0
       };
       
-      await axios.patch('http://127.0.0.1:8000/api/coach/me/', { ...formData, offres_tarifs }, {
+      await api.patch('/coach/me/', { ...formData, offres_tarifs }, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -209,7 +208,7 @@ const handleStripeConnect = async () => {
     setIsPasswordLoading(true);
     try {
       const token = localStorage.getItem('authToken') || localStorage.getItem('access_token');
-      await axios.post('http://127.0.0.1:8000/api/auth/change-password/', {
+      await api.post('/auth/change-password/', {
         old_password: passwordData.old_password,
         new_password: passwordData.new_password
       }, { headers: { Authorization: `Bearer ${token}` } });

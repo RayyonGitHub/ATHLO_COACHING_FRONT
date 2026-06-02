@@ -1,6 +1,8 @@
 // src/services/nutritionService.js
 
-const API_URL = "http://localhost:8000/api/nutrition";
+import { API_BASE_URL } from './api';
+
+const API_URL = `${API_BASE_URL}/nutrition`;
 
 const getHeaders = (isFormData = false) => {
   const token = localStorage.getItem('authToken'); 

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { 
   ChevronLeft, ChevronRight, CheckCircle2, Dumbbell, 
   CalendarDays, History, X, AlertCircle, CheckCircle, Clock 
 } from 'lucide-react';
 import athleteService from '../services/athleteService';
 import SeanceDetailsModal from '../components/athlete/SeanceDetailsModal';
+import api from '../services/api';
 
 // --- MODALE DE NOTIFICATION (Ton travail) ---
 const NotifModal = ({ isOpen, onClose, message, type = 'success' }) => {
@@ -101,7 +101,7 @@ const AthleteCalendar = () => {
       
       // On supprime l'appel à /api/auth/me/ qui causait l'erreur 404
       // Et on charge directement les séances !
-      const response = await axios.get('http://127.0.0.1:8000/api/seances/', { 
+      const response = await api.get('/seances/', { 
         headers: { Authorization: `Bearer ${token}` } 
       });
       setSeances(response.data);
@@ -120,7 +120,7 @@ const AthleteCalendar = () => {
     setLoadingResume(true);
     try {
       const token = localStorage.getItem('authToken');
-      const response = await axios.get(`http://127.0.0.1:8000/api/seances/${seanceId}/resume/`, {
+      const response = await api.get(`/seances/${seanceId}/resume/`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setSelectedResume(response.data);

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { API_BASE_URL } from '../services/api';
 
 const villes = [
   'Aix-en-Provence', 'Amiens', 'Angers', 'Annecy', 'Avignon', 'Bayonne',
@@ -121,7 +122,7 @@ const ProspectDashboard = () => {
       if (filters.prix_max) params.append('prix_max', filters.prix_max);
       if (filters.type_offre) params.append('type_offre', filters.type_offre);
 
-      const response = await fetch(`http://127.0.0.1:8000/api/prospects/coachs/?${params.toString()}`);
+      const response = await fetch(`${API_BASE_URL}/prospects/coachs/?${params.toString()}`);
       if (!response.ok) throw new Error('Erreur lors du chargement des coachs');
 
       const data = await response.json();

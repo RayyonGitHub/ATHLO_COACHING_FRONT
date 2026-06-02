@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { adminAPI } from '../../services/api';
+import { adminAPI, API_ORIGIN } from '../../services/api';
 import { CreditCard, Download, Search, Filter, ExternalLink } from 'lucide-react';
 
 const AdminFinance = () => {
@@ -92,7 +92,7 @@ const AdminFinance = () => {
                   <td className="px-6 py-4 text-right">
                     {t.has_invoice && t.invoice_url ? (
                       <a 
-                        href={`http://localhost:8000${t.invoice_url}`} 
+                        href={`${API_ORIGIN}${t.invoice_url}`} 
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1.5 text-[#FF6A00] hover:underline text-xs font-bold"

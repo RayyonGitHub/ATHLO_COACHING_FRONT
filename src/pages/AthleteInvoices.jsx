@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FileText, Download, CreditCard, Calendar, CheckCircle } from 'lucide-react';
 import prospectService from '../services/prospectService';
+import { API_ORIGIN } from '../services/api';
 
 const AthleteInvoices = () => {
     const [commandes, setCommandes] = useState([]);
@@ -75,8 +76,8 @@ const AthleteInvoices = () => {
                                 </span>
                                 {cmd.facture && cmd.facture.pdf_file && (
                                        <a 
-                                            href={`http://127.0.0.1:8000${cmd.facture.pdf_file}`} 
-                                            onClick={(e) => forceDownload(e, `http://127.0.0.1:8000${cmd.facture.pdf_file}`)}
+                                            href={`${API_ORIGIN}${cmd.facture.pdf_file}`} 
+                                            onClick={(e) => forceDownload(e, `${API_ORIGIN}${cmd.facture.pdf_file}`)}
                                             className="p-2.5 bg-[#2D2D2D] text-white rounded-xl hover:bg-[#FF6B00] transition-colors cursor-pointer flex items-center justify-center"
                                             title="Télécharger"
                                         >

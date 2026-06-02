@@ -1,4 +1,4 @@
-import api from './api';
+import api, { API_BASE_URL } from './api';
 
 const calendarService = {
     getCoachCalendar: async () => {
@@ -46,7 +46,7 @@ const calendarService = {
         try {
             const me = await api.get('/coach/me/');
             if (!me.data.id) throw new Error("ID du coach introuvable.");
-            return `http://localhost:8000/api/calendar/export/${me.data.id}/`;
+            return `${API_BASE_URL}/calendar/export/${me.data.id}/`;
         } catch (error) {
             console.error("Erreur récupération URL d'export", error);
             throw error;

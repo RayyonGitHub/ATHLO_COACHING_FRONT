@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
 import { Bell, Clock, Zap, Activity, CheckCircle, Info, BellOff } from 'lucide-react';
+import api from '../services/api';
 
 const AthleteNotificationBell = () => {
   // On initialise avec un tableau vide pour éviter les erreurs de .length
@@ -8,7 +8,6 @@ const AthleteNotificationBell = () => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  const API_URL = 'http://127.0.0.1:8000/api/notifications-athlete/';
   const token = localStorage.getItem('token'); 
 
   useEffect(() => {
@@ -36,7 +35,7 @@ const AthleteNotificationBell = () => {
       return;
     }
 
-    const response = await axios.get(API_URL, {
+    const response = await api.get('/notifications-athlete/', {
       headers: { 
         Authorization: `Bearer ${token}` 
       }
@@ -61,7 +60,7 @@ const AthleteNotificationBell = () => {
     const backup = [...notifications];
     setNotifications(notifications.map(n => ({ ...n, est_lu: true })));
 
-    await axios.post(`${API_URL}marquer_tout_lu/`, {}, {
+    await api.post('/notifications-athlete/marquer_tout_lu/', {}, {
       headers: { Authorization: `Bearer ${token}` }
     });
     console.log("✅ Backend synchronisé : Tout est lu");
@@ -81,7 +80,7 @@ const marquerCommeLu = async (id) => {
     // Mise à jour visuelle immédiate
     setNotifications(notifications.map(n => n.id === id ? { ...n, est_lu: true } : n));
 
-    await axios.patch(`${API_URL}${id}/`, { est_lu: true }, {
+    await api.patch(`/notifications-athlete/${id}/`, { est_lu: true }, {
       headers: { Authorization: `Bearer ${token}` }
     });
     console.log(`✅ Notif ${id} marquée comme lue`);

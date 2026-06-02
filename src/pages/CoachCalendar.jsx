@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import calendarService from '../services/calendarService';
 import { authService } from '../services/authService';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';
 import { Calendar, ChevronLeft, ChevronRight, AlertTriangle, PlusCircle, X, Edit3, Trash2, Link, Users, Info, UserX, CheckCircle, XCircle, Check, Dumbbell, Filter } from 'lucide-react';
 
 // Constantes pour la grille moderne
@@ -108,7 +108,7 @@ const CoachCalendar = () => {
 
     const fetchCoachSalles = async () => {
         try {
-            const res = await axios.get('http://localhost:8000/api/coach/salles-disponibles/', {
+            const res = await api.get('/coach/salles-disponibles/', {
                 headers: { 'Authorization': `Bearer ${authService.getToken()}` }
             });
             setCoachSalles(res.data || []);
@@ -119,7 +119,7 @@ const CoachCalendar = () => {
 
     const fetchClients = async () => {
         try {
-            const res = await axios.get('http://localhost:8000/api/clients/', {
+            const res = await api.get('/clients/', {
                 headers: { 'Authorization': `Bearer ${authService.getToken()}` }
             });
             setClients(res.data || []);
@@ -194,10 +194,10 @@ const CoachCalendar = () => {
 
             if (oldFamily === newFamily) {
                 const endpoint = oldFamily === 'indispo' ? `/indisponibilites/${selectedEvent.db_id}/` : `/seances/${selectedEvent.db_id}/`;
-                await axios.patch(`http://localhost:8000/api${endpoint}`, payload, { headers: { 'Authorization': `Bearer ${token}` } });
+                await api.patch(endpoint, payload, { headers: { 'Authorization': `Bearer ${token}` } });
             } else {
                 const deleteEndpoint = oldFamily === 'indispo' ? `/indisponibilites/${selectedEvent.db_id}/` : `/seances/${selectedEvent.db_id}/`;
-                await axios.delete(`http://localhost:8000/api${deleteEndpoint}`, { headers: { 'Authorization': `Bearer ${token}` } });
+                await api.delete(deleteEndpoint, { headers: { 'Authorization': `Bearer ${token}` } });
 
                 if (newFamily === 'indispo') {
                     await calendarService.createIndisponibilite(payload);
@@ -231,7 +231,7 @@ const CoachCalendar = () => {
                 heure_fin: toTimeInput(newEnd) + ':00'
             };
 
-            await axios.patch(`http://localhost:8000/api${endpoint}`, payload, { headers: { 'Authorization': `Bearer ${token}` } });
+            await api.patch(endpoint, payload, { headers: { 'Authorization': `Bearer ${token}` } });
             fetchSeances();
         } catch (error) {
             changeInfo.revert();
@@ -269,7 +269,7 @@ const CoachCalendar = () => {
             const isIndispo = eventToDelete.type === 'indisponibilite' || eventToDelete.type === 'conge';
             const endpoint = isIndispo ? `/indisponibilites/${eventToDelete.db_id}/` : `/seances/${eventToDelete.db_id}/`;
 
-            await axios.delete(`http://localhost:8000/api${endpoint}`, { headers: { 'Authorization': `Bearer ${token}` } });
+            await api.delete(endpoint, { headers: { 'Authorization': `Bearer ${token}` } });
             fetchSeances();
             setIsDeleteModalOpen(false);
         } catch (err) {
@@ -290,7 +290,7 @@ const CoachCalendar = () => {
             if (!token) return;
 
             // 1. Suppression du participant
-            await axios.delete(`http://localhost:8000/api/inscriptions/${participantToRemove.id}/`, {
+            await api.delete(`/inscriptions/${participantToRemove.id}/`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -301,8 +301,8 @@ const CoachCalendar = () => {
                     p => p.statut === 'ATTENTE' && p.id !== participantToRemove.id
                 );
                 if (firstWaiting) {
-                    await axios.patch(
-                        `http://localhost:8000/api/inscriptions/${firstWaiting.id}/status/`,
+                    await api.patch(
+                        `/inscriptions/${firstWaiting.id}/status/`,
                         { statut: 'CONFIRME' },
                         { headers: { 'Authorization': `Bearer ${token}` } }
                     );
@@ -339,7 +339,7 @@ const CoachCalendar = () => {
             const token = authService.getToken();
             if (!token) return;
 
-            await axios.patch(`http://localhost:8000/api/inscriptions/${inscriptionId}/status/`, { statut: newStatus }, {
+            await api.patch(`/inscriptions/${inscriptionId}/status/`, { statut: newStatus }, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -362,8 +362,8 @@ const CoachCalendar = () => {
             const token = authService.getToken();
             if (!token) return;
 
-            await axios.post(
-                `http://localhost:8000/api/inscriptions/coach/inscrire/${selectedEvent.db_id}/`,
+            await api.post(
+                `/inscriptions/coach/inscrire/${selectedEvent.db_id}/`,
                 { client_id: selectedClientId },
                 { headers: { 'Authorization': `Bearer ${token}` } }
             );

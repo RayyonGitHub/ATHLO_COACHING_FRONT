@@ -23,6 +23,10 @@ jobs:
         env:
           VITE_API_URL: ${{ vars.BACKEND_API_URL }}
           VITE_STRIPE_PUBLIC_KEY: ${{ secrets.STRIPE_PUBLIC_KEY }}
+          VITE_STRAVA_CLIENT_ID: ${{ vars.STRAVA_CLIENT_ID }}
+          VITE_STRAVA_REDIRECT_URI: ${{ vars.STRAVA_REDIRECT_URI }}
+          VITE_GOOGLE_CLIENT_ID: ${{ vars.GOOGLE_CLIENT_ID }}
+          VITE_GOOGLE_REDIRECT_URI: ${{ vars.GOOGLE_REDIRECT_URI }}
         run: npm run build
 
       - name: Deploy to VPS Front

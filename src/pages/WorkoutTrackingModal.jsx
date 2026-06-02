@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Play, Pause, CheckCircle2, AlertCircle, FastForward, Square, Loader2, Trophy } from 'lucide-react';
-import axios from 'axios';
+import api from '../services/api';
 
 const WorkoutTrackingModal = ({ isOpen, onClose, seanceId, onComplete }) => {
   // États de la séance
@@ -28,7 +28,7 @@ const WorkoutTrackingModal = ({ isOpen, onClose, seanceId, onComplete }) => {
         setLoading(true);
         try {
           const token = localStorage.getItem('authToken') || localStorage.getItem('access_token');
-          const response = await axios.get(`http://127.0.0.1:8000/api/seances/${seanceId}/`, {
+          const response = await api.get(`/seances/${seanceId}/`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           
@@ -135,7 +135,7 @@ const WorkoutTrackingModal = ({ isOpen, onClose, seanceId, onComplete }) => {
       setIsSaving(true);
       const token = localStorage.getItem('authToken') || localStorage.getItem('access_token');
       
-      await axios.post('http://127.0.0.1:8000/api/athlete/performance/record/', {
+      await api.post('/athlete/performance/record/', {
         seance_id: seanceId,
         exercices: exercices.map((exo) => {
           const weight = parseWeight(weights[exo.id]);

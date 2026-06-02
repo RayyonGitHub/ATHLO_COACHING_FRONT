@@ -1,8 +1,8 @@
 import api from './api';
 import { authService } from './authService';
 
-const GOOGLE_CLIENT_ID = '1085275017199-gtp77vbkp5uc6llt34l32t9iploc43ts.apps.googleusercontent.com';
-const GOOGLE_REDIRECT_URI = 'http://localhost:5173/auth/google/callback';
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+const GOOGLE_REDIRECT_URI = import.meta.env.VITE_GOOGLE_REDIRECT_URI || `${window.location.origin}/auth/google/callback`;
 const GOOGLE_SCOPE = 'https://www.googleapis.com/auth/calendar';
 
 const googleCalendarService = {

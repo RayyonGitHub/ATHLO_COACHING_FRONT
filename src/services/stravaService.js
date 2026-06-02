@@ -1,7 +1,7 @@
 import api from './api';
 
 const STRAVA_CLIENT_ID = import.meta.env.VITE_STRAVA_CLIENT_ID;
-const STRAVA_REDIRECT_URI = 'http://localhost:5173/auth/strava/callback';
+const STRAVA_REDIRECT_URI = import.meta.env.VITE_STRAVA_REDIRECT_URI || `${window.location.origin}/auth/strava/callback`;
 const STRAVA_SCOPE = 'activity:read_all';
 
 const stravaService = {

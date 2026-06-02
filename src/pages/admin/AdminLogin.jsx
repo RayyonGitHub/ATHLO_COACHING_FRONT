@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios'; // <-- Import de base pour contourner l'intercepteur
-import api from '../../services/api';
+import api, { API_BASE_URL } from '../../services/api';
 
 const AdminLogin = () => {
   const navigate = useNavigate();
@@ -17,7 +17,7 @@ const AdminLogin = () => {
 
     try {
       // On utilise axios direct pour ne pas déclencher la redirection automatique 401 de api.js
-      const response = await axios.post('http://127.0.0.1:8000/api/admin/login/', formData);
+      const response = await axios.post(`${API_BASE_URL}/admin/login/`, formData);
       
       // On stocke les infos pour AdminRoute et Axios (avec tous les noms utilisés dans ton app)
       localStorage.setItem('token', response.data.token);
