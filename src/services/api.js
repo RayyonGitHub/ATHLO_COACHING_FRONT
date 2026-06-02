@@ -1,8 +1,9 @@
 import axios from 'axios';
 import { authService } from './authService';
 
-// On utilise la variable d'environnement, ou localhost par défaut si on est en dev local
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+// Use the Vite build-time environment variable in production,
+// and fall back to a local Django dev URL during local development.
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
