@@ -9,6 +9,7 @@ const ClientList = () => {
   const [clientToDelete, setClientToDelete] = useState<any>(null);
   const [editingClient, setEditingClient] = useState<any>(null);
   const [errors, setErrors] = useState<any>({});
+  const [apiError, setApiError] = useState('');
 
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -96,11 +97,17 @@ const ClientList = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
+    setApiError('');
 
     const finalData = {
       ...formData,
+      nom: formData.nom.trim(),
+      prenom: formData.prenom.trim(),
+      email: formData.email.trim().toLowerCase(),
+      telephone: formData.telephone.trim(),
+      objectifs_sportifs: formData.objectifs_sportifs.trim(),
       pathologies_blessures: formData.pathologies_blessures || "Aucune",
-    offer_type: formData.abonnement_type || "abonnement",
+      offer_type: formData.abonnement_type || "abonnement",
     };
 
     try {
@@ -119,6 +126,14 @@ const ClientList = () => {
       }
     } catch (error) {
       console.error("Erreur lors de l'enregistrement:", error);
+      const data = (error as any)?.response?.data;
+      if (data && typeof data === 'object') {
+        setErrors((prev: any) => ({ ...prev, ...data }));
+        const firstMessage = Object.values(data).flat().join(' ');
+        setApiError(firstMessage || "Impossible d'enregistrer cet athlète.");
+      } else {
+        setApiError("Impossible d'enregistrer cet athlète.");
+      }
     }
   };
 
@@ -142,6 +157,7 @@ const ClientList = () => {
   };
 
   const openModal = (client: any = null) => {
+    setApiError('');
     if (client) { setEditingClient(client); setFormData(client); }
     else {
       setEditingClient(null);
@@ -150,7 +166,7 @@ const ClientList = () => {
     setIsModalOpen(true);
   };
 
-  const closeModal = () => { setIsModalOpen(false); setEditingClient(null); setErrors({}); };
+  const closeModal = () => { setIsModalOpen(false); setEditingClient(null); setErrors({}); setApiError(''); };
 
   const totalClients = clients.length;
   const poidsMoyen = totalClients > 0 ? (clients.reduce((acc, c) => acc + Number(c.poids || 0), 0) / totalClients).toFixed(1) : 0;
@@ -293,6 +309,11 @@ const ClientList = () => {
         <div className={`absolute inset-0 bg-[#0B0B0E]/80 backdrop-blur-sm transition-opacity duration-300 ${isModalOpen ? 'opacity-100' : 'opacity-0'}`} onClick={closeModal}></div>
         <div className={`relative bg-[#131317] rounded-[2.5rem] shadow-2xl w-full max-w-3xl p-10 overflow-hidden transform transition-all duration-300 ease-out ${isModalOpen ? 'translate-y-0 scale-100 opacity-100' : 'translate-y-4 scale-95 opacity-0'}`}>
           <h2 className="text-3xl font-black text-[#FF6A00] mb-8">{editingClient ? 'Modifier le profil' : 'Nouveau sportif'}</h2>
+          {apiError && (
+            <div className="mb-6 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm font-bold text-red-300">
+              {apiError}
+            </div>
+          )}
           
           <form onSubmit={handleSubmit} className="space-y-6">
             

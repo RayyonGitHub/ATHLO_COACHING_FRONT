@@ -71,7 +71,7 @@ const StripeInviteForm = ({ token, preview, total }) => {
       setLoading(false);
     } else if (paymentIntent && paymentIntent.status === 'succeeded') {
       // Paiement réussi ! On redirige l'utilisateur pour qu'il crée son mot de passe
-      navigate(`/invite/set-password?token=${encodeURIComponent(token)}`);
+      navigate(`/invite/set-password?token=${encodeURIComponent(token)}&payment_intent=${encodeURIComponent(paymentIntent.id)}`);
     } else {
       setLoading(false);
     }

@@ -22,6 +22,7 @@ const InviteSetPassword = () => {
   const [searchParams] = useSearchParams();
 
   const token = searchParams.get('token') || '';
+  const paymentIntentId = searchParams.get('payment_intent') || '';
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -72,6 +73,7 @@ const InviteSetPassword = () => {
     try {
       await prospectService.setInvitationPassword({
         token,
+        payment_intent_id: paymentIntentId,
         new_password: formData.new_password,
         confirm_password: formData.confirm_password,
       });

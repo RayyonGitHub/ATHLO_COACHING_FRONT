@@ -3,6 +3,13 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import {Plus, Search, GripVertical, Trash2, Save, Dumbbell, Clock, CalendarDays, ListTodo, AlertTriangle } from 'lucide-react';
 import api from '../services/api';
 
+const createUid = () => {
+  if (window.crypto?.randomUUID) {
+    return window.crypto.randomUUID();
+  }
+  return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+};
+
 const SessionBuilder = () => {
   const location = useLocation();
   const navigate = useNavigate(); // Pour rediriger après sauvegarde
@@ -66,7 +73,7 @@ const SessionBuilder = () => {
             // Si la séance avait DÉJÀ des exercices, on les charge !
             if (seanceRes.data.exercices_details && seanceRes.data.exercices_details.length > 0) {
                 const loadedExos = seanceRes.data.exercices_details.map(e => ({
-                    uid: crypto.randomUUID(),
+                    uid: createUid(),
                     exercice: e.exercice_details, // On récupère l'objet complet via "exercice_details"
                     series: e.series,
                     repetitions: e.repetitions,
@@ -108,7 +115,7 @@ const SessionBuilder = () => {
 
     if (exo) {
       setSessionExos([...sessionExos, {
-        uid: crypto.randomUUID(),
+        uid: createUid(),
         exercice: exo,
         series: 3,
         repetitions: "10",
