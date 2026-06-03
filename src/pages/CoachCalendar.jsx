@@ -3,7 +3,7 @@ import calendarService from '../services/calendarService';
 import { authService } from '../services/authService';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import { Calendar, ChevronLeft, ChevronRight, AlertTriangle, PlusCircle, X, Edit3, Trash2, Link, Users, Info, UserX, CheckCircle, XCircle, Check, Dumbbell, Filter } from 'lucide-react';
+import { Calendar, ChevronLeft, ChevronRight, AlertTriangle, PlusCircle, X, Edit3, Trash2, Link, Users, Info, UserX, CheckCircle, XCircle, Check, Dumbbell } from 'lucide-react';
 
 // Constantes pour la grille moderne
 const HOURS = Array.from({ length: 19 }, (_, i) => i + 6); // 6:00 à 00:00 (minuit)
@@ -594,9 +594,6 @@ const CoachCalendar = () => {
                         </button>
                     </div>
                 </div>
-                <button className="flex items-center gap-2 px-4 py-2 border border-[#2A2A32] rounded-xl text-sm font-semibold hover:bg-[#1F1F25] transition-colors cursor-pointer text-[#ACAAB0]">
-                    <Filter size={18} /> Filtres
-                </button>
             </section>
 
             {/* Calendar Content */}
@@ -957,8 +954,9 @@ const CoachCalendar = () => {
                                     </div>
                                 )}
 
-                                <div className="pt-6 flex justify-between items-center border-t border-[#2A2A32]">
-                                    <button type="button" onClick={triggerDelete} className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-red-500 hover:bg-red-50 rounded-xl transition-all cursor-pointer"><Trash2 size={18} /> Supprimer</button>
+                                <div className="pt-6 flex flex-col gap-3 border-t border-[#2A2A32] sm:flex-row sm:items-center sm:justify-between">
+                                    <div className="flex flex-wrap gap-2">
+                                    <button type="button" onClick={triggerDelete} className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-4 text-sm font-bold text-red-400 transition-all hover:bg-red-500/20 cursor-pointer"><Trash2 size={18} /> Supprimer</button>
 
                                     {/* LE NOUVEAU BOUTON BUILDER EST ICI */}
                                     {!(editFormData.type === 'indisponibilite' || editFormData.type === 'conge') && (
@@ -969,16 +967,17 @@ const CoachCalendar = () => {
                                                 // On redirige vers le Builder en passant l'ID de la séance dans l'URL
                                                 navigate(`/builder?seance_id=${selectedEvent.db_id}`);
                                             }}
-                                            className="flex items-center gap-2 px-4 py-2.5 text-sm font-bold text-orange-600 bg-orange-50 hover:bg-orange-100 rounded-xl transition-all cursor-pointer"
+                                            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[#FF6A00]/25 bg-[#FF6A00]/10 px-4 text-sm font-bold text-[#FF6A00] transition-all hover:bg-[#FF6A00]/20 cursor-pointer"
                                         >
                                             <Dumbbell size={18} />
                                             Ajouter des exercices
                                         </button>
                                     )}
+                                    </div>
 
-                                    <div className="flex gap-2">
-                                        <button type="button" onClick={() => setIsEditModalOpen(false)} className="px-5 py-2.5 font-bold text-[#ACAAB0] hover:bg-[#1F1F25] rounded-xl transition-all cursor-pointer">Annuler</button>
-                                        <button type="submit" className="px-5 py-2.5 font-black text-white bg-indigo-600 rounded-xl shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all cursor-pointer">Mettre à jour</button>
+                                    <div className="flex flex-wrap gap-2 sm:justify-end">
+                                        <button type="button" onClick={() => setIsEditModalOpen(false)} className="inline-flex h-10 items-center justify-center rounded-xl border border-[#2A2A32] px-4 text-sm font-bold text-[#ACAAB0] transition-all hover:bg-[#1F1F25] cursor-pointer">Annuler</button>
+                                        <button type="submit" className="inline-flex h-10 items-center justify-center rounded-xl bg-indigo-600 px-4 text-sm font-black text-white shadow-lg shadow-indigo-950/20 transition-all hover:bg-indigo-700 cursor-pointer">Mettre à jour</button>
                                     </div>
                                 </div>
                             </form>

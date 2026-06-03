@@ -102,6 +102,7 @@ export const adminAPI = {
   deleteAthlete: (id) => api.delete(`/admin/athletes/${id}/`),
   getProspects: () => api.get('/admin/prospects/'),
   getFinanceHistory: () => api.get('/admin/finance/'),
+  getNotifications: () => api.get('/admin/notifications/'),
   deleteProspect: (id) => api.delete(`/admin/prospects/${id}/`),
   updateUser: (id, data) => api.patch(`/admin/users/${id}/update/`, data),
   changePassword: (id, password) => api.post(`/admin/users/${id}/change-password/`, { password }),

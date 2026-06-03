@@ -1,11 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Store, BookOpen, LogOut, Search, Bell, HelpCircle, Dumbbell, History, Settings, CreditCard, FolderOpen } from 'lucide-react';
+import { LayoutDashboard, Users, Store, BookOpen, LogOut, Search, Bell, Dumbbell, Settings, CreditCard, FolderOpen } from 'lucide-react';
+import { adminAPI } from '../../services/api';
 
 const AdminLayout = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [adminUser, setAdminUser] = useState({ name: 'Admin', email: 'admin@athlo.com' });
+  const [notifications, setNotifications] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [readNotificationIds, setReadNotificationIds] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('adminReadNotifications') || '[]');
+    } catch {
+      return [];
+    }
+  });
 
   // Récupérer l'utilisateur connecté depuis le localStorage
   useEffect(() => {
@@ -18,6 +28,27 @@ const AdminLayout = ({ children }) => {
       }
     }
   }, []);
+
+  useEffect(() => {
+    fetchAdminNotifications();
+    const interval = setInterval(fetchAdminNotifications, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const fetchAdminNotifications = async () => {
+    try {
+      const response = await adminAPI.getNotifications();
+      setNotifications(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
+      console.error('Erreur notifications admin:', error);
+    }
+  };
+
+  const markAdminNotificationsAsRead = () => {
+    const ids = notifications.map((notification) => notification.id);
+    setReadNotificationIds(ids);
+    localStorage.setItem('adminReadNotifications', JSON.stringify(ids));
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -43,6 +74,18 @@ const AdminLayout = ({ children }) => {
     const parts = name.split(' ');
     if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
     return name.substring(0, 2).toUpperCase();
+  };
+
+  const unreadCount = notifications.filter((notification) => !readNotificationIds.includes(notification.id)).length;
+
+  const formatNotificationDate = (value) => {
+    if (!value) return '';
+    return new Date(value).toLocaleString('fr-FR', {
+      day: '2-digit',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   };
 
   return (
@@ -107,10 +150,52 @@ const AdminLayout = ({ children }) => {
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <button className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-[#16161A] text-slate-600 dark:text-slate-400 relative transition-colors">
-              <Bell size={20} />
-              <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-[#FF6A00] border-2 border-white dark:border-[#0B0B0F] rounded-full"></span>
-            </button>
+            <div className="relative">
+              <button
+                onClick={() => {
+                  setShowNotifications((open) => !open);
+                  if (!showNotifications) markAdminNotificationsAsRead();
+                }}
+                className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-[#16161A] text-slate-600 dark:text-slate-400 relative transition-colors"
+                title="Notifications"
+              >
+                <Bell size={20} />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 flex items-center justify-center bg-[#FF6A00] border-2 border-white dark:border-[#0B0B0F] rounded-full text-[10px] font-black text-white">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {showNotifications && (
+                <div className="absolute right-0 top-12 w-80 max-w-[calc(100vw-2rem)] bg-white dark:bg-[#131317] border border-slate-200 dark:border-[#2A2A32] rounded-xl shadow-2xl overflow-hidden z-50">
+                  <div className="px-4 py-3 border-b border-slate-200 dark:border-[#2A2A32] flex items-center justify-between">
+                    <h3 className="text-sm font-black text-slate-900 dark:text-white">Notifications</h3>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Superadmin</span>
+                  </div>
+                  <div className="max-h-96 overflow-y-auto">
+                    {notifications.length === 0 ? (
+                      <div className="p-6 text-center text-sm text-slate-500">
+                        Aucune notification pour le moment.
+                      </div>
+                    ) : (
+                      notifications.map((notification) => (
+                        <div key={notification.id} className="px-4 py-3 border-b border-slate-100 dark:border-[#24242A] last:border-b-0 hover:bg-slate-50 dark:hover:bg-[#1F1F25]">
+                          <div className="flex items-start gap-3">
+                            <span className="mt-1 w-2 h-2 rounded-full bg-[#FF6A00] shrink-0"></span>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-bold text-slate-900 dark:text-white">{notification.title}</p>
+                              <p className="mt-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">{notification.message}</p>
+                              <p className="mt-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">{formatNotificationDate(notification.date_creation)}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </header>
 
