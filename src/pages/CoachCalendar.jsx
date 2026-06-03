@@ -954,30 +954,46 @@ const CoachCalendar = () => {
                                     </div>
                                 )}
 
-                                <div className="pt-6 flex flex-col gap-3 border-t border-[#2A2A32] sm:flex-row sm:items-center sm:justify-between">
-                                    <div className="flex flex-wrap gap-2">
-                                    <button type="button" onClick={triggerDelete} className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-4 text-sm font-bold text-red-400 transition-all hover:bg-red-500/20 cursor-pointer"><Trash2 size={18} /> Supprimer</button>
-
-                                    {/* LE NOUVEAU BOUTON BUILDER EST ICI */}
-                                    {!(editFormData.type === 'indisponibilite' || editFormData.type === 'conge') && (
+                                <div className="pt-6 border-t border-[#2A2A32]">
+                                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                         <button
                                             type="button"
-                                            onClick={() => {
-                                                setIsEditModalOpen(false);
-                                                // On redirige vers le Builder en passant l'ID de la séance dans l'URL
-                                                navigate(`/builder?seance_id=${selectedEvent.db_id}`);
-                                            }}
-                                            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[#FF6A00]/25 bg-[#FF6A00]/10 px-4 text-sm font-bold text-[#FF6A00] transition-all hover:bg-[#FF6A00]/20 cursor-pointer"
+                                            onClick={triggerDelete}
+                                            className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-4 text-sm font-bold text-red-400 transition-all hover:bg-red-500/20 cursor-pointer sm:w-auto"
                                         >
-                                            <Dumbbell size={18} />
-                                            Ajouter des exercices
+                                            <Trash2 size={18} />
+                                            Supprimer
                                         </button>
-                                    )}
-                                    </div>
 
-                                    <div className="flex flex-wrap gap-2 sm:justify-end">
-                                        <button type="button" onClick={() => setIsEditModalOpen(false)} className="inline-flex h-10 items-center justify-center rounded-xl border border-[#2A2A32] px-4 text-sm font-bold text-[#ACAAB0] transition-all hover:bg-[#1F1F25] cursor-pointer">Annuler</button>
-                                        <button type="submit" className="inline-flex h-10 items-center justify-center rounded-xl bg-indigo-600 px-4 text-sm font-black text-white shadow-lg shadow-indigo-950/20 transition-all hover:bg-indigo-700 cursor-pointer">Mettre à jour</button>
+                                        <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+                                            {!(editFormData.type === 'indisponibilite' || editFormData.type === 'conge') && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setIsEditModalOpen(false);
+                                                        // On redirige vers le Builder en passant l'ID de la séance dans l'URL
+                                                        navigate(`/builder?seance_id=${selectedEvent.db_id}`);
+                                                    }}
+                                                    className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-[#FF6A00]/25 bg-[#FF6A00]/10 px-4 text-sm font-bold text-[#FF6A00] transition-all hover:bg-[#FF6A00]/20 cursor-pointer sm:w-auto"
+                                                >
+                                                    <Dumbbell size={18} />
+                                                    Ajouter des exercices
+                                                </button>
+                                            )}
+                                            <button
+                                                type="button"
+                                                onClick={() => setIsEditModalOpen(false)}
+                                                className="inline-flex h-10 w-full items-center justify-center rounded-xl border border-[#2A2A32] px-4 text-sm font-bold text-[#ACAAB0] transition-all hover:bg-[#1F1F25] cursor-pointer sm:w-auto"
+                                            >
+                                                Annuler
+                                            </button>
+                                            <button
+                                                type="submit"
+                                                className="inline-flex h-10 w-full items-center justify-center rounded-xl bg-indigo-600 px-4 text-sm font-black text-white shadow-lg shadow-indigo-950/20 transition-all hover:bg-indigo-700 cursor-pointer sm:w-auto"
+                                            >
+                                                Mettre à jour
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </form>
