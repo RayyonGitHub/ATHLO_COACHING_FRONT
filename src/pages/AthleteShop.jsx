@@ -191,11 +191,11 @@ const AthleteShop = () => {
             <X size={24} />
           </button>
           
-          <div className="relative max-w-6xl max-h-[90vh] w-full animate-in zoom-in-95 duration-300">
+          <div className="relative flex justify-center items-center w-full h-full p-4 animate-in zoom-in-95 duration-300">
             <img 
               src={selectedImage} 
               alt="Agrandissement" 
-              className="w-full h-full object-contain rounded-2xl shadow-2xl"
+              className="max-w-full max-h-[85vh] object-contain mx-auto rounded-2xl shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             />
           </div>

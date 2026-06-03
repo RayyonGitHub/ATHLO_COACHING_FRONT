@@ -88,7 +88,7 @@ const ExerciceManager = () => {
       {/* Header */}
       <div className="flex justify-between items-end shrink-0">
         <div>
-          <h1 className="text-3xl font-black text-[#FCF8FE] dark:text-white tracking-tight">Bibliothèque d'Exercices</h1>
+          <h1 className="text-3xl font-black text-[#FCF8FE] tracking-tight">Bibliothèque d'Exercices</h1>
           <p className="text-[#ACAAB0] text-sm mt-1">Gérez votre base de données d'exercices personnalisés.</p>
         </div>
         <button 
@@ -101,7 +101,7 @@ const ExerciceManager = () => {
       </div>
 
       {/* Barre de recherche */}
-      <div className="bg-[#131317] dark:bg-[#16161A] border border-[#2A2A32] dark:border-[#26262B] p-4 rounded-2xl shadow-sm">
+      <div className="bg-[#131317] border border-[#2A2A32] p-4 rounded-2xl shadow-sm">
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#ACAAB0]" size={18} />
           <input 
@@ -109,7 +109,7 @@ const ExerciceManager = () => {
             placeholder="Rechercher un exercice, un muscle..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-[#0B0B0E] dark:bg-[#0B0B0F] border border-[#2A2A32] dark:border-[#26262B] rounded-xl py-2.5 pl-10 pr-4 text-sm outline-none transition-all focus:border-[#FF6A00] dark:text-white"
+            className="w-full bg-[#0B0B0E] border border-[#2A2A32] rounded-xl py-2.5 pl-10 pr-4 text-sm outline-none transition-all focus:border-[#FF6A00] text-white"
           />
         </div>
       </div>
@@ -119,16 +119,16 @@ const ExerciceManager = () => {
         {loading ? (
           <div className="flex justify-center items-center h-40"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#FF6A00]"></div></div>
         ) : filteredExercices.length === 0 ? (
-          <div className="border-2 border-dashed border-[#2A2A32] dark:border-[#26262B] rounded-2xl p-12 flex flex-col items-center text-center">
-            <div className="w-16 h-16 bg-[#1F1F25] dark:bg-[#0B0B0F] rounded-full flex items-center justify-center mb-4 text-[#ACAAB0]">
+          <div className="border-2 border-dashed border-[#2A2A32] rounded-2xl p-12 flex flex-col items-center text-center">
+            <div className="w-16 h-16 bg-[#1F1F25] rounded-full flex items-center justify-center mb-4 text-[#ACAAB0]">
               <Activity size={24} />
             </div>
-            <p className="text-lg font-bold text-[#ACAAB0] dark:text-slate-300">Aucun exercice trouvé</p>
+            <p className="text-lg font-bold text-[#ACAAB0]">Aucun exercice trouvé</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {filteredExercices.map((exo) => (
-              <div key={exo.id} className="bg-[#131317] dark:bg-[#16161A] border border-[#2A2A32] dark:border-[#26262B] rounded-xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col group">
+              <div key={exo.id} className="bg-[#131317] border border-[#2A2A32] rounded-xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col group">
                 <div className="flex justify-between items-start mb-3">
                   <span className="text-[10px] font-bold uppercase tracking-widest text-[#FF6A00] bg-[#FF6A00]/10 px-2 py-1 rounded">
                     {exo.categorie}
@@ -139,12 +139,12 @@ const ExerciceManager = () => {
                     </a>
                   )}
                 </div>
-                <h3 className="font-bold text-[#FCF8FE] dark:text-white mb-1">{exo.nom}</h3>
+                <h3 className="font-bold text-[#FCF8FE] mb-1">{exo.nom}</h3>
                 <p className="text-xs font-semibold text-[#ACAAB0] mb-3">{exo.muscle_principal || "Général"}</p>
                 <p className="text-xs text-[#ACAAB0] line-clamp-3 mt-auto">{exo.description || "Aucune description."}</p>
-                <div className="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-[#2A2A32] dark:border-[#26262B]">
-                  <button onClick={() => openExerciceModal(exo)} className="flex items-center justify-center gap-1 bg-[#1F1F25] dark:bg-white/5 text-[#ACAAB0] dark:text-slate-300 py-2 rounded-lg text-xs font-bold hover:bg-[#1F1F25]"><Pencil size={14} /> Modifier</button>
-                  <button onClick={() => handleDeleteExercice(exo.id)} className="flex items-center justify-center gap-1 bg-[#1F1F25] dark:bg-red-500/10 text-red-600 dark:text-red-400 py-2 rounded-lg text-xs font-bold hover:bg-[#1F1F25]"><Trash2 size={14} /> Supprimer</button>
+                <div className="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-[#2A2A32]">
+                  <button onClick={() => openExerciceModal(exo)} className="flex items-center justify-center gap-1 bg-[#1F1F25] text-[#ACAAB0] py-2 rounded-lg text-xs font-bold hover:bg-[#2A2A32]"><Pencil size={14} /> Modifier</button>
+                  <button onClick={() => handleDeleteExercice(exo.id)} className="flex items-center justify-center gap-1 bg-[#1F1F25] text-red-500 py-2 rounded-lg text-xs font-bold hover:bg-[#2A2A32]"><Trash2 size={14} /> Supprimer</button>
                 </div>
               </div>
             ))}
@@ -155,47 +155,47 @@ const ExerciceManager = () => {
       {/* Modale de Création */}
       <div className={`fixed inset-0 z-[100] flex items-center justify-center p-4 transition-all duration-300 ${isModalOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}`}>
         <div className="absolute inset-0 bg-[#0B0B0E]/80 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
-        <div className="relative bg-[#131317] dark:bg-[#16161A] border border-[#2A2A32] dark:border-[#26262B] rounded-3xl shadow-2xl w-full max-w-lg p-8">
+        <div className="relative bg-[#131317] border border-[#2A2A32] rounded-3xl shadow-2xl w-full max-w-lg p-8">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-black text-[#FCF8FE] dark:text-white">{editingExercice ? 'Modifier un Exercice' : 'Créer un Exercice'}</h2>
-            <button onClick={() => { setIsModalOpen(false); setEditingExercice(null); }} className="text-[#ACAAB0] hover:text-red-500 transition-colors p-2 bg-[#1F1F25] dark:bg-white/5 rounded-full"><X size={20}/></button>
+            <h2 className="text-2xl font-black text-[#FCF8FE]">{editingExercice ? 'Modifier un Exercice' : 'Créer un Exercice'}</h2>
+            <button onClick={() => { setIsModalOpen(false); setEditingExercice(null); }} className="text-[#ACAAB0] hover:text-red-500 transition-colors p-2 bg-[#1F1F25] rounded-full"><X size={20}/></button>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-[#ACAAB0] dark:text-slate-300 mb-1 uppercase tracking-wider">Nom de l'exercice *</label>
-              <input type="text" required placeholder="Ex: Développé Couché" className="w-full bg-[#0B0B0E] dark:bg-[#0B0B0F] border border-[#2A2A32] dark:border-[#26262B] rounded-xl px-4 py-3 outline-none focus:border-[#FF6A00] dark:text-white"
+              <label className="block text-xs font-bold text-[#ACAAB0] mb-1 uppercase tracking-wider">Nom de l'exercice *</label>
+              <input type="text" required placeholder="Ex: Développé Couché" className="w-full bg-[#0B0B0E] border border-[#2A2A32] rounded-xl px-4 py-3 outline-none focus:border-[#FF6A00] text-white"
                 value={formData.nom} onChange={e => setFormData({...formData, nom: e.target.value})}
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-[#ACAAB0] dark:text-slate-300 mb-1 uppercase tracking-wider">Catégorie *</label>
-                <select className="w-full bg-[#0B0B0E] dark:bg-[#0B0B0F] border border-[#2A2A32] dark:border-[#26262B] rounded-xl px-4 py-3 outline-none focus:border-[#FF6A00] dark:text-white"
+                <label className="block text-xs font-bold text-[#ACAAB0] mb-1 uppercase tracking-wider">Catégorie *</label>
+                <select className="w-full bg-[#0B0B0E] border border-[#2A2A32] rounded-xl px-4 py-3 outline-none focus:border-[#FF6A00] text-white"
                   value={formData.categorie} onChange={e => setFormData({...formData, categorie: e.target.value})}
                 >
                   {categories.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-bold text-[#ACAAB0] dark:text-slate-300 mb-1 uppercase tracking-wider">Muscle principal</label>
-                <input type="text" placeholder="Ex: Pectoraux" className="w-full bg-[#0B0B0E] dark:bg-[#0B0B0F] border border-[#2A2A32] dark:border-[#26262B] rounded-xl px-4 py-3 outline-none focus:border-[#FF6A00] dark:text-white"
+                <label className="block text-xs font-bold text-[#ACAAB0] mb-1 uppercase tracking-wider">Muscle principal</label>
+                <input type="text" placeholder="Ex: Pectoraux" className="w-full bg-[#0B0B0E] border border-[#2A2A32] rounded-xl px-4 py-3 outline-none focus:border-[#FF6A00] text-white"
                   value={formData.muscle_principal} onChange={e => setFormData({...formData, muscle_principal: e.target.value})}
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[#ACAAB0] dark:text-slate-300 mb-1 uppercase tracking-wider">Lien Vidéo (optionnel)</label>
-              <input type="url" placeholder="https://youtube.com/..." className="w-full bg-[#0B0B0E] dark:bg-[#0B0B0F] border border-[#2A2A32] dark:border-[#26262B] rounded-xl px-4 py-3 outline-none focus:border-[#FF6A00] dark:text-white"
+              <label className="block text-xs font-bold text-[#ACAAB0] mb-1 uppercase tracking-wider">Lien Vidéo (optionnel)</label>
+              <input type="url" placeholder="https://youtube.com/..." className="w-full bg-[#0B0B0E] border border-[#2A2A32] rounded-xl px-4 py-3 outline-none focus:border-[#FF6A00] text-white"
                 value={formData.video_url} onChange={e => setFormData({...formData, video_url: e.target.value})}
               />
             </div>
             
             <div>
-              <label className="block text-xs font-bold text-[#ACAAB0] dark:text-slate-300 mb-1 uppercase tracking-wider">Consignes / Description</label>
-              <textarea placeholder="Points d'attention, placement..." rows="3" className="w-full bg-[#0B0B0E] dark:bg-[#0B0B0F] border border-[#2A2A32] dark:border-[#26262B] rounded-xl px-4 py-3 outline-none focus:border-[#FF6A00] resize-none dark:text-white"
+              <label className="block text-xs font-bold text-[#ACAAB0] mb-1 uppercase tracking-wider">Consignes / Description</label>
+              <textarea placeholder="Points d'attention, placement..." rows="3" className="w-full bg-[#0B0B0E] border border-[#2A2A32] rounded-xl px-4 py-3 outline-none focus:border-[#FF6A00] resize-none text-white"
                 value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})}
               />
             </div>
