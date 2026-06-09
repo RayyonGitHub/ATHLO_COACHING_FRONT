@@ -66,7 +66,7 @@ const Home = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <div className="inline-flex items-center px-3 py-1 rounded-full border border-orange-500/30 bg-orange-500/10 text-orange-500 text-xs font-semibold uppercase tracking-wide mb-8">
             <span className="w-2 h-2 rounded-full bg-orange-500 mr-2 animate-pulse"></span>
-            Nouveau: Intégration Garmin avancée
+            Nouveau: Intégration Strava avancée
           </div>
           <h1 className="text-5xl sm:text-7xl font-black tracking-tight mb-6 text-white leading-tight">
             Dépassez vos limites avec <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-600">ATHLO</span>
